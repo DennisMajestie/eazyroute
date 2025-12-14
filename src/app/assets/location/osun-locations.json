@@ -1,0 +1,128 @@
+{
+  "osun": {
+    "name": "Osun State",
+    "capital": "Osogbo",
+    "lgas": {
+      "atakunmosa_east": {
+        "name": "Atakunmosa East",
+        "areas": ["Atakunmosa East Central", "Iperindo", "Osu"]
+      },
+      "atakunmosa_west": {
+        "name": "Atakunmosa West",
+        "areas": ["Atakunmosa West Central", "Olorunsogo", "Esie"]
+      },
+      "aiyedaade": {
+        "name": "Aiyedaade",
+        "areas": ["Aiyedaade Central", "Gbongan", "Orile Owu"]
+      },
+      "aiyedire": {
+        "name": "Aiyedire",
+        "areas": ["Aiyedire Central", "Ile Ogbo", "Kuta"]
+      },
+      "boluwaduro": {
+        "name": "Boluwaduro",
+        "areas": ["Boluwaduro Central", "Otan Ayegbaju", "Esa Oke"]
+      },
+      "boripe": {
+        "name": "Boripe",
+        "areas": ["Boripe Central", "Iragbiji", "Ada"]
+      },
+      "ede_north": {
+        "name": "Ede North",
+        "areas": ["Ede North Central", "Oja Timi", "Sekona"]
+      },
+      "ede_south": {
+        "name": "Ede South",
+        "areas": ["Ede South Central", "Ejigbo Ward", "Eko Ende"]
+      },
+      " egbedore": {
+        "name": "Egbedore",
+        "areas": ["Egbedore Central", "Awo", "Ede Olohunsogo"]
+      },
+      "ejigbo": {
+        "name": "Ejigbo",
+        "areas": ["Ejigbo Central", "Ede South Ward", "Isundunrin"]
+      },
+      "ife_central": {
+        "name": "Ife Central",
+        "areas": ["Ife Central Ward", "Moore", "Ilare"]
+      },
+      "ife_east": {
+        "name": "Ife East",
+        "areas": ["Ife East Central", "Oke Ogbo", "Yakoyo"]
+      },
+      "ife_north": {
+        "name": "Ife North",
+        "areas": ["Ife North Central", "Ipetumodu", "Edunabon"]
+      },
+      "ife_south": {
+        "name": "Ife South",
+        "areas": ["Ife South Central", "Ifetedo", "Balogun"]
+      },
+      "ifedayo": {
+        "name": "Ifedayo",
+        "areas": ["Ifedayo Central", "Oke Ila", "Ora Igbomina"]
+      },
+      "ifelodun": {
+        "name": "Ifelodun",
+        "areas": ["Ifelodun Central", "Ikirun", "Ilobu"]
+      },
+      "ila": {
+        "name": "Ila",
+        "areas": ["Ila Central", "Oke Ila Ward", "Arandun"]
+      },
+      "ilesa_east": {
+        "name": "Ilesa East",
+        "areas": ["Ilesa East Central", "Ijebu Jesa", "Erinmo"]
+      },
+      "ilesa_west": {
+        "name": "Ilesa West",
+        "areas": ["Ilesa West Central", "Oke Omiru", "Ere Ijesa"]
+      },
+      "irepodun": {
+        "name": "Irepodun",
+        "areas": ["Irepodun Central", "Ilobu Ward", "Ada Ward"]
+      },
+      "irewole": {
+        "name": "Irewole",
+        "areas": ["Irewole Central", "Ikire", "Ikoyi"]
+      },
+      "isokan": {
+        "name": "Isokan",
+        "areas": ["Isokan Central", "Apomu", "Iwo Ward"]
+      },
+      "iwo": {
+        "name": "Iwo",
+        "areas": ["Iwo Central", "Gaa Akanbi", "Oke Adan"]
+      },
+      "obokun": {
+        "name": "Obokun",
+        "areas": ["Obokun Central", "Ilesa East Ward", "Ibokun"]
+      },
+      "odo_otin": {
+        "name": "Odo Otin",
+        "areas": ["Odo Otin Central", "Okuku", "Ila Ward"]
+      },
+      "ola_oluwa": {
+        "name": "Ola Oluwa",
+        "areas": ["Ola Oluwa Central", "Bode Osi", "Iwo Central Ward"]
+      },
+      "olorunda": {
+        "name": "Olorunda",
+        "areas": ["Olorunda Central", "Igbonna", "Osogbo Ward"]
+      },
+      "oriade": {
+        "name": "Oriade",
+        "areas": ["Oriade Central", "Ijebu Jesa Ward", "Gbongan Ward"]
+      },
+      "orolu": {
+        "name": "Orolu",
+        "areas": ["Orolu Central", "Ifon Osun", "Iragbiji Ward"]
+      },
+      "osogbo": {
+        "name": "Osogbo",
+        "areas": ["Osogbo Central", "Oke Baale", "Oja Oba", "Olaiya"]
+      }
+    }
+  }
+}

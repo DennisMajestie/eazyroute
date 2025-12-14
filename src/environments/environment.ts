@@ -76,11 +76,15 @@
 //   }
 // };
 // src/environments/environment.ts (Production)
+// src/environments/environment.development.ts (Development)
 import { Environment } from './environment.interface';
 
 export const environment: Environment = {
   production: true,
-  apiUrl: 'https://your-production-api.com/api/v1',
+  apiUrl: 'http://localhost:3000/api/v1',
+  appName: 'EazyRoute',
+  useMockSockets: false, // Backend now supports sockets
+
   googleMapsApiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
 
   // Storage keys

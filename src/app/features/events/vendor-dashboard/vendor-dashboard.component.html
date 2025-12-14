@@ -1,0 +1,63 @@
+<div class="dashboard-container">
+    <!-- Sidebar: Event List -->
+    <aside class="sidebar glass-panel">
+        <div class="header">
+            <h2>Your Events</h2>
+            <button class="btn-create">+ New Event</button>
+        </div>
+
+        <div class="event-list" *ngIf="!loading; else spinner">
+            <div class="event-item" *ngFor="let event of events" [class.active]="selectedEvent?.id === event.id"
+                (click)="selectEvent(event)">
+
+                <div class="date-badge">
+                    <span class="day">{{ event.schedule.start | date:'dd' }}</span>
+                    <span class="month">{{ event.schedule.start | date:'MMM' }}</span>
+                </div>
+
+                <div class="info">
+                    <h3>{{ event.title }}</h3>
+                    <p class="status">{{ event.status | uppercase }}</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content: Live Monitor -->
+    <main class="main-content">
+        <ng-container *ngIf="selectedEvent">
+            <!-- Stats Overlay -->
+            <div class="stats-overlay">
+                <div class="stat-card glass-card">
+                    <h4>Registered</h4>
+                    <span class="value">{{ selectedEvent.stats.registeredGuests }}</span>
+                </div>
+                <div class="stat-card glass-card active">
+                    <h4>En Route</h4>
+                    <span class="value live-pulse">{{ selectedEvent.stats.guestsEnRoute }}</span>
+                </div>
+                <div class="stat-card glass-card">
+                    <h4>Arrived</h4>
+                    <span class="value">{{ selectedEvent.stats.guestsArrived }}</span>
+                </div>
+            </div>
+
+            <!-- Live Map -->
+            <div class="map-wrapper">
+                <app-map [center]="selectedEvent.venue.location" [zoom]="14" [markers]="liveGuests">
+                </app-map>
+            </div>
+
+            <!-- Share Link -->
+            <div class="share-bar glass-card">
+                <span>Share Invitation:</span>
+                <code class="link">eazyroute.com/events/invite/{{ selectedEvent.accessCode }}</code>
+                <button class="btn-copy">Copy</button>
+            </div>
+        </ng-container>
+    </main>
+</div>
+
+<ng-template #spinner>
+    <div class="spinner">Loading...</div>
+</ng-template>

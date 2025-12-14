@@ -1,0 +1,60 @@
+{
+  "nasarawa": {
+    "name": "Nasarawa State",
+    "capital": "Lafia",
+    "lgas": {
+      "akwanga": {
+        "name": "Akwanga",
+        "areas": ["Akwanga Central", "Wamba Ward", "Andaha"]
+      },
+      "awe": {
+        "name": "Awe",
+        "areas": ["Awe Central", "Keana Ward", "Obi Ward"]
+      },
+      "doma": {
+        "name": "Doma",
+        "areas": ["Doma Central", "Alagye", "Rukubi"]
+      },
+      "karu": {
+        "name": "Karu",
+        "areas": ["Karu Central", "Karshi", "New Karu", "Nyanya"]
+      },
+      "keana": {
+        "name": "Keana",
+        "areas": ["Keana Central", "Awe Central Ward", "Obi Central"]
+      },
+      "keffi": {
+        "name": "Keffi",
+        "areas": ["Keffi Central", "Antada", "Jigwada"]
+      },
+      "kokona": {
+        "name": "Kokona",
+        "areas": ["Kokona Central", "Garaku", "Keffi Ward"]
+      },
+      "lafia": {
+        "name": "Lafia",
+        "areas": ["Lafia Central", "Akurba", "Bukan Sidi", "Shabu"]
+      },
+      "nasarawa": {
+        "name": "Nasarawa",
+        "areas": ["Nasarawa Central", "Loko", "Nasarawa Egon"]
+      },
+      "nasarawa_egon": {
+        "name": "Nasarawa Egon",
+        "areas": ["Nasarawa Egon Central", "Akwanga Ward", "Wamba Central"]
+      },
+      "obi": {
+        "name": "Obi",
+        "areas": ["Obi Central", "Awe Ward", "Keana Central"]
+      },
+      "toto": {
+        "name": "Toto",
+        "areas": ["Toto Central", "Gadabuke", "Umaisha"]
+      },
+      "wamba": {
+        "name": "Wamba",
+        "areas": ["Wamba Central", "Akwanga Central", "Nasarawa Egon Ward"]
+      }
+    }
+  }
+}

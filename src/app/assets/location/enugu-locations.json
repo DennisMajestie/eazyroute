@@ -1,0 +1,76 @@
+{
+  "enugu": {
+    "name": "Enugu State",
+    "capital": "Enugu",
+    "lgas": {
+      "aninri": {
+        "name": "Aninri",
+        "areas": ["Aninri Central", "Mpu", "Oduma"]
+      },
+      "awgu": {
+        "name": "Awgu",
+        "areas": ["Agbogugu", "Awgu Central", "Milliken Hill"]
+      },
+      "enugu_east": {
+        "name": "Enugu East",
+        "areas": ["Abakpa Nike", "Emene", "Nike"]
+      },
+      "enugu_north": {
+        "name": "Enugu North",
+        "areas": ["Asata", "China Town", "Ogbete"]
+      },
+      "enugu_south": {
+        "name": "Enugu South",
+        "areas": ["Achara Layout", "Maryland", "Trans Ekulu"]
+      },
+      "ezeagu": {
+        "name": "Ezeagu",
+        "areas": ["Aguobu Owa", "Ezeagu Central", "Obioma"]
+      },
+      "igbo_etiti": {
+        "name": "Igbo Etiti",
+        "areas": ["Enugu Ezike", "Igbo Etiti Central", "Unadu"]
+      },
+      "igbo_eze_north": {
+        "name": "Igbo Eze North",
+        "areas": ["Enugu Ezike Ward", "Igbo Eze North Central", "Ogrute"]
+      },
+      "igbo_eze_south": {
+        "name": "Igbo Eze South",
+        "areas": ["Ibagwa Aka", "Igbo Eze South Central", "Uhunowerre"]
+      },
+      "isi_uzo": {
+        "name": "Isi Uzo",
+        "areas": ["Isi Uzo Central", "Eha Amufu", "Mgbuji"]
+      },
+      "nkanu_east": {
+        "name": "Nkanu East",
+        "areas": ["Amagunze", "Nkanu East Central", "Nara"]
+      },
+      "nkanu_west": {
+        "name": "Nkanu West",
+        "areas": ["Agbani", "Nkanu West Central", "Akegbe Ugwu"]
+      },
+      "nsukka": {
+        "name": "Nsukka",
+        "areas": ["Nsukka Urban", "Obimo", "Opi Nsukka"]
+      },
+      "oji_river": {
+        "name": "Oji River",
+        "areas": ["Achi", "Inyi", "Oji River Central"]
+      },
+      "udenu": {
+        "name": "Udenu",
+        "areas": ["Obollo Afor", "Udenu Central", "Ezimo"]
+      },
+      "udi": {
+        "name": "Udi",
+        "areas": ["Udi Central", "Ebe", "Ngwo"]
+      },
+      "uzo_uwani": {
+        "name": "Uzo Uwani",
+        "areas": ["Adani", "Nimbo", "Uzo Uwani Central"]
+      }
+    }
+  }
+}

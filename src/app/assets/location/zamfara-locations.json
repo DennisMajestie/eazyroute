@@ -1,0 +1,68 @@
+{
+  "zamfara": {
+    "name": "Zamfara State",
+    "capital": "Gusau",
+    "lgas": {
+      "anka": {
+        "name": "Anka",
+        "areas": ["Anka Central", "Gusau Ward", "Talata Mafara Ward"]
+      },
+      "bakura": {
+        "name": "Bakura",
+        "areas": ["Bakura Central", "Maradun Ward", "Zurmi Ward"]
+      },
+      "birnin_magaji_kiyaw": {
+        "name": "Birnin Magaji/Kiyaw",
+        "areas": ["Birnin Magaji Central", "Kiyaw", "Shinkafi Ward"]
+      },
+      "bukkuyum": {
+        "name": "Bukkuyum",
+        "areas": ["Bukkuyum Central", "Anka Ward", "Gummi Ward"]
+      },
+      "bungudu": {
+        "name": "Bungudu",
+        "areas": ["Bungudu Central", "Gusau Central", "Maru Ward"]
+      },
+      "gummi": {
+        "name": "Gummi",
+        "areas": ["Gummi Central", "Bukkuyum Ward", "Zurmi Central"]
+      },
+      "gusau": {
+        "name": "Gusau",
+        "areas": ["Gusau Central", "Anka Central", "Bungudu Ward"]
+      },
+      "kaura_namoda": {
+        "name": "Kaura Namoda",
+        "areas": ["Kaura Namoda Central", "Zurmi Ward", "Birnin Magaji Ward"]
+      },
+      "maradun": {
+        "name": "Maradun",
+        "areas": ["Maradun Central", "Bakura Ward", "Talata Mafara Central"]
+      },
+      "maru": {
+        "name": "Maru",
+        "areas": ["Maru Central", "Bungudu Central", "Tsafe Ward"]
+      },
+      "shinkafi": {
+        "name": "Shinkafi",
+        "areas": ["Shinkafi Central", "Birnin Magaji Central", "Zurmi Ward"]
+      },
+      "talata_mafara": {
+        "name": "Talata Mafara",
+        "areas": ["Talata Mafara Central", "Anka Ward", "Maradun Ward"]
+      },
+      "chafe": {
+        "name": "Chafe",
+        "areas": ["Chafe Central", "Bungudu Chafe", "Gusau Chafe"]
+      },
+      "tsafe": {
+        "name": "Tsafe",
+        "areas": ["Tsafe Central", "Maru Ward", "Gusau Tsafe"]
+      },
+      "zurmi": {
+        "name": "Zurmi",
+        "areas": ["Zurmi Central", "Bakura Central", "Kaura Namoda Ward"]
+      }
+    }
+  }
+}

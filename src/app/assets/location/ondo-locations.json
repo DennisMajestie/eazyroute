@@ -1,0 +1,80 @@
+{
+  "ondo": {
+    "name": "Ondo State",
+    "capital": "Akure",
+    "lgas": {
+      "akoko_north_east": {
+        "name": "Akoko North-East",
+        "areas": ["Akoko North-East Central", "Ikare", "Ugbe"]
+      },
+      "akoko_north_west": {
+        "name": "Akoko North-West",
+        "areas": ["Akoko North-West Central", "Okeagbe", "Ese"]
+      },
+      "akoko_south_east": {
+        "name": "Akoko South-East",
+        "areas": ["Akoko South-East Central", "Isua", "Oka"]
+      },
+      "akoko_south_west": {
+        "name": "Akoko South-West",
+        "areas": ["Akoko South-West Central", "Oka Akoko", "Supare"]
+      },
+      "akure_north": {
+        "name": "Akure North",
+        "areas": ["Akure North Central", "Igoba", "Iju Itaogbolu"]
+      },
+      "akure_south": {
+        "name": "Akure South",
+        "areas": ["Akure South Central", "Isolo", "Oda Road"]
+      },
+      "ese_odo": {
+        "name": "Ese Odo",
+        "areas": ["Ese Odo Central", "Arogbo", "Igbotu"]
+      },
+      "idanre": {
+        "name": "Idanre",
+        "areas": ["Idanre Central", "Alade", "Ofosun"]
+      },
+      "ifedore": {
+        "name": "Ifedore",
+        "areas": ["Ifedore Central", "Igbara Oke", "Ijare"]
+      },
+      "ilaje": {
+        "name": "Ilaje",
+        "areas": ["Ilaje Central", "Igbokoda", "Mahin"]
+      },
+      "ile_oluji_okeigbo": {
+        "name": "Ile Oluji/Okeigbo",
+        "areas": ["Ile Oluji Central", "Okeigbo", "Alapere"]
+      },
+      "irele": {
+        "name": "Irele",
+        "areas": ["Irele Central", "Ode Irele", "Ajagba"]
+      },
+      "odigbo": {
+        "name": "Odigbo",
+        "areas": ["Odigbo Central", "Ore", "Okitipupa Ward"]
+      },
+      "okitipupa": {
+        "name": "Okitipupa",
+        "areas": ["Okitipupa Central", "Igbotako", "Ilutitun"]
+      },
+      "ondo_east": {
+        "name": "Ondo East",
+        "areas": ["Ondo East Central", "Bolorunduro", "Sahel"]
+      },
+      "ondo_west": {
+        "name": "Ondo West",
+        "areas": ["Ondo West Central", "Lisa", "Sobe"]
+      },
+      "ose": {
+        "name": "Ose",
+        "areas": ["Ose Central", "Ifon", "Idoani"]
+      },
+      "owo": {
+        "name": "Owo",
+        "areas": ["Owo Central", "Isuada", "Emure Ile"]
+      }
+    }
+  }
+}

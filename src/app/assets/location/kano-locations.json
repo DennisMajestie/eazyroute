@@ -1,0 +1,184 @@
+{
+  "kano": {
+    "name": "Kano State",
+    "capital": "Kano",
+    "lgas": {
+      "ajingi": {
+        "name": "Ajingi",
+        "areas": ["Ajingi Central", "Balare", "Chula"]
+      },
+      "albasu": {
+        "name": "Albasu",
+        "areas": ["Albasu Central", "Duja", "Sayaya"]
+      },
+      "bagwai": {
+        "name": "Bagwai",
+        "areas": ["Bagwai Central", "Gada", "Tsaure"]
+      },
+      "bebeji": {
+        "name": "Bebeji",
+        "areas": ["Bebeji Central", "Gafan", "Ranka"]
+      },
+      "bichi": {
+        "name": "Bichi",
+        "areas": ["Bichi Central", "Bagwaro", "Kunkurawa"]
+      },
+      "bunkure": {
+        "name": "Bunkure",
+        "areas": ["Bunkure Central", "Chirin", "Yandadi"]
+      },
+      "dala": {
+        "name": "Dala",
+        "areas": ["Dala Central", "Adakawa", "Gwammaja"]
+      },
+      "dambatta": {
+        "name": "Dambatta",
+        "areas": ["Dambatta Central", "Ajumawa", "Duna"]
+      },
+      "dawakin_kudu": {
+        "name": "Dawakin Kudu",
+        "areas": ["Dawakin Kudu Central", "Baici", "Dawan Galadima"]
+      },
+      "dawakin_tofa": {
+        "name": "Dawakin Tofa",
+        "areas": ["Dawakin Tofa Central", "Langel", "Tofa"]
+      },
+      "doguwa": {
+        "name": "Doguwa",
+        "areas": ["Doguwa Central", "Ragada", "Tudu"]
+      },
+      "fagge": {
+        "name": "Fagge",
+        "areas": ["Fagge Central", "Rijiyar Zaki", "Yandoka"]
+      },
+      "gabasawa": {
+        "name": "Gabasawa",
+        "areas": ["Gabasawa Central", "Chiromawa", "Mahuta"]
+      },
+      "garko": {
+        "name": "Garko",
+        "areas": ["Garko Central", "Bako", "Yalleman"]
+      },
+      "garun_mallam": {
+        "name": "Garun Mallam",
+        "areas": ["Garun Mallam Central", "Dogon Kawo", "Minjibir Ward"]
+      },
+      "gaya": {
+        "name": "Gaya",
+        "areas": ["Gaya Central", "Kademi", "Yalwa"]
+      },
+      "gezawa": {
+        "name": "Gezawa",
+        "areas": ["Gezawa Central", "Dansoshiya", "Jigawa"]
+      },
+      "gwale": {
+        "name": "Gwale",
+        "areas": ["Gwale Central", "Kofar Mazugal", "Yammata"]
+      },
+      "gwarzo": {
+        "name": "Gwarzo",
+        "areas": ["Gwarzo Central", "Getso", "Kadawa"]
+      },
+      "kabo": {
+        "name": "Kabo",
+        "areas": ["Kabo Central", "Danburam", "Shagagi"]
+      },
+      "kano_municipal": {
+        "name": "Kano Municipal",
+        "areas": ["Kano Central", "Kofar Kudu", "Na'ibawa", "Sharada", "Yakasai"]
+      },
+      "karaye": {
+        "name": "Karaye",
+        "areas": ["Karaye Central", "Daneji", "Rogo Ward"]
+      },
+      "kibiya": {
+        "name": "Kibiya",
+        "areas": ["Kibiya Central", "Gammo", "Tsanyawa"]
+      },
+      "kiru": {
+        "name": "Kiru",
+        "areas": ["Kiru Central", "Batagarawa", "Marke"]
+      },
+      "kumbotso": {
+        "name": "Kumbotso",
+        "areas": ["Kumbotso Central", "Challawa", "Panshekara"]
+      },
+      "kunchi": {
+        "name": "Kunchi",
+        "areas": ["Kunchi Central", "Dabi", "Yakasai Ward"]
+      },
+      "kura": {
+        "name": "Kura",
+        "areas": ["Kura Central", "Babariya", "Wudil Ward"]
+      },
+      "madobi": {
+        "name": "Madobi",
+        "areas": ["Madobi Central", "Garko Ward", "Yerima"]
+      },
+      "makoda": {
+        "name": "Makoda",
+        "areas": ["Makoda Central", "Gaya Ward", "Kwankwaso"]
+      },
+      "minjibir": {
+        "name": "Minjibir",
+        "areas": ["Minjibir Central", "Gogori", "Yalleman Ward"]
+      },
+      "nasarawa": {
+        "name": "Nasarawa",
+        "areas": ["Nasarawa Central", "Bichi Ward", "Kadawa Ward"]
+      },
+      "rano": {
+        "name": "Rano",
+        "areas": ["Rano Central", "Aujara", "Kibiya Ward"]
+      },
+      "rimin_gado": {
+        "name": "Rimin Gado",
+        "areas": ["Rimin Gado Central", "Dansure", "Tofa Ward"]
+      },
+      "rogo": {
+        "name": "Rogo",
+        "areas": ["Rogo Central", "Bunkure Ward", "Falgore"]
+      },
+      "shanono": {
+        "name": "Shanono",
+        "areas": ["Shanono Central", "Dutse Ward", "Faruruwa"]
+      },
+      "sumaila": {
+        "name": "Sumaila",
+        "areas": ["Sumaila Central", "Garko Central Ward", "Magami"]
+      },
+      "takali": {
+        "name": "Takali",
+        "areas": ["Takali Central", "Dogon Nama", "Yalwa Takali"]
+      },
+      "tarauni": {
+        "name": "Tarauni",
+        "areas": ["Tarauni Central", "Kofar Mata", "Unguwar Gini"]
+      },
+      "tofa": {
+        "name": "Tofa",
+        "areas": ["Tofa Central", "Dindere", "Langel Ward"]
+      },
+      "tsanyawa": {
+        "name": "Tsanyawa",
+        "areas": ["Tsanyawa Central", "Makoda Ward", "Yanoko"]
+      },
+      "tudun_wada": {
+        "name": "Tudun Wada",
+        "areas": ["Tudun Wada Central", "Darmanawa", "Gidado"]
+      },
+      "ungogo": {
+        "name": "Ungogo",
+        "areas": ["Ungogo Central", "Bachirawa", "Zango"]
+      },
+      "warawa": {
+        "name": "Warawa",
+        "areas": ["Warawa Central", "Gafasa", "Zango Ward"]
+      },
+      "wudil": {
+        "name": "Wudil",
+        "areas": ["Wudil Central", "Achika", "Utai"]
+      }
+    }
+  }
+}

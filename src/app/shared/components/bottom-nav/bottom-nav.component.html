@@ -1,1 +1,13 @@
-<p>bottom-nav works!</p>
+<!-- src/app/shared/components/bottom-nav/bottom-nav.component.html -->
+@if (isAuthenticated()) {
+<nav class="bottom-nav">
+    <div class="bottom-nav-container">
+        @for (item of visibleNavItems(); track item.route) {
+        <a [routerLink]="item.route" routerLinkActive="active" class="nav-item" [attr.aria-label]="item.label">
+            <div class="nav-icon" [innerHTML]="item.icon"></div>
+            <span class="nav-label">{{ item.label }}</span>
+        </a>
+        }
+    </div>
+</nav>
+}

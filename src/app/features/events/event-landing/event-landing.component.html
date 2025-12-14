@@ -1,0 +1,75 @@
+<div class="event-landing-container" *ngIf="event; else loadingTpl">
+    <!-- Hero Section with Glass Effect -->
+    <div class="hero-section">
+        <div class="glass-card header-card">
+            <span class="badge">{{ event.eventType | uppercase }}</span>
+            <h1>{{ event.title }}</h1>
+            <p class="venue"><i class="fas fa-map-marker-alt"></i> {{ event.venue.name }}</p>
+            <p class="date"><i class="far fa-calendar-alt"></i> {{ event.schedule.start | date:'fullDate' }}</p>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+        <!-- Event Details -->
+        <div class="glass-card details-card">
+            <h3>About this Event</h3>
+            <p>{{ event.description }}</p>
+
+            <div class="location-preview">
+                <h4>Location</h4>
+                <p>{{ event.venue.address }}</p>
+                <!-- Map Preview Plugin Here if needed -->
+            </div>
+        </div>
+
+        <!-- Registration / Action -->
+        <div class="glass-card action-card">
+            <ng-container *ngIf="!isRegistered; else registeredUi">
+                <h3>Join the Guest List</h3>
+                <form [formGroup]="registrationForm" (ngSubmit)="register()">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" formControlName="name" class="glass-input" placeholder="John Doe">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" formControlName="phone" class="glass-input" placeholder="080...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email (Optional)</label>
+                        <input type="email" formControlName="email" class="glass-input" placeholder="john@example.com">
+                    </div>
+
+                    <button type="submit" class="btn-primary-glass" [disabled]="registrationForm.invalid || loading">
+                        {{ loading ? 'Registering...' : 'Confirm Attendance' }}
+                    </button>
+                </form>
+            </ng-container>
+
+            <ng-template #registeredUi>
+                <div class="success-state">
+                    <div class="success-icon">🎉</div>
+                    <h3>You're on the list!</h3>
+                    <p>We've sent the details to your phone.</p>
+
+                    <div class="day-of-actions">
+                        <p class="hint">On the day of the event:</p>
+                        <button (click)="startNavigation()" class="btn-success-glass">
+                            <i class="fas fa-location-arrow"></i> Start Navigation
+                        </button>
+                    </div>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+</div>
+
+<ng-template #loadingTpl>
+    <div class="loading-container">
+        <div class="spinner" *ngIf="!error"></div>
+        <div class="error" *ngIf="error">{{ error }}</div>
+    </div>
+</ng-template>

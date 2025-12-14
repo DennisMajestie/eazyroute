@@ -1,0 +1,76 @@
+{
+  "yobe": {
+    "name": "Yobe State",
+    "capital": "Damaturu",
+    "lgas": {
+      "bade": {
+        "name": "Bade",
+        "areas": ["Bade Central", "Gashua Ward", "Jakusko Ward"]
+      },
+      "bursari": {
+        "name": "Bursari",
+        "areas": ["Bursari Central", "Yunusari Ward", "Yusufari Ward"]
+      },
+      "damaturu": {
+        "name": "Damaturu",
+        "areas": ["Damaturu Central", "Bade Ward", "Fune Ward"]
+      },
+      "fika": {
+        "name": "Fika",
+        "areas": ["Fika Central", "Potiskum Ward", "Nangere Ward"]
+      },
+      "fune": {
+        "name": "Fune",
+        "areas": ["Fune Central", "Damaturu Ward", "Gujba Ward"]
+      },
+      "geidam": {
+        "name": "Geidam",
+        "areas": ["Geidam Central", "Yunusari Central", "Yusufari Central"]
+      },
+      "gujba": {
+        "name": "Gujba",
+        "areas": ["Gujba Central", "Fune Ward", "Gulani Ward"]
+      },
+      "gulani": {
+        "name": "Gulani",
+        "areas": ["Gulani Central", "Gujba Ward", "Tarmuwa Ward"]
+      },
+      "jakusko": {
+        "name": "Jakusko",
+        "areas": ["Jakusko Central", "Bade Central", "Karasuwa Ward"]
+      },
+      "karasuwa": {
+        "name": "Karasuwa",
+        "areas": ["Karasuwa Central", "Jakusko Ward", "Machina Ward"]
+      },
+      "machina": {
+        "name": "Machina",
+        "areas": ["Machina Central", "Karasuwa Ward", "Nguru Ward"]
+      },
+      "nangere": {
+        "name": "Nangere",
+        "areas": ["Nangere Central", "Fika Ward", "Potiskum Central"]
+      },
+      "nguru": {
+        "name": "Nguru",
+        "areas": ["Nguru Central", "Machina Ward", "Bursari Ward"]
+      },
+      "potiskum": {
+        "name": "Potiskum",
+        "areas": ["Potiskum Central", "Fika Central", "Nangere Ward"]
+      },
+      "tarmuwa": {
+        "name": "Tarmuwa",
+        "areas": ["Tarmuwa Central", "Gulani Ward", "Yunusari Ward"]
+      },
+      "yunusari": {
+        "name": "Yunusari",
+        "areas": ["Yunusari Central", "Bursari Ward", "Geidam Ward"]
+      },
+      "yusufari": {
+        "name": "Yusufari",
+        "areas": ["Yusufari Central", "Bursari Central", "Geidam Central"]
+      }
+    }
+  }
+}

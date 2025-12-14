@@ -1,0 +1,80 @@
+{
+  "edo": {
+    "name": "Edo State",
+    "capital": "Benin City",
+    "lgas": {
+      "akoko_edo": {
+        "name": "Akoko-Edo",
+        "areas": ["Igarra", "Ibillo", "Lampese"]
+      },
+      "egor": {
+        "name": "Egor",
+        "areas": ["Egor Central", "New Benin", "Uselu"]
+      },
+      "esan_central": {
+        "name": "Esan Central",
+        "areas": ["Esan Central Ward", "Irrua", "Opoji"]
+      },
+      "esan_north_east": {
+        "name": "Esan North-East",
+        "areas": ["Uromi", "Esan North-East Central", "Uzea"]
+      },
+      "esan_south_east": {
+        "name": "Esan South-East",
+        "areas": ["Ubiaja", "Esan South-East Central", "Ewohimi"]
+      },
+      "esan_west": {
+        "name": "Esan West",
+        "areas": ["Ekpoma", "Esan West Central", "Iruekpen"]
+      },
+      "etsako_central": {
+        "name": "Etsako Central",
+        "areas": ["Fugar", "Etsako Central Ward", "Okpella"]
+      },
+      "etsako_east": {
+        "name": "Etsako East",
+        "areas": ["Agenebode", "Etsako East Central", "Weppa Wanno"]
+      },
+      "etsako_west": {
+        "name": "Etsako West",
+        "areas": ["Auchi", "Etsako West Central", "Jattu"]
+      },
+      "igueben": {
+        "name": "Igueben",
+        "areas": ["Igueben Central", "Ekpon", "Ujemen"]
+      },
+      "ikpoba_okha": {
+        "name": "Ikpoba Okha",
+        "areas": ["Aduwawa", "Ikpoba Hill", "Oregbeni"]
+      },
+      "oredo": {
+        "name": "Oredo",
+        "areas": ["Benin City", "Garrick Memorial", "New Benin Ward", "Ogida", "Oregbeni Ward"]
+      },
+      "orhionmwon": {
+        "name": "Orhionmwon",
+        "areas": ["Abudu", "Orhionmwon Central", "Ugboko"]
+      },
+      "ovia_north_east": {
+        "name": "Ovia North-East",
+        "areas": ["Okada", "Ovia North-East Central", "Utese"]
+      },
+      "ovia_south_west": {
+        "name": "Ovia South-West",
+        "areas": ["Iguobazuwa", "Ovia South-West Central", "Siluko"]
+      },
+      "owan_east": {
+        "name": "Owan East",
+        "areas": ["Afuze", "Owan East Central", "Igue"]
+      },
+      "owan_west": {
+        "name": "Owan West",
+        "areas": ["Sabongida Ora", "Owan West Central", "Uhonmora"]
+      },
+      "uhunmwonde": {
+        "name": "Uhunmwonde",
+        "areas": ["Eviohoba", "Uhunmwonde Central", "Urhonigbe"]
+      }
+    }
+  }
+}

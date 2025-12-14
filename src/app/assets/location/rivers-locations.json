@@ -1,0 +1,100 @@
+{
+  "rivers": {
+    "name": "Rivers State",
+    "capital": "Port Harcourt",
+    "lgas": {
+      "abua_odual": {
+        "name": "Abua/Odual",
+        "areas": ["Abua Central", "Odual", "Ahoada Ward"]
+      },
+      "ahoada_east": {
+        "name": "Ahoada East",
+        "areas": ["Ahoada East Central", "Ogba Ward", "Akinima"]
+      },
+      "ahoada_west": {
+        "name": "Ahoada West",
+        "areas": ["Ahoada West Central", "Abua Ward", "Ekpeye Ward"]
+      },
+      "akuku_toru": {
+        "name": "Akuku-Toru",
+        "areas": ["Akuku-Toru Central", "Degema Ward", "Abonnema"]
+      },
+      "andoni": {
+        "name": "Andoni",
+        "areas": ["Andoni Central", "Ngo", "Bonny Ward"]
+      },
+      "asari_toru": {
+        "name": "Asari-Toru",
+        "areas": ["Asari-Toru Central", "Buguma", "Akuku Ward"]
+      },
+      "bonny": {
+        "name": "Bonny",
+        "areas": ["Bonny Central", "Finima", "Andoni Ward"]
+      },
+      "degema": {
+        "name": "Degema",
+        "areas": ["Degema Central", "Akuku-Toru Ward", "Usokun"]
+      },
+      "eleme": {
+        "name": "Eleme",
+        "areas": ["Eleme Central", "Ebubu", "Oyigbo Ward"]
+      },
+      "emuoha": {
+        "name": "Emuoha",
+        "areas": ["Emuoha Central", "Rumuji", "Port Harcourt Ward"]
+      },
+      "etche": {
+        "name": "Etche",
+        "areas": ["Etche Central", "Okehi", "Oyigbo Central"]
+      },
+      "gokana": {
+        "name": "Gokana",
+        "areas": ["Gokana Central", "B-Dere", "Khana Ward"]
+      },
+      "ikwerre": {
+        "name": "Ikwerre",
+        "areas": ["Ikwerre Central", "Isiokpo", "Emuoha Ward"]
+      },
+      "khana": {
+        "name": "Khana",
+        "areas": ["Khana Central", "Bori", "Gokana Ward"]
+      },
+      "obio_akpor": {
+        "name": "Obio/Akpor",
+        "areas": ["Obio Central", "Akpor", "Port Harcourt Central"]
+      },
+      "ogba_egbema_ndoni": {
+        "name": "Ogba/Egbema/Ndoni",
+        "areas": ["Ogba Central", "Egbema", "Ndoni"]
+      },
+      "ogu_bolo": {
+        "name": "Ogu/Bolo",
+        "areas": ["Ogu Central", "Bolo", "Eleme Ward"]
+      },
+      "okrika": {
+        "name": "Okrika",
+        "areas": ["Okrika Central", "Ogu Ward", "Port Harcourt Okrika"]
+      },
+      "omuma": {
+        "name": "Omuma",
+        "areas": ["Omuma Central", "Etche Ward", "Oyigbo Omuma"]
+      },
+      "opobo_nkoro": {
+        "name": "Opobo/Nkoro",
+        "areas": ["Opobo Central", "Nkoro", "Andoni Central"]
+      },
+      "oyigbo": {
+        "name": "Oyigbo",
+        "areas": ["Oyigbo Central", "Eleme Central", "Etche Central"]
+      },
+      "port_harcourt": {
+        "name": "Port Harcourt",
+        "areas": ["Port Harcourt Township", "Diobu", "Mile 1", "Mile 3", "Old GRA"]
+      },
+      "tai": {
+        "name": "Tai",
+        "areas": ["Tai Central", "Nonwa", "Khana Central"]
+      }
+    }
+  }
+}

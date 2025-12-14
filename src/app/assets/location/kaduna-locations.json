@@ -1,0 +1,100 @@
+{
+  "kaduna": {
+    "name": "Kaduna State",
+    "capital": "Kaduna",
+    "lgas": {
+      "birnin_gwari": {
+        "name": "Birnin Gwari",
+        "areas": ["Birnin Gwari Central", "Gayam", "Kakangi"]
+      },
+      "chikun": {
+        "name": "Chikun",
+        "areas": ["Chikun Central", "Gwagwada", "Nassarawa"]
+      },
+      "giwa": {
+        "name": "Giwa",
+        "areas": ["Giwa Central", "Kadage", "Shika"]
+      },
+      "igabi": {
+        "name": "Igabi",
+        "areas": ["Igabi Central", "Kerawa", "Rigasa"]
+      },
+      "ikara": {
+        "name": "Ikara",
+        "areas": ["Ikara Central", "Auchan", "Saulawa"]
+      },
+      "jaba": {
+        "name": "Jaba",
+        "areas": ["Jaba Central", "Daddu", "Kwoi"]
+      },
+      "jema_a": {
+        "name": "Jema'a",
+        "areas": ["Kafanchan", "Jema'a Central", "Takad"]
+      },
+      "kachia": {
+        "name": "Kachia",
+        "areas": ["Kachia Central", "Bishini", "Doka"]
+      },
+      "kaduna_north": {
+        "name": "Kaduna North",
+        "areas": ["Kaduna North Central", "Hayin Banki", "Tudun Wada"]
+      },
+      "kaduna_south": {
+        "name": "Kaduna South",
+        "areas": ["Kaduna South Central", "Barnawa", "Television"]
+      },
+      "kagarko": {
+        "name": "Kagarko",
+        "areas": ["Kagarko Central", "Jere", "Katari"]
+      },
+      "kajuru": {
+        "name": "Kajuru",
+        "areas": ["Kajuru Central", "Afogo", "Idon"]
+      },
+      "kaura": {
+        "name": "Kaura",
+        "areas": ["Kaura Central", "Mallagum", "Manchok"]
+      },
+      "kauru": {
+        "name": "Kauru",
+        "areas": ["Kauru Central", "Pambeguwa", "Zankan"]
+      },
+      "kubau": {
+        "name": "Kubau",
+        "areas": ["Kubau Central", "Anchau", "Dutsen Wai"]
+      },
+      "kudan": {
+        "name": "Kudan",
+        "areas": ["Kudan Central", "Doka Ward", "Saminaka"]
+      },
+      "lere": {
+        "name": "Lere",
+        "areas": ["Lere Central", "Abuja Ward", "Saminaka Ward"]
+      },
+      "makarfi": {
+        "name": "Makarfi",
+        "areas": ["Makarfi Central", "Gimi", "Nasarawa Ward"]
+      },
+      "sabon_gari": {
+        "name": "Sabon Gari",
+        "areas": ["Sabon Gari Central", "Hanwa", "Zabi"]
+      },
+      "sanga": {
+        "name": "Sanga",
+        "areas": ["Sanga Central", "Gwantu", "Jere Ward"]
+      },
+      "soba": {
+        "name": "Soba",
+        "areas": ["Soba Central", "Rahama", "Turawa"]
+      },
+      "zangon_kataf": {
+        "name": "Zangon Kataf",
+        "areas": ["Zangon Kataf Central", "Atyap", "Zonkwa"]
+      },
+      "zaria": {
+        "name": "Zaria",
+        "areas": ["Zaria City", "Dambo", "Gyallesu", "Sabon Gari Ward"]
+      }
+    }
+  }
+}

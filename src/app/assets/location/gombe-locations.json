@@ -1,0 +1,52 @@
+{
+  "gombe": {
+    "name": "Gombe State",
+    "capital": "Gombe",
+    "lgas": {
+      "akko": {
+        "name": "Akko",
+        "areas": ["Akko Central", "Garko", "Kashere"]
+      },
+      "balanga": {
+        "name": "Balanga",
+        "areas": ["Balanga Central", "Dadiya", "Talasse"]
+      },
+      "billiri": {
+        "name": "Billiri",
+        "areas": ["Billiri Central", "Bare", "Kalmai"]
+      },
+      "dukku": {
+        "name": "Dukku",
+        "areas": ["Dukku Central", "Hashidu", "Malala"]
+      },
+      "funakaye": {
+        "name": "Funakaye",
+        "areas": ["Funakaye Central", "Bajoga", "Tongo"]
+      },
+      "gombe": {
+        "name": "Gombe",
+        "areas": ["Gombe Central", "Bolari East", "Pantami", "Shamaki"]
+      },
+      "kaltungo": {
+        "name": "Kaltungo",
+        "areas": ["Kaltungo Central", "Awak", "Tula"]
+      },
+      "kwami": {
+        "name": "Kwami",
+        "areas": ["Kwami Central", "Deba", "Malleri"]
+      },
+      "nafada": {
+        "name": "Nafada",
+        "areas": ["Nafada Central", "Gudukku", "Jangara"]
+      },
+      "shongom": {
+        "name": "Shongom",
+        "areas": ["Shongom Central", "Boh", "Filiya"]
+      },
+      "yamaltu_deba": {
+        "name": "Yamaltu/Deba",
+        "areas": ["Deba Habe", "Yamaltu", "Zambuk"]
+      }
+    }
+  }
+}

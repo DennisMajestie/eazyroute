@@ -1,0 +1,60 @@
+{
+  "ebonyi": {
+    "name": "Ebonyi State",
+    "capital": "Abakaliki",
+    "lgas": {
+      "abakaliki": {
+        "name": "Abakaliki",
+        "areas": ["Abakaliki Urban", "Azugwu", "Itemba", "Kpirikpiri"]
+      },
+      "afikpo_north": {
+        "name": "Afikpo North",
+        "areas": ["Afikpo Central", "Akpoha", "Unwana"]
+      },
+      "afikpo_south": {
+        "name": "Afikpo South",
+        "areas": ["Afikpo South Central", "Edda", "Ozizza"]
+      },
+      "ebonyi": {
+        "name": "Ebonyi",
+        "areas": ["Ebonyi Central", "Noyo", "Onueke"]
+      },
+      "ezza_north": {
+        "name": "Ezza North",
+        "areas": ["Amaeze", "Ezza North Central", "Oriuzor"]
+      },
+      "ezza_south": {
+        "name": "Ezza South",
+        "areas": ["Amana", "Ezza South Central", "Onueke Ward"]
+      },
+      "ikwo": {
+        "name": "Ikwo",
+        "areas": ["Eka Awoke", "Ikwo Central", "Ndubia"]
+      },
+      "ishielu": {
+        "name": "Ishielu",
+        "areas": ["Ezza Effium", "Ishielu Central", "Nkalagu"]
+      },
+      "ivo": {
+        "name": "Ivo",
+        "areas": ["Akaeze", "Ishiagu", "Ivo Central"]
+      },
+      "izzi": {
+        "name": "Izzi",
+        "areas": ["Abaomege", "Igbeagu", "Izzi Central"]
+      },
+      "ohaozara": {
+        "name": "Ohaozara",
+        "areas": ["Effium", "Ohaozara Central", "Uburu"]
+      },
+      "ohaukwu": {
+        "name": "Ohaukwu",
+        "areas": ["Effium Ward", "Nkalagu Ward", "Ohaukwu Central"]
+      },
+      "onicha": {
+        "name": "Onicha",
+        "areas": ["Isu", "Onicha Central", "Oriuzor Ward"]
+      }
+    }
+  }
+}

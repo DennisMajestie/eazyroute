@@ -1,0 +1,100 @@
+{
+  "benue": {
+    "name": "Benue State",
+    "capital": "Makurdi",
+    "lgas": {
+      "ado": {
+        "name": "Ado",
+        "areas": ["Ado Central", "Igumale", "Orokam", "Yala"]
+      },
+      "agatu": {
+        "name": "Agatu",
+        "areas": ["Agatu Central", "Obagaji", "Okokolo"]
+      },
+      "apa": {
+        "name": "Apa",
+        "areas": ["Apa Central", "Igbumale", "Ugbokpo"]
+      },
+      "buruku": {
+        "name": "Buruku",
+        "areas": ["Buruku Central", "Mbalom", "Shokov"]
+      },
+      "gboko": {
+        "name": "Gboko",
+        "areas": ["Gboko East", "Gboko West", "Yandev"]
+      },
+      "guma": {
+        "name": "Guma",
+        "areas": ["Guma Central", "Kasev", "Nyiev"]
+      },
+      "gwer_east": {
+        "name": "Gwer East",
+        "areas": ["Aliade", "Gwer East Central", "Naka"]
+      },
+      "gwer_west": {
+        "name": "Gwer West",
+        "areas": ["Gwer West Central", "Makurdi Rural", "Nzorov"]
+      },
+      "katsina_ala": {
+        "name": "Katsina-Ala",
+        "areas": ["Katsina-Ala Central", "Mbayion", "Sankera"]
+      },
+      "konshisha": {
+        "name": "Konshisha",
+        "areas": ["Konshisha Central", "Tse-Agberagba", "Wende"]
+      },
+      "kwande": {
+        "name": "Kwande",
+        "areas": ["Adikpo", "Kwande Central", "Turan"]
+      },
+      "logo": {
+        "name": "Logo",
+        "areas": ["Logo Central", "Okpokwu", "Ugbokolo"]
+      },
+      "makurdi": {
+        "name": "Makurdi",
+        "areas": ["High Level", "Low Level", "Makurdi Central", "North Bank", "Wuese"]
+      },
+      "obi": {
+        "name": "Obi",
+        "areas": ["Oju Central", "Obi Central", "Ohimini"]
+      },
+      "ogbadibo": {
+        "name": "Ogbadibo",
+        "areas": ["Ogbadibo Central", "Otukpa", "Owukpa"]
+      },
+      "ohimini": {
+        "name": "Ohimini",
+        "areas": ["Ohimini Central", "Oju Ward"]
+      },
+      "oju": {
+        "name": "Oju",
+        "areas": ["Ai-Oju", "Oju Central", "Onabu"]
+      },
+      "okpokwu": {
+        "name": "Okpokwu",
+        "areas": ["Ichama", "Okpokwu Central", "Ugbokolo Ward"]
+      },
+      "otukpo": {
+        "name": "Otukpo",
+        "areas": ["Akpa", "Otukpo Central", "Sabon Gida"]
+      },
+      "tarka": {
+        "name": "Tarka",
+        "areas": ["Mbayase", "Tarka Central", "Wukari"]
+      },
+      "ukum": {
+        "name": "Ukum",
+        "areas": ["Borikyo", "Ukum Central", "Zaki-Biam"]
+      },
+      "ushongo": {
+        "name": "Ushongo",
+        "areas": ["Lessel", "Ushongo Central", "Wannune"]
+      },
+      "vandeikya": {
+        "name": "Vandeikya",
+        "areas": ["Mbakya", "Vandeikya Central", "Yooyo"]
+      }
+    }
+  }
+}

@@ -1,0 +1,161 @@
+<div class="dialog-overlay" (click)="onClose()">
+    <div class="dialog-container" (click)="$event.stopPropagation()">
+        <!-- Dialog Header -->
+        <div class="dialog-header">
+            <h2>Add Transport Point</h2>
+            <button class="close-btn" (click)="onClose()" type="button">×</button>
+        </div>
+
+        <!-- Dialog Content -->
+        <div class="dialog-content">
+            <form [formGroup]="pointForm" (ngSubmit)="onSubmit()">
+
+                <!-- Transport Point Type -->
+                <div class="form-group">
+                    <label class="form-label required">Point Type</label>
+                    <div class="type-selector">
+                        <button *ngFor="let type of transportPointTypes" type="button" class="type-option"
+                            [class.selected]="pointForm.get('type')?.value === type"
+                            (click)="pointForm.patchValue({ type: type })">
+                            <span class="type-icon">{{ TRANSPORT_POINT_TYPES[type].icon }}</span>
+                            <span class="type-label">{{ TRANSPORT_POINT_TYPES[type].label }}</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Official Name -->
+                <div class="form-group">
+                    <label class="form-label required">Official Name</label>
+                    <input type="text" class="form-input" formControlName="name" placeholder="e.g., Berger Bus Stop"
+                        [class.error]="pointForm.get('name')?.invalid && pointForm.get('name')?.touched" />
+                    <div class="form-error" *ngIf="pointForm.get('name')?.invalid && pointForm.get('name')?.touched">
+                        Name must be at least 3 characters
+                    </div>
+                </div>
+
+                <!-- Local Names -->
+                <div class="form-group">
+                    <label class="form-label">Local Names (Optional)</label>
+                    <app-chip-input formControlName="localNames" placeholder="Type local name and press Enter..."
+                        [maxChips]="5">
+                    </app-chip-input>
+                    <div class="form-hint">
+                        Add common local names (e.g., "Berger", "Berger Roundabout")
+                    </div>
+                </div>
+
+                <!-- Transport Modes -->
+                <div class="form-group">
+                    <label class="form-label required">Available Transport Modes</label>
+                    <div class="mode-selector">
+                        <button *ngFor="let mode of transportModes" type="button" class="mode-option"
+                            [class.selected]="isTransportModeSelected(mode)" (click)="toggleTransportMode(mode)">
+                            <span class="mode-icon">{{ TRANSPORT_MODES[mode].icon }}</span>
+                            <span class="mode-label">{{ TRANSPORT_MODES[mode].label }}</span>
+                        </button>
+                    </div>
+                    <div class="form-error"
+                        *ngIf="pointForm.get('transportModes')?.invalid && pointForm.get('transportModes')?.touched">
+                        Select at least one transport mode
+                    </div>
+                </div>
+
+                <!-- Location Selection -->
+                <div class="form-group">
+                    <label class="form-label required">Location</label>
+                    <div class="location-actions">
+                        <button type="button" class="location-btn" (click)="useCurrentLocation()">
+                            📍 Use Current Location
+                        </button>
+                        <span class="location-hint" *ngIf="selectedLocation">
+                            {{ selectedLocation.lat.toFixed(6) }}, {{ selectedLocation.lng.toFixed(6) }}
+                        </span>
+                    </div>
+                    <div class="map-container">
+                        <app-map [center]="mapCenter" [zoom]="15" [markers]="mapMarkers">
+                        </app-map>
+                    </div>
+                    <div class="form-hint">
+                        Tap on the map to set the exact location
+                    </div>
+                </div>
+
+                <!-- Address (Optional) -->
+                <div class="form-group">
+                    <label class="form-label">Address (Optional)</label>
+                    <input type="text" class="form-input" formControlName="address"
+                        placeholder="e.g., Plot 123, Wuse Zone 4" />
+                </div>
+
+                <!-- City & Area -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">City</label>
+                        <input type="text" class="form-input" formControlName="city" placeholder="e.g., Abuja" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Area</label>
+                        <input type="text" class="form-input" formControlName="area" placeholder="e.g., Wuse" />
+                    </div>
+                </div>
+
+                <!-- Photos -->
+                <div class="form-group">
+                    <label class="form-label">Photos (Optional, Max 5)</label>
+                    <div class="photo-upload">
+                        <input #fileInput type="file" accept="image/jpeg,image/jpg,image/png,image/webp" multiple
+                            (change)="onPhotoSelect($event)" style="display: none" />
+
+                        <div class="photo-previews" *ngIf="photoPreviewUrls.length > 0">
+                            <div class="photo-preview" *ngFor="let url of photoPreviewUrls; let i = index">
+                                <img [src]="url" alt="Preview">
+                                <button type="button" class="remove-photo" (click)="removePhoto(i)">×</button>
+                            </div>
+                        </div>
+
+                        <button type="button" class="upload-btn" (click)="triggerFileInput()"
+                            [disabled]="selectedPhotos.length >= 5">
+                            <span class="upload-icon">📷</span>
+                            <span>{{ selectedPhotos.length > 0 ? 'Add More Photos' : 'Upload Photos' }}</span>
+                            <span class="photo-count">{{ selectedPhotos.length }}/5</span>
+                        </button>
+
+                        <div class="form-error" *ngIf="photoErrors.length > 0">
+                            <div *ngFor="let error of photoErrors">{{ error }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label class="form-label">Description (Optional)</label>
+                    <textarea class="form-textarea" formControlName="description"
+                        placeholder="Add any additional details about this location..." rows="4" maxlength="500">
+          </textarea>
+                    <div class="char-counter">
+                        {{ descriptionCharCount }}/500
+                    </div>
+                </div>
+
+                <!-- Error/Success Messages -->
+                <div class="alert alert-error" *ngIf="submitError">
+                    {{ submitError }}
+                </div>
+                <div class="alert alert-success" *ngIf="submitSuccess">
+                    {{ submitSuccess }}
+                </div>
+
+                <!-- Dialog Actions -->
+                <div class="dialog-actions">
+                    <button type="button" class="btn btn-secondary" (click)="onClose()" [disabled]="isSubmitting">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+                        <span *ngIf="!isSubmitting">Submit Point</span>
+                        <span *ngIf="isSubmitting">Submitting...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

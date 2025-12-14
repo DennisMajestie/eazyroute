@@ -1,0 +1,92 @@
+{
+  "lagos": {
+    "name": "Lagos State",
+    "capital": "Ikeja",
+    "lgas": {
+      "agege": {
+        "name": "Agege",
+        "areas": ["Agege Central", "Dopemu", "Mangoro", "Orile Agege"]
+      },
+      "ajeromi_ifelodun": {
+        "name": "Ajeromi-Ifelodun",
+        "areas": ["Ajeromi", "Ifelodun", "Layeni", "Tolu"]
+      },
+      "alimosho": {
+        "name": "Alimosho",
+        "areas": ["Abesan", "Egbeda", "Idimu", "Ikotun", "Iyana Ipaja"]
+      },
+      "amuwo_odofin": {
+        "name": "Amuwo-Odofin",
+        "areas": ["Amuwo", "Festac", "Mile 2", "Oriade"]
+      },
+      "apapa": {
+        "name": "Apapa",
+        "areas": ["Apapa Central", "Kirikiri", "Liverpool", "Marine"]
+      },
+      "badagry": {
+        "name": "Badagry",
+        "areas": ["Badagry Central", "Ajara", "Olorunda", "Posukoh"]
+      },
+      "epe": {
+        "name": "Epe",
+        "areas": ["Epe Central", "Ejinrin", "Noforija", "Poka"]
+      },
+      "eti_osa": {
+        "name": "Eti Osa",
+        "areas": ["Eti Osa Central", "Ikoyi", "Lekki", "Victoria Island"]
+      },
+      "ibeju_lekki": {
+        "name": "Ibeju-Lekki",
+        "areas": ["Ibeju", "Lekki Peninsula", "Akodo", "Eleko"]
+      },
+      "ifako_ijaiye": {
+        "name": "Ifako-Ijaiye",
+        "areas": ["Ifako", "Ijaiye", "Ojokoro", "Sango"]
+      },
+      "ikeja": {
+        "name": "Ikeja",
+        "areas": ["Ikeja GRA", "Allen Avenue", "Computer Village", "Opebi"]
+      },
+      "ikorodu": {
+        "name": "Ikorodu",
+        "areas": ["Ikorodu Central", "Ebute", "Igbogbo", "Imota"]
+      },
+      "isolo": {
+        "name": "Isolo",
+        "areas": ["Isolo Central", "Ajao Estate", "Okota", "Oshodi Ward"]
+      },
+      "kosofe": {
+        "name": "Kosofe",
+        "areas": ["Kosofe Central", "Agboyi", "Ikosi", "Oworonshoki"]
+      },
+      "lagos_island": {
+        "name": "Lagos Island",
+        "areas": ["Lagos Island Central", "Adeniji Adele", "Elegbata", "Sandgrouse"]
+      },
+      "lagos_mainland": {
+        "name": "Lagos Mainland",
+        "areas": ["Lagos Mainland Central", "Ebute Meta", "Iddo", "Oyingbo"]
+      },
+      "mushin": {
+        "name": "Mushin",
+        "areas": ["Mushin Central", "Daleko", "Idi Oro", "Papa Ajao"]
+      },
+      "ojo": {
+        "name": "Ojo",
+        "areas": ["Ojo Central", "Alaba", "Igando", "Iba"]
+      },
+      "oshodi_isolo": {
+        "name": "Oshodi-Isolo",
+        "areas": ["Oshodi", "Isolo Ward", "Ejigbo", "Mafoluku"]
+      },
+      "shomolu": {
+        "name": "Shomolu",
+        "areas": ["Shomolu Central", "Bariga", "Fadeyi", "Palmgrove"]
+      },
+      "surulere": {
+        "name": "Surulere",
+        "areas": ["Surulere Central", "Aguda", "Coker", "Itire"]
+      }
+    }
+  }
+}

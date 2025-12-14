@@ -1,0 +1,23 @@
+@use "../shared/auth-shared.component.scss" as *;
+
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-content {
+  display: flex;
+  width: 100%;
+  max-width: 1400px;
+
+  &.centered {
+    justify-content: center;
+    align-items: center;
+  }
+}
+.verify-card {
+  max-width: 400px;
+  padding: 15px !important;
+}

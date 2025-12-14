@@ -1,0 +1,116 @@
+{
+  "jigawa": {
+    "name": "Jigawa State",
+    "capital": "Dutse",
+    "lgas": {
+      "auyo": {
+        "name": "Auyo",
+        "areas": ["Auyo Central", "Auyokawa", "Gatafa"]
+      },
+      "babura": {
+        "name": "Babura",
+        "areas": ["Babura Central", "Batalawa", "Garu"]
+      },
+      "biriniwa": {
+        "name": "Biriniwa",
+        "areas": ["Biriniwa Central", "Buraira", "Karanka"]
+      },
+      "birnin_kudu": {
+        "name": "Birnin Kudu",
+        "areas": ["Birnin Kudu Central", "Kangire", "Surko"]
+      },
+      "buji": {
+        "name": "Buji",
+        "areas": ["Buji Central", "Churbun", "Kwangila"]
+      },
+      "dutse": {
+        "name": "Dutse",
+        "areas": ["Dutse Central", "Chamo", "Limawa"]
+      },
+      "gagarawa": {
+        "name": "Gagarawa",
+        "areas": ["Gagarawa Central", "Gagarmari", "Yalwa"]
+      },
+      "garki": {
+        "name": "Garki",
+        "areas": ["Garki Central", "Dantanadi", "Rafin Marke"]
+      },
+      "gumel": {
+        "name": "Gumel",
+        "areas": ["Gumel Central", "Adiyani", "Galagamma"]
+      },
+      "guri": {
+        "name": "Guri",
+        "areas": ["Guri Central", "Abunabo", "Goya"]
+      },
+      "gwaram": {
+        "name": "Gwaram",
+        "areas": ["Gwaram Central", "Fagam", "Sasari"]
+      },
+      "gwiwa": {
+        "name": "Gwiwa",
+        "areas": ["Gwiwa Central", "Korayel", "Shagari"]
+      },
+      "hadejia": {
+        "name": "Hadejia",
+        "areas": ["Hadejia Central", "Atafi", "Majia"]
+      },
+      "jahun": {
+        "name": "Jahun",
+        "areas": ["Jahun Central", "Aujara", "Gauza Bababba"]
+      },
+      "kafin_hausa": {
+        "name": "Kafin Hausa",
+        "areas": ["Kafin Hausa Central", "Dubantu", "Meiga"]
+      },
+      "kazaure": {
+        "name": "Kazaure",
+        "areas": ["Kazaure Central", "Dandi", "Magarya"]
+      },
+      "kiri_kasama": {
+        "name": "Kiri Kasama",
+        "areas": ["Kiri Kasama Central", "Baragumi", "Tsurma"]
+      },
+      "kiyawa": {
+        "name": "Kiyawa",
+        "areas": ["Kiyawa Central", "Andaza", "Fara"]
+      },
+      "kaugama": {
+        "name": "Kaugama",
+        "areas": ["Kaugama Central", "Arki", "Jarkasa"]
+      },
+      "maigatari": {
+        "name": "Maigatari",
+        "areas": ["Maigatari Central", "Balarabe", "Turbus"]
+      },
+      "malam_madori": {
+        "name": "Malam Madori",
+        "areas": ["Malam Madori Central", "Malamawa", "Tofa"]
+      },
+      "miga": {
+        "name": "Miga",
+        "areas": ["Miga Central", "Dangyatin", "Garbo"]
+      },
+      "ringim": {
+        "name": "Ringim",
+        "areas": ["Ringim Central", "Chai-Chai", "Sankara"]
+      },
+      "roni": {
+        "name": "Roni",
+        "areas": ["Roni Central", "Berde", "Kafin Babushe"]
+      },
+      "sule_tankarkar": {
+        "name": "Sule Tankarkar",
+        "areas": ["Sule Tankarkar Central", "Amanga", "Dankumbo"]
+      },
+      "taura": {
+        "name": "Taura",
+        "areas": ["Taura Central", "Ajaura", "Majawa"]
+      },
+      "yankwashi": {
+        "name": "Yankwashi",
+        "areas": ["Yankwashi Central", "Achilafiya", "Belas"]
+      }
+    }
+  }
+}

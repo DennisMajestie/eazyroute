@@ -1,12 +1,12 @@
-// src/environments/environment.development.ts export const environmentDev = { production: false, apiUrl: 'http://localhost:3000/api', mapboxToken: 'YOUR_MAPBOX_TOKEN', otpLength: 4, otpExpiry: 300 };
-
-
 // src/environments/environment.development.ts (Development)
 import { Environment } from './environment.interface';
 
 export const environment: Environment = {
     production: false,
-    apiUrl: 'http://localhost:5000/api/v1',
+    apiUrl: 'http://localhost:3000/api/v1',
+    appName: 'EazyRoute',
+    useMockSockets: false, // Backend now supports sockets
+
     googleMapsApiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
 
     // Storage keys

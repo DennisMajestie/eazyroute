@@ -1,0 +1,330 @@
+<div class="trip-planner-container">
+  <!-- Header -->
+  <header class="planner-header">
+    <h2>🗺️ Trip Planner</h2>
+    <p>Plan your journey with real-time routes and costs</p>
+  </header>
+
+  <!-- Search Section -->
+  <section class="search-section">
+    <!-- From Input -->
+    <div class="search-box position-relative mb-3">
+      <div class="input-with-button">
+        <input type="text"
+          [placeholder]="isDetectingLocation ? 'Detecting location...' : 'From: Enter location or use 📍 button'"
+          class="form-control" [(ngModel)]="fromQuery" [disabled]="isDetectingLocation"
+          (input)="onSearchInput('from', fromQuery)">
+
+        <!-- Refresh Location Button -->
+        <button class="location-refresh-btn" (click)="refreshLocation()" [disabled]="isDetectingLocation"
+          title="Refresh location">
+          <i [class]="isDetectingLocation ? 'fas fa-spinner fa-spin' : 'fas fa-crosshairs'"></i>
+        </button>
+      </div>
+
+      <!-- Location Error -->
+      <small *ngIf="locationError" class="text-danger d-block mt-1">
+        <i class="fas fa-exclamation-circle"></i> {{ locationError }}
+      </small>
+
+      <!-- Use My Location Hint (shown when no location detected and no error) -->
+      <small *ngIf="!fromLocation && !locationError && !isDetectingLocation" class="text-muted d-block mt-1">
+        <i class="fas fa-info-circle"></i> Click the <i class="fas fa-crosshairs"></i> button to use your current
+        location
+      </small>
+
+      <!-- Real-time Tracking Status -->
+      <small *ngIf="isTrackingLocation" class="text-success d-block mt-1">
+        <i class="fas fa-circle" style="animation: pulse 2s infinite;"></i> Real-time tracking active
+      </small>
+
+      <!-- Search Results for From -->
+      <ul *ngIf="activeSearchField === 'from' && searchResults.length > 0" class="list-group">
+        <li *ngFor="let result of searchResults" class="list-group-item" (click)="selectResult(result)">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1">
+              <strong>{{ result.name }}</strong>
+
+              <!-- Verification Badge (only for bus stops) -->
+              <span *ngIf="result.type === 'bus_stop' && result.verificationStatus" class="badge ms-2"
+                [ngClass]="getVerificationBadge(result.verificationStatus).class">
+                {{ getVerificationBadge(result.verificationStatus).icon }}
+                {{ getVerificationBadge(result.verificationStatus).text }}
+              </span>
+
+              <small class="d-block text-muted">
+                {{ result.type === 'bus_stop' ? '🚏 Bus Stop' : '📍 Location' }}
+                {{ result.area ? '• ' + result.area : '' }}
+              </small>
+
+              <!-- Local Names (Also known as...) -->
+              <small *ngIf="result.localNames && result.localNames.length > 0" class="d-block text-info">
+                <i class="fas fa-info-circle"></i> {{ getLocalNamesText(result.localNames) }}
+              </small>
+
+              <!-- Transport Modes -->
+              <div *ngIf="result.transportModes && result.transportModes.length > 0" class="mt-1">
+                <i *ngFor="let icon of getTransportModeIcons(result.transportModes)" [class]="icon + ' me-1'"
+                  style="font-size: 0.8rem; color: #666;"></i>
+              </div>
+            </div>
+
+            <!-- Upvotes (if available) -->
+            <div *ngIf="result.upvotes && result.upvotes > 0" class="text-muted small">
+              <i class="fas fa-thumbs-up"></i> {{ result.upvotes }}
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- To Input -->
+    <div class="search-box position-relative mb-3">
+      <input type="text" placeholder="🎯 To: Destination" class="form-control" [(ngModel)]="toQuery"
+        (input)="onSearchInput('to', toQuery)">
+
+      <!-- Search Results for To -->
+      <ul *ngIf="activeSearchField === 'to' && searchResults.length > 0" class="list-group">
+        <li *ngFor="let result of searchResults" class="list-group-item" (click)="selectResult(result)">
+          <div class="d-flex justify-content-between align-items-start">
+            <div class="flex-grow-1">
+              <strong>{{ result.name }}</strong>
+
+              <!-- Verification Badge (only for bus stops) -->
+              <span *ngIf="result.type === 'bus_stop' && result.verificationStatus" class="badge ms-2"
+                [ngClass]="getVerificationBadge(result.verificationStatus).class">
+                {{ getVerificationBadge(result.verificationStatus).icon }}
+                {{ getVerificationBadge(result.verificationStatus).text }}
+              </span>
+
+              <small class="d-block text-muted">
+                {{ result.type === 'bus_stop' ? '🚏 Bus Stop' : '📍 Location' }}
+                {{ result.area ? '• ' + result.area : '' }}
+              </small>
+
+              <!-- Local Names (Also known as...) -->
+              <small *ngIf="result.localNames && result.localNames.length > 0" class="d-block text-info">
+                <i class="fas fa-info-circle"></i> {{ getLocalNamesText(result.localNames) }}
+              </small>
+
+              <!-- Transport Modes -->
+              <div *ngIf="result.transportModes && result.transportModes.length > 0" class="mt-1">
+                <i *ngFor="let icon of getTransportModeIcons(result.transportModes)" [class]="icon + ' me-1'"
+                  style="font-size: 0.8rem; color: #666;"></i>
+              </div>
+            </div>
+
+            <!-- Upvotes (if available) -->
+            <div *ngIf="result.upvotes && result.upvotes > 0" class="text-muted small">
+              <i class="fas fa-thumbs-up"></i> {{ result.upvotes }}
+            </div>
+          </div>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Find Routes Button -->
+    <button class="btn btn-primary w-100 mb-3" (click)="findRoutes()" [disabled]="isLoadingRoutes">
+      <i class="fas fa-route"></i>
+      {{ isLoadingRoutes ? 'Finding Routes...' : 'Find Routes' }}
+    </button>
+
+    <!-- Report Missing Stop Button -->
+    <button class="btn btn-outline-info w-100" (click)="toggleReportModal()">
+      <i class="fas fa-map-marker-plus"></i> Report Missing Stop
+    </button>
+  </section>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoadingRoutes" class="loading-state">
+    <div class="spinner-border" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+    <p>Generating best routes for you...</p>
+  </div>
+
+  <!-- Route Results -->
+  <section *ngIf="!isLoadingRoutes && generatedRoutes.length > 0" class="route-results">
+    <h5>✨ Available Routes ({{ generatedRoutes.length }})</h5>
+
+    <div *ngFor="let route of generatedRoutes; let i = index" class="route-card"
+      [class.selected]="selectedRoute === route" (click)="selectRoute(route)">
+
+      <!-- Route Summary -->
+      <div class="route-summary">
+        <span class="route-badge">Route {{ i + 1 }}</span>
+        <div class="route-stats">
+          <span class="stat-item">
+            <i class="fas fa-clock"></i> {{ route.totalTime }} min
+          </span>
+          <span class="stat-item cost">
+            <i class="fas fa-money-bill-wave"></i> ₦{{ route.totalCost }}
+          </span>
+          <span class="stat-item">
+            <i class="fas fa-route"></i> {{ (route.totalDistance / 1000).toFixed(1) }} km
+          </span>
+        </div>
+      </div>
+
+      <!-- Segment Breakdown -->
+      <div class="segments-list">
+        <div *ngFor="let segment of route.segments; let j = index" class="segment-item">
+
+          <!-- Segment Header -->
+          <div class="segment-header">
+            <span class="segment-number">{{ j + 1 }}</span>
+            <i [class]="getTransportIcon(segment.mode)"></i>
+            <span class="transport-mode">{{ segment.mode.name }}</span>
+            <span class="segment-cost">₦{{ segment.cost }}</span>
+          </div>
+
+          <!-- From Stop -->
+          <div class="segment-route">
+            <div class="stop-marker start">
+              <i class="fas fa-circle"></i>
+            </div>
+            <div class="stop-info">
+              <strong>{{ segment.fromStop.name }}</strong>
+              <small class="d-block">{{ segment.fromStop.area }}</small>
+            </div>
+          </div>
+
+          <!-- Segment Details -->
+          <div class="segment-details">
+            <span class="detail-item">
+              <i class="fas fa-arrows-alt-v"></i> {{ (segment.distance / 1000).toFixed(1) }} km
+            </span>
+            <span class="detail-item">
+              <i class="fas fa-clock"></i> {{ segment.estimatedTime }} min
+            </span>
+          </div>
+
+          <!-- To Stop -->
+          <div class="segment-route">
+            <div class="stop-marker end">
+              <i class="fas fa-map-marker-alt"></i>
+            </div>
+            <div class="stop-info">
+              <strong>{{ segment.toStop.name }}</strong>
+              <small class="d-block">{{ segment.toStop.area }}</small>
+            </div>
+          </div>
+
+          <!-- Instructions -->
+          <div *ngIf="segment.instructions" class="segment-instructions">
+            <i class="fas fa-info-circle"></i>
+            {{ segment.instructions }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Start Trip Button -->
+      <button class="btn btn-success w-100 mt-3" (click)="startTripWithRoute(route); $event.stopPropagation()">
+        <i class="fas fa-play"></i> Start This Route
+      </button>
+    </div>
+  </section>
+
+  <!-- No Routes Found -->
+  <div *ngIf="!isLoadingRoutes && generatedRoutes.length === 0 && fromLocation && toLocation" class="alert alert-info">
+    <i class="fas fa-info-circle"></i> No routes found. Try different locations or check if bus stops exist in the area.
+  </div>
+
+  <!-- Map Container -->
+  <section class="map-container" *ngIf="!isLoadingRoutes">
+    <div class="map-wrapper">
+      <app-map [center]="center" [zoom]="zoom" [markers]="testMarkers"></app-map>
+    </div>
+  </section>
+
+  <!-- Report Missing Stop Modal -->
+  <div class="modal-overlay" *ngIf="showReportModal">
+    <div class="modal-content p-4">
+      <h4>📍 Report Missing Stop</h4>
+      <p class="text-muted mb-3">Help improve our database by reporting missing bus stops</p>
+
+      <div class="mb-3">
+        <label>Stop Name</label>
+        <input [(ngModel)]="newStop.name" class="form-control" placeholder="e.g. Berger Junction">
+      </div>
+
+      <!-- Local Names (Alternative Names) -->
+      <div class="mb-3">
+        <label>Local Names <small class="text-muted">(Optional - How else is this stop known?)</small></label>
+        <input #localNameInput type="text" class="form-control mb-2" placeholder="e.g. Okada Junction, Okada"
+          (keyup.enter)="addLocalName(localNameInput.value); localNameInput.value = ''">
+        <small class="text-muted d-block mb-2">
+          <i class="fas fa-info-circle"></i> Press Enter to add each name
+        </small>
+
+        <!-- Display added local names as chips -->
+        <div *ngIf="newStop.localNames && newStop.localNames.length > 0" class="d-flex flex-wrap gap-2">
+          <span *ngFor="let name of newStop.localNames; let i = index"
+            class="badge bg-secondary d-inline-flex align-items-center">
+            {{ name }}
+            <i class="fas fa-times ms-2" style="cursor: pointer;" (click)="removeLocalName(i)"></i>
+          </span>
+        </div>
+      </div>
+
+      <!-- Transport Modes -->
+      <div class="mb-3">
+        <label class="d-block">Available Transport Modes</label>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="mode-keke"
+            [checked]="newStop.transportModes?.includes('keke')" (change)="toggleTransportMode('keke')">
+          <label class="form-check-label" for="mode-keke">
+            <i class="fas fa-motorcycle"></i> Keke
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="mode-bus"
+            [checked]="newStop.transportModes?.includes('bus')" (change)="toggleTransportMode('bus')">
+          <label class="form-check-label" for="mode-bus">
+            <i class="fas fa-bus"></i> Bus
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="mode-okada"
+            [checked]="newStop.transportModes?.includes('okada')" (change)="toggleTransportMode('okada')">
+          <label class="form-check-label" for="mode-okada">
+            <i class="fas fa-motorcycle"></i> Okada
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" id="mode-taxi"
+            [checked]="newStop.transportModes?.includes('taxi')" (change)="toggleTransportMode('taxi')">
+          <label class="form-check-label" for="mode-taxi">
+            <i class="fas fa-taxi"></i> Taxi
+          </label>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label>Description</label>
+        <textarea [(ngModel)]="newStop.description" class="form-control" rows="3"
+          placeholder="Any landmarks or notable features?"></textarea>
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          <label>Latitude</label>
+          <input [(ngModel)]="newStop.latitude" type="number" step="0.000001" class="form-control">
+        </div>
+        <div class="col">
+          <label>Longitude</label>
+          <input [(ngModel)]="newStop.longitude" type="number" step="0.000001" class="form-control">
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-success flex-grow-1" [disabled]="isSubmitting" (click)="submitStop()">
+          {{ isSubmitting ? 'Sending...' : 'Submit Report' }}
+        </button>
+        <button class="btn btn-outline-info" (click)="toggleReportModal()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,10 @@
+// src/app/layouts/main-layout/main-layout.component.scss
+.main-content {
+  min-height: calc(100vh - 64px);
+  padding-top: 64px; // Height of navbar
+  padding-bottom: 80px; // Space for bottom nav on mobile
+
+  @media (min-width: 769px) {
+    padding-bottom: 0; // No bottom nav on desktop
+  }
+}

@@ -1,5 +1,5 @@
 // src/app/core/interceptors/logging.interceptor.ts
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { tap } from 'rxjs';
 
 export const loggingInterceptor: HttpInterceptorFn = (req, next) => {
@@ -11,7 +11,13 @@ export const loggingInterceptor: HttpInterceptorFn = (req, next) => {
         tap({
             next: (event) => {
                 const duration = Date.now() - startTime;
-                console.log(`✅ Response: ${req.method} ${req.url} - ${duration}ms`);
+
+                // Only log when we get the actual HttpResponse, not other events
+                if (event instanceof HttpResponse) {
+                    console.log(`✅ Response: ${req.method} ${req.url} - ${duration}ms`);
+                    console.log(`📦 Response Body:`, event.body);
+                    console.log(`📊 Response Status:`, event.status);
+                }
             },
             error: (error) => {
                 const duration = Date.now() - startTime;

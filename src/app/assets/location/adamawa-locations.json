@@ -1,0 +1,92 @@
+{
+  "adamawa": {
+    "name": "Adamawa State",
+    "capital": "Yola",
+    "lgas": {
+      "demsa": {
+        "name": "Demsa",
+        "areas": ["Demsa Central", "Dong", "Mbula", "Nassarawo Demsa"]
+      },
+      "fufure": {
+        "name": "Fufure",
+        "areas": ["Farang", "Fufure Central", "Gurin", "Karlahi"]
+      },
+      "ganye": {
+        "name": "Ganye",
+        "areas": ["Ganye Central", "Gurum", "Jada", "Sugu"]
+      },
+      "girei": {
+        "name": "Girei",
+        "areas": ["Girei Central", "Modire", "Wuro Bokki", "Gereng"]
+      },
+      "gombi": {
+        "name": "Gombi",
+        "areas": ["Gabun", "Gombi Central", "Tawa", "Garkida"]
+      },
+      "guyuk": {
+        "name": "Guyuk",
+        "areas": ["Bobini", "Chikila", "Guyuk Central", "Lawaru"]
+      },
+      "hong": {
+        "name": "Hong",
+        "areas": ["Garaha", "Hong Central", "Shangui", "Pella"]
+      },
+      "jada": {
+        "name": "Jada",
+        "areas": ["Jada Central", "Leko", "Mayo Kam", "Yebhi"]
+      },
+      "lamurde": {
+        "name": "Lamurde",
+        "areas": ["Doubeli", "Lamurde Central", "Opalo", "Bagaruwa"]
+      },
+      "madagali": {
+        "name": "Madagali",
+        "areas": ["Gulak", "Madagali Central", "Sukur", "Duhu"]
+      },
+      "maiha": {
+        "name": "Maiha",
+        "areas": ["Maiha Central", "Pakka", "Sorau", "Belel"]
+      },
+      "mayo_belwa": {
+        "name": "Mayo Belwa",
+        "areas": ["Bajabure", "Gangfada", "Mayo Belwa Central", "Ribadu"]
+      },
+      "michika": {
+        "name": "Michika",
+        "areas": ["Michika Central", "Moda", "Vi", "Kwande"]
+      },
+      "mubi_north": {
+        "name": "Mubi North",
+        "areas": ["Betso", "Mubi Central", "Sabon Layi", "Vimtim", "Muchalla"]
+      },
+      "mubi_south": {
+        "name": "Mubi South",
+        "areas": ["Gella", "Mujara", "Vimtim", "Uba"]
+      },
+      "numan": {
+        "name": "Numan",
+        "areas": ["Bare", "Gamadio", "Numan Central", "Vulpi"]
+      },
+      "shelleng": {
+        "name": "Shelleng",
+        "areas": ["Bakari Guso", "Shelleng Central", "Tallare", "Gwapopollo"]
+      },
+      "song": {
+        "name": "Song",
+        "areas": ["Dirma", "Song Central", "Waltandi", "Kilange"]
+      },
+      "toungo": {
+        "name": "Toungo",
+        "areas": ["Toungo Central", "Dawo", "Kanye", "Kunini"]
+      },
+      "yola_north": {
+        "name": "Yola North",
+        "areas": ["Alkalawa", "Gwadabawa", "Karewa", "Nassarawo", "Yola Town"]
+      },
+      "yola_south": {
+        "name": "Yola South",
+        "areas": ["Ajiya", "Jimeta", "Makama", "Rumde", "Wuro Sembe"]
+      }
+    }
+  }
+}

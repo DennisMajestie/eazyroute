@@ -1,0 +1,140 @@
+{
+  "oyo": {
+    "name": "Oyo State",
+    "capital": "Ibadan",
+    "lgas": {
+      "afijio": {
+        "name": "Afijio",
+        "areas": ["Afijio Central", "Awe", "Fiditi"]
+      },
+      "akinyele": {
+        "name": "Akinyele",
+        "areas": ["Akinyele Central", "Moniya", "Saki East Ward"]
+      },
+      "atiba": {
+        "name": "Atiba",
+        "areas": ["Atiba Central", "Ofa Meta", "Oyo Ward"]
+      },
+      "atisbo": {
+        "name": "Atisbo",
+        "areas": ["Atisbo Central", "Tede", "Ago Are"]
+      },
+      "egbeda": {
+        "name": "Egbeda",
+        "areas": ["Egbeda Central", "Erunmu", "Ibadan Ward"]
+      },
+      "ibadan_north": {
+        "name": "Ibadan North",
+        "areas": ["Ibadan North Central", "Bodija", "Sango", "University"]
+      },
+      "ibadan_north_east": {
+        "name": "Ibadan North-East",
+        "areas": ["Ibadan North-East Central", "Iwo Road", "New Bodija"]
+      },
+      "ibadan_north_west": {
+        "name": "Ibadan North-West",
+        "areas": ["Ibadan North-West Central", "Onireke", "Dugbe"]
+      },
+      "ibadan_south_east": {
+        "name": "Ibadan South-East",
+        "areas": ["Ibadan South-East Central", "Mapo", "Ring Road"]
+      },
+      "ibadan_south_west": {
+        "name": "Ibadan South-West",
+        "areas": ["Ibadan South-West Central", "Challenge", "Ring Road Ward"]
+      },
+      "ibarapa_central": {
+        "name": "Ibarapa Central",
+        "areas": ["Ibarapa Central Ward", "Igbo Ora", "Eruwa Ward"]
+      },
+      "ibarapa_east": {
+        "name": "Ibarapa East",
+        "areas": ["Ibarapa East Central", "Lanlate", "Batedo"]
+      },
+      "ibarapa_north": {
+        "name": "Ibarapa North",
+        "areas": ["Ibarapa North Central", "Ayete", "Tapa"]
+      },
+      "ido": {
+        "name": "Ido",
+        "areas": ["Ido Central", "Omi Adio", "Akinyele Ward"]
+      },
+      "irepo": {
+        "name": "Irepo",
+        "areas": ["Irepo Central", "Kishi", "Okeogun"]
+      },
+      "iseyin": {
+        "name": "Iseyin",
+        "areas": ["Iseyin Central", "Kishi Ward", "Ado Awaye"]
+      },
+      "itesiwaju": {
+        "name": "Itesiwaju",
+        "areas": ["Itesiwaju Central", "Otu", "Komu"]
+      },
+      "iwajowa": {
+        "name": "Iwajowa",
+        "areas": ["Iwajowa Central", "Iwere Ile", "Budo Egba"]
+      },
+      "kajola": {
+        "name": "Kajola",
+        "areas": ["Kajola Central", "Okeho", "Iseyin Ward"]
+      },
+      "lagelu": {
+        "name": "Lagelu",
+        "areas": ["Lagelu Central", "Lalupon", "Ibadan Central Ward"]
+      },
+      "ogbomoso_north": {
+        "name": "Ogbomoso North",
+        "areas": ["Ogbomoso North Central", "Aguodo", "Saja"]
+      },
+      "ogbomoso_south": {
+        "name": "Ogbomoso South",
+        "areas": ["Ogbomoso South Central", "Orire Ward", "Arowomole"]
+      },
+      "ogo_oluwa": {
+        "name": "Ogo Oluwa",
+        "areas": ["Ogo Oluwa Central", "Ajaawa", "Surulere Ward"]
+      },
+      "olorunsogo": {
+        "name": "Olorunsogo",
+        "areas": ["Olorunsogo Central", "Igbeti", "Kishi Central"]
+      },
+      "oluyole": {
+        "name": "Oluyole",
+        "areas": ["Oluyole Central", "Idi Ishin", "Ibadan South Ward"]
+      },
+      "ona_ara": {
+        "name": "Ona Ara",
+        "areas": ["Ona Ara Central", "Akanran", "Ibadan South-West Ward"]
+      },
+      "orelope": {
+        "name": "Orelope",
+        "areas": ["Orelope Central", "Igboho", "Kishi Orelope"]
+      },
+      "ori_ire": {
+        "name": "Ori Ire",
+        "areas": ["Ori Ire Central", "Ikoyi Ile", "Ogbomoso Ward"]
+      },
+      "oyo_east": {
+        "name": "Oyo East",
+        "areas": ["Oyo East Central", "Kosobo", "Atiba Ward"]
+      },
+      "oyo_west": {
+        "name": "Oyo West",
+        "areas": ["Oyo West Central", "Ojongbodu", "Saki Ward"]
+      },
+      "saki_east": {
+        "name": "Saki East",
+        "areas": ["Saki East Central", "Ago Amodu", "Saki Ward"]
+      },
+      "saki_west": {
+        "name": "Saki West",
+        "areas": ["Saki West Central", "Sepeteri", "Otu Ward"]
+      },
+      "surulere": {
+        "name": "Surulere",
+        "areas": ["Surulere Central", "Iresa Adu", "Ogo Oluwa Ward"]
+      }
+    }
+  }
+}

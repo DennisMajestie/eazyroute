@@ -114,6 +114,13 @@
 //     return total;
 //   }
 // }
+/**
+ * ═══════════════════════════════════════════════════════════════════
+ * STORAGE SERVICE (Using Your Storage Keys)
+ * ═══════════════════════════════════════════════════════════════════
+ * 
+ * File: src/app/core/services/storage.service.ts
+ */
 
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
@@ -123,73 +130,17 @@ import { environment } from '../../../environments/environment';
 })
 export class StorageService {
     /**
-     * Get item from localStorage
+     * Save auth token
      */
-    getItem<T>(key: string): T | null {
-        try {
-            const item = localStorage.getItem(key);
-            if (!item) return null;
-            return JSON.parse(item) as T;
-        } catch (error) {
-            console.error(`Error getting item from storage: ${key}`, error);
-            return null;
-        }
+    saveToken(token: string): void {
+        localStorage.setItem(environment.storageKeys.token, token);
     }
-
-    /**
-     * Set item in localStorage
-     */
-    setItem<T>(key: string, value: T): void {
-        try {
-            localStorage.setItem(key, JSON.stringify(value));
-        } catch (error) {
-            console.error(`Error setting item in storage: ${key}`, error);
-        }
-    }
-
-    /**
-     * Remove item from localStorage
-     */
-    removeItem(key: string): void {
-        try {
-            localStorage.removeItem(key);
-        } catch (error) {
-            console.error(`Error removing item from storage: ${key}`, error);
-        }
-    }
-
-    /**
-     * Clear all items from localStorage
-     */
-    clear(): void {
-        try {
-            localStorage.clear();
-        } catch (error) {
-            console.error('Error clearing storage', error);
-        }
-    }
-
-    /**
-     * Check if key exists in localStorage
-     */
-    hasItem(key: string): boolean {
-        return localStorage.getItem(key) !== null;
-    }
-
-    // ===== App-specific storage methods =====
 
     /**
      * Get auth token
      */
     getToken(): string | null {
         return localStorage.getItem(environment.storageKeys.token);
-    }
-
-    /**
-     * Set auth token
-     */
-    setToken(token: string): void {
-        localStorage.setItem(environment.storageKeys.token, token);
     }
 
     /**
@@ -200,142 +151,88 @@ export class StorageService {
     }
 
     /**
-     * Get current user
+     * Save user data
      */
-    getUser<T>(): T | null {
-        return this.getItem<T>(environment.storageKeys.user);
+    saveUser(user: any): void {
+        localStorage.setItem(environment.storageKeys.user, JSON.stringify(user));
     }
 
     /**
-     * Set current user
+     * Get user data
      */
-    setUser<T>(user: T): void {
-        this.setItem(environment.storageKeys.user, user);
+    getUser(): any | null {
+        const user = localStorage.getItem(environment.storageKeys.user);
+        return user ? JSON.parse(user) : null;
     }
 
     /**
-     * Remove current user
+     * Remove user data
      */
     removeUser(): void {
-        this.removeItem(environment.storageKeys.user);
+        localStorage.removeItem(environment.storageKeys.user);
     }
 
     /**
-     * Check if user has seen onboarding
+     * Check if onboarding was completed
      */
     hasSeenOnboarding(): boolean {
-        return this.getItem<boolean>(environment.storageKeys.hasSeenOnboarding) === true;
+        return localStorage.getItem(environment.storageKeys.hasSeenOnboarding) === 'true';
     }
 
     /**
-     * Mark onboarding as complete
+     * Mark onboarding as completed
      */
-    setOnboardingComplete(): void {
-        this.setItem(environment.storageKeys.hasSeenOnboarding, true);
+    markOnboardingComplete(): void {
+        localStorage.setItem(environment.storageKeys.hasSeenOnboarding, 'true');
+    }
+
+    /**
+     * Save favorite routes
+     */
+    saveFavoriteRoutes(routes: string[]): void {
+        localStorage.setItem(environment.storageKeys.favoriteRoutes, JSON.stringify(routes));
     }
 
     /**
      * Get favorite routes
      */
     getFavoriteRoutes(): string[] {
-        return this.getItem<string[]>(environment.storageKeys.favoriteRoutes) || [];
+        const routes = localStorage.getItem(environment.storageKeys.favoriteRoutes);
+        return routes ? JSON.parse(routes) : [];
     }
 
     /**
-     * Set favorite routes
+     * Add to recent searches
      */
-    setFavoriteRoutes(routeIds: string[]): void {
-        this.setItem(environment.storageKeys.favoriteRoutes, routeIds);
-    }
+    addRecentSearch(search: string): void {
+        const searches = this.getRecentSearches();
 
-    /**
-     * Add route to favorites
-     */
-    addFavoriteRoute(routeId: string): void {
-        const favorites = this.getFavoriteRoutes();
-        if (!favorites.includes(routeId)) {
-            favorites.push(routeId);
-            this.setFavoriteRoutes(favorites);
-        }
-    }
+        // Remove if already exists
+        const filtered = searches.filter(s => s !== search);
 
-    /**
-     * Remove route from favorites
-     */
-    removeFavoriteRoute(routeId: string): void {
-        const favorites = this.getFavoriteRoutes();
-        const filtered = favorites.filter(id => id !== routeId);
-        this.setFavoriteRoutes(filtered);
-    }
+        // Add to beginning
+        filtered.unshift(search);
 
-    /**
-     * Check if route is favorite
-     */
-    isFavoriteRoute(routeId: string): boolean {
-        return this.getFavoriteRoutes().includes(routeId);
+        // Keep only last 10
+        const limited = filtered.slice(0, 10);
+
+        localStorage.setItem(environment.storageKeys.recentSearches, JSON.stringify(limited));
     }
 
     /**
      * Get recent searches
      */
     getRecentSearches(): string[] {
-        return this.getItem<string[]>(environment.storageKeys.recentSearches) || [];
+        const searches = localStorage.getItem(environment.storageKeys.recentSearches);
+        return searches ? JSON.parse(searches) : [];
     }
 
     /**
-     * Add to recent searches
+     * Clear all app data
      */
-    addRecentSearch(searchTerm: string, maxItems = 10): void {
-        const searches = this.getRecentSearches();
-
-        // Remove if already exists
-        const filtered = searches.filter(s => s !== searchTerm);
-
-        // Add to beginning
-        filtered.unshift(searchTerm);
-
-        // Limit to maxItems
-        const limited = filtered.slice(0, maxItems);
-
-        this.setItem(environment.storageKeys.recentSearches, limited);
-    }
-
-    /**
-     * Clear recent searches
-     */
-    clearRecentSearches(): void {
-        this.removeItem(environment.storageKeys.recentSearches);
-    }
-
-    /**
-     * Clear all app data (logout cleanup)
-     */
-    clearAppData(): void {
-        this.removeToken();
-        this.removeUser();
-        // Keep onboarding status and preferences
-    }
-
-    /**
-     * Get storage size (approximate)
-     */
-    getStorageSize(): number {
-        let size = 0;
-        for (const key in localStorage) {
-            if (localStorage.hasOwnProperty(key)) {
-                size += localStorage[key].length + key.length;
-            }
-        }
-        return size;
-    }
-
-    /**
-     * Get storage size in human-readable format
-     */
-    getStorageSizeFormatted(): string {
-        const bytes = this.getStorageSize();
-        if (bytes < 1024) return `${bytes} B`;
-        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-        return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+    clearAll(): void {
+        Object.values(environment.storageKeys).forEach(key => {
+            localStorage.removeItem(key);
+        });
     }
 }

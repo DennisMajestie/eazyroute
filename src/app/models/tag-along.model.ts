@@ -1,50 +1,61 @@
 // src/app/models/tag-along.model.ts
+
+export interface UserProfile {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    profilePicture?: string;
+    rating?: number;
+}
+
 export interface TagAlongRide {
-    id: number;
-    driverId: number;
-    driver?: {
-        id: number;
-        fullName: string;
-        rating: number;
-        profileImage?: string;
-        verified: boolean;
-    };
-    startLocation: string;
-    endLocation: string;
-    departureTime: Date;
+    _id: string;
+    title: string;
+    description: string;
+    origin: string;
+    destination: string;
+    departureDate: string | Date;
+    departureTime: string;
+    estimatedArrivalTime?: string;
     availableSeats: number;
     pricePerSeat: number;
-    status: 'available' | 'full' | 'completed' | 'cancelled';
+    vehicleType: 'car' | 'van' | 'bus' | 'suv' | 'motorcycle' | 'other';
+    vehicleDetails?: string;
+    status: 'pending' | 'active' | 'completed' | 'cancelled';
+    createdBy: UserProfile;
+    participants: any[]; // Define properly if needed
+    meetingPoint?: string;
+    notes?: string;
     createdAt: Date;
-    requests?: RideRequest[];
+    remainingSeats?: number; // Virtual
 }
 
 export interface CreateRideRequest {
-    startLocation: string;
-    endLocation: string;
+    title: string;
+    description?: string;
+    origin: string;
+    destination: string;
+    originLatitude: number;
+    originLongitude: number;
+    destinationLatitude: number;
+    destinationLongitude: number;
+    departureDate: string;
     departureTime: string;
     availableSeats: number;
     pricePerSeat: number;
-}
-
-export interface RideRequest {
-    id: number;
-    rideId: number;
-    riderId: number;
-    rider?: {
-        id: number;
-        fullName: string;
-        rating: number;
-        profileImage?: string;
-    };
-    seatsRequested: number;
-    status: 'pending' | 'accepted' | 'rejected';
-    createdAt: Date;
+    vehicleType: string;
+    vehicleDetails?: string;
+    meetingPoint?: string;
+    notes?: string;
 }
 
 export interface RideSearchParams {
-    startLocation?: string;
-    endLocation?: string;
-    date?: string;
+    origin?: string;
+    destination?: string;
+    departureDate?: string;
+    minSeats?: number;
     maxPrice?: number;
+    page?: number;
+    limit?: number;
 }
+

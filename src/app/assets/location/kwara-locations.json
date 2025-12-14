@@ -1,0 +1,72 @@
+{
+  "kwara": {
+    "name": "Kwara State",
+    "capital": "Ilorin",
+    "lgas": {
+      "asa": {
+        "name": "Asa",
+        "areas": ["Asa Central", "Afon", "Laduba"]
+      },
+      "baruten": {
+        "name": "Baruten",
+        "areas": ["Baruten Central", "Gwanara", "Okuta"]
+      },
+      "edu": {
+        "name": "Edu",
+        "areas": ["Edu Central", "Lafiagi", "Tsonga"]
+      },
+      "ekiti": {
+        "name": "Ekiti",
+        "areas": ["Ekiti Central", "Araromi", "Obo Aiyegunle"]
+      },
+      "ifelodun": {
+        "name": "Ifelodun",
+        "areas": ["Ifelodun Central", "Share", "Omuaran"]
+      },
+      "ilorin_east": {
+        "name": "Ilorin East",
+        "areas": ["Ilorin East Central", "Oke Oyi", "Sango"]
+      },
+      "ilorin_south": {
+        "name": "Ilorin South",
+        "areas": ["Ilorin South Central", "Fufu", "Oke Ose"]
+      },
+      "ilorin_west": {
+        "name": "Ilorin West",
+        "areas": ["Ajikobi", "Badari", "Magaji Are", "Oja Oba", "Ubandawaki"]
+      },
+      "irepodun": {
+        "name": "Irepodun",
+        "areas": ["Irepodun Central", "Ajase Ipo", "Omu Aran Ward"]
+      },
+      "isin": {
+        "name": "Isin",
+        "areas": ["Isin Central", "Olla", "Owu Isin"]
+      },
+      "kaiama": {
+        "name": "Kaiama",
+        "areas": ["Kaiama Central", "Gwanara Ward", "Kemanji"]
+      },
+      "moro": {
+        "name": "Moro",
+        "areas": ["Moro Central", "Bode Saadu", "Lanwa"]
+      },
+      "offa": {
+        "name": "Offa",
+        "areas": ["Offa Central", "Igosun", "Shawo"]
+      },
+      "oke_ero": {
+        "name": "Oke Ero",
+        "areas": ["Oke Ero Central", "Odo Owa", "Iloffa"]
+      },
+      "oyun": {
+        "name": "Oyun",
+        "areas": ["Oyun Central", "Ilemona", "Ojoku"]
+      },
+      "pategi": {
+        "name": "Pategi",
+        "areas": ["Pategi Central", "Lade", "Kpada"]
+      }
+    }
+  }
+}

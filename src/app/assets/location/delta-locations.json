@@ -1,0 +1,108 @@
+{
+  "delta": {
+    "name": "Delta State",
+    "capital": "Asaba",
+    "lgas": {
+      "aniocha_north": {
+        "name": "Aniocha North",
+        "areas": ["Idumuje Unor", "Issele Azagba", "Obomkpa"]
+      },
+      "aniocha_south": {
+        "name": "Aniocha South",
+        "areas": ["Aniocha South Central", "Ogwashi Uku", "Ubulu Uku"]
+      },
+      "bomadi": {
+        "name": "Bomadi",
+        "areas": ["Bomadi Central", "Ogbobagbene", "Tuomo"]
+      },
+      "burutu": {
+        "name": "Burutu",
+        "areas": ["Burutu Central", "Forcados", "Sangana"]
+      },
+      "ethiope_east": {
+        "name": "Ethiope East",
+        "areas": ["Abraka", "Ethiope East Central", "Ughelli South"]
+      },
+      "ethiope_west": {
+        "name": "Ethiope West",
+        "areas": ["Ethiope West Central", "Oghara", "Sapele Ward"]
+      },
+      "ika_north_east": {
+        "name": "Ika North East",
+        "areas": ["Agbor", "Ika Central", "Owa Oyibu"]
+      },
+      "ika_south": {
+        "name": "Ika South",
+        "areas": ["Abavo", "Ika South Central", "Mbiri"]
+      },
+      "isoko_north": {
+        "name": "Isoko North",
+        "areas": ["Isoko North Central", "Otor Owhe", "Ozoro"]
+      },
+      "isoko_south": {
+        "name": "Isoko South",
+        "areas": ["Emede", "Irri", "Oleh"]
+      },
+      "ndokwa_east": {
+        "name": "Ndokwa East",
+        "areas": ["Aboh", "Ndokwa East Central", "Ukwuani"]
+      },
+      "ndokwa_west": {
+        "name": "Ndokwa West",
+        "areas": ["Kwale", "Ndokwa West Central", "Ogume"]
+      },
+      "okpe": {
+        "name": "Okpe",
+        "areas": ["Mereje", "Okpe Central", "Orerokpe"]
+      },
+      "oshimili_north": {
+        "name": "Oshimili North",
+        "areas": ["Akwukwu Igbo", "Ibusa", "Oshimili North Central"]
+      },
+      "oshimili_south": {
+        "name": "Oshimili South",
+        "areas": ["Asaba", "Cable Point", "Okwe"]
+      },
+      "patani": {
+        "name": "Patani",
+        "areas": ["Patani Central", "Toru Angiama", "Uduophori"]
+      },
+      "sapele": {
+        "name": "Sapele",
+        "areas": ["Amukpe", "Sapele Central", "Ugborikoko"]
+      },
+      "udu": {
+        "name": "Udu",
+        "areas": ["Aladja", "Ekete", "Udu Central"]
+      },
+      "ughelli_north": {
+        "name": "Ughelli North",
+        "areas": ["Agbarho", "Orogun", "Ughelli North Central"]
+      },
+      "ughelli_south": {
+        "name": "Ughelli South",
+        "areas": ["Emu", "Olomoro", "Ughelli South Central"]
+      },
+      "ukwuani": {
+        "name": "Ukwuani",
+        "areas": ["Amai", "Ebedei", "Ukwuani Central"]
+      },
+      "uvwie": {
+        "name": "Uvwie",
+        "areas": ["Effurun", "Ekpan", "Uvwie Central"]
+      },
+      "warri_north": {
+        "name": "Warri North",
+        "areas": ["Koko", "Ogheye", "Warri North Central"]
+      },
+      "warri_south": {
+        "name": "Warri South",
+        "areas": ["Agbassa", "Ogunu", "Warri Central"]
+      },
+      "warri_south_west": {
+        "name": "Warri South West",
+        "areas": ["Gbaramatu", "Ogidigben", "Warri South West Central"]
+      }
+    }
+  }
+}

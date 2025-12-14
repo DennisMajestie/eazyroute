@@ -1,0 +1,92 @@
+{
+  "kebbi": {
+    "name": "Kebbi State",
+    "capital": "Birnin Kebbi",
+    "lgas": {
+      "aleiro": {
+        "name": "Aleiro",
+        "areas": ["Aleiro Central", "Jega Ward", "Gwandu Ward"]
+      },
+      "arewa_dandi": {
+        "name": "Arewa Dandi",
+        "areas": ["Arewa Central", "Dandi Central", "Ribah"]
+      },
+      "argungu": {
+        "name": "Argungu",
+        "areas": ["Argungu Central", "Augie Ward", "Suru Ward"]
+      },
+      "augie": {
+        "name": "Augie",
+        "areas": ["Augie Central", "Argungu Ward", "Gwandu Central"]
+      },
+      "bagudo": {
+        "name": "Bagudo",
+        "areas": ["Bagudo Central", "Maiyama Ward", "Suru Central"]
+      },
+      "birnin_kebbi": {
+        "name": "Birnin Kebbi",
+        "areas": ["Birnin Kebbi Central", "Gwandu Birnin Kebbi", "Koko Besse"]
+      },
+      "bunza": {
+        "name": "Bunza",
+        "areas": ["Bunza Central", "Koko Ward", "Zuru Ward"]
+      },
+      "dandi": {
+        "name": "Dandi",
+        "areas": ["Dandi Central", "Arewa Ward", "Ribah Ward"]
+      },
+      "fakai": {
+        "name": "Fakai",
+        "areas": ["Fakai Central", "Shanga Ward", "Yauri Ward"]
+      },
+      "gwandu": {
+        "name": "Gwandu",
+        "areas": ["Gwandu Central", "Aleiro Ward", "Augie Ward"]
+      },
+      "jega": {
+        "name": "Jega",
+        "areas": ["Jega Central", "Aleiro Central", "Maiyama Central"]
+      },
+      "kalgo": {
+        "name": "Kalgo",
+        "areas": ["Kalgo Central", "Koko Central", "Sakaba Ward"]
+      },
+      "koko_besse": {
+        "name": "Koko/Besse",
+        "areas": ["Koko Central", "Besse", "Kalgo Ward"]
+      },
+      "maiyama": {
+        "name": "Maiyama",
+        "areas": ["Maiyama Central", "Bagudo Ward", "Jega Ward"]
+      },
+      "ngaski": {
+        "name": "Ngaski",
+        "areas": ["Ngaski Central", "Yauri Central", "Wasagu Ward"]
+      },
+      "sakaba": {
+        "name": "Sakaba",
+        "areas": ["Sakaba Central", "Kalgo Central", "Wasagu Central"]
+      },
+      "shanga": {
+        "name": "Shanga",
+        "areas": ["Shanga Central", "Fakai Ward", "Yauri Ward"]
+      },
+      "suru": {
+        "name": "Suru",
+        "areas": ["Suru Central", "Argungu Ward", "Bagudo Ward"]
+      },
+      "wasagu_danko": {
+        "name": "Wasagu/Danko",
+        "areas": ["Wasagu Central", "Danko", "Sakaba Central"]
+      },
+      "yauri": {
+        "name": "Yauri",
+        "areas": ["Yauri Central", "Fakai Central", "Shanga Central"]
+      },
+      "zuru": {
+        "name": "Zuru",
+        "areas": ["Zuru Central", "Bunza Ward", "Danko Ward"]
+      }
+    }
+  }
+}

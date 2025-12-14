@@ -1,0 +1,108 @@
+{
+  "niger": {
+    "name": "Niger State",
+    "capital": "Minna",
+    "lgas": {
+      "agaie": {
+        "name": "Agaie",
+        "areas": ["Agaie Central", "Baro", "Ekossa"]
+      },
+      "agwara": {
+        "name": "Agwara",
+        "areas": ["Agwara Central", "Rofia", "Suteku"]
+      },
+      "bida": {
+        "name": "Bida",
+        "areas": ["Bida Central", "Bariki", "Kyari", "Mayaki Ndajiya"]
+      },
+      "borgu": {
+        "name": "Borgu",
+        "areas": ["Borgu Central", "Babana", "Dugga"]
+      },
+      "bosso": {
+        "name": "Bosso",
+        "areas": ["Bosso Central", "Chanchaga Ward", "Maikunkele"]
+      },
+      "chanchaga": {
+        "name": "Chanchaga",
+        "areas": ["Chanchaga Central", "Bosso Ward", "Limawa"]
+      },
+      "edati": {
+        "name": "Edati",
+        "areas": ["Edati Central", "Enagi", "Batati"]
+      },
+      "gbako": {
+        "name": "Gbako",
+        "areas": ["Gbako Central", "Lemu", "Bida Ward"]
+      },
+      "gurara": {
+        "name": "Gurara",
+        "areas": ["Gurara Central", "Gawu Babangida Ward", "Izom"]
+      },
+      "katcha": {
+        "name": "Katcha",
+        "areas": ["Katcha Central", "Baddeggi", "Edati Ward"]
+      },
+      "kontagora": {
+        "name": "Kontagora",
+        "areas": ["Kontagora Central", "Agwara Ward", "Wushishi Ward"]
+      },
+      "lapai": {
+        "name": "Lapai",
+        "areas": ["Lapai Central", "Agaie Ward", "Gurara Ward"]
+      },
+      "lavun": {
+        "name": "Lavun",
+        "areas": ["Lavun Central", "Dabban", "Katcha Ward"]
+      },
+      "magama": {
+        "name": "Magama",
+        "areas": ["Magama Central", "Nasko", "Kontagora Ward"]
+      },
+      "mariga": {
+        "name": "Mariga",
+        "areas": ["Mariga Central", "Bangi", "Rijau Ward"]
+      },
+      "mashegu": {
+        "name": "Mashegu",
+        "areas": ["Mashegu Central", "Adunu", "Magama Ward"]
+      },
+      "mokwa": {
+        "name": "Mokwa",
+        "areas": ["Mokwa Central", "Gbako Ward", "Lavun Ward"]
+      },
+      "moya": {
+        "name": "Moya",
+        "areas": ["Moya Central", "Sarkin Pawa", "Mashegu Ward"]
+      },
+      "paikoro": {
+        "name": "Paikoro",
+        "areas": ["Paikoro Central", "Kafin Koro", "Minna Ward"]
+      },
+      "rafi": {
+        "name": "Rafi",
+        "areas": ["Rafi Central", "Kagara", "Tegina"]
+      },
+      "rijau": {
+        "name": "Rijau",
+        "areas": ["Rijau Central", "Mariga Ward", "Moya Ward"]
+      },
+      "shiroro": {
+        "name": "Shiroro",
+        "areas": ["Shiroro Central", "Kuta", "Rafi Ward"]
+      },
+      "suleja": {
+        "name": "Suleja",
+        "areas": ["Suleja Central", "Bagama", "Kurmin Sarki"]
+      },
+      "tafa": {
+        "name": "Tafa",
+        "areas": ["Tafa Central", "Ija Gwari", "Suleja Ward"]
+      },
+      "wushishi": {
+        "name": "Wushishi",
+        "areas": ["Wushishi Central", "Kontagora Central", "Zungeru"]
+      }
+    }
+  }
+}

@@ -1,0 +1,76 @@
+{
+  "plateau": {
+    "name": "Plateau State",
+    "capital": "Jos",
+    "lgas": {
+      "barkin_ladi": {
+        "name": "Barkin Ladi",
+        "areas": ["Barkin Ladi Central", "Gwol", "Heipang"]
+      },
+      "bassa": {
+        "name": "Bassa",
+        "areas": ["Bassa Central", "Jos East Ward", "Kurgwi"]
+      },
+      "bokkos": {
+        "name": "Bokkos",
+        "areas": ["Bokkos Central", "Daffo", "Mushere"]
+      },
+      "jos_east": {
+        "name": "Jos East",
+        "areas": ["Jos East Central", "Angware", "Bassa Ward"]
+      },
+      "jos_north": {
+        "name": "Jos North",
+        "areas": ["Jos North Central", "Gangare", "Tudun Wada Plateau"]
+      },
+      "jos_south": {
+        "name": "Jos South",
+        "areas": ["Jos South Central", "Bukuru", "Du"]
+      },
+      "kanam": {
+        "name": "Kanam",
+        "areas": ["Kanam Central", "Dengi", "Sabongari Kanam"]
+      },
+      "kanke": {
+        "name": "Kanke",
+        "areas": ["Kanke Central", "Amper", "Jos South Ward"]
+      },
+      "langtang_north": {
+        "name": "Langtang North",
+        "areas": ["Langtang North Central", "Takai", "Wase Ward"]
+      },
+      "langtang_south": {
+        "name": "Langtang South",
+        "areas": ["Langtang South Central", "Bwall", "Mabudi"]
+      },
+      "mangu": {
+        "name": "Mangu",
+        "areas": ["Mangu Central", "Bokkos Ward", "Kerang"]
+      },
+      "mikang": {
+        "name": "Mikang",
+        "areas": ["Mikang Central", "Bashar", "Piapung"]
+      },
+      "pankshin": {
+        "name": "Pankshin",
+        "areas": ["Pankshin Central", "Chip", "Langtang Ward"]
+      },
+      "qua_an_pan": {
+        "name": "Qua'an Pan",
+        "areas": ["Qua'an Pan Central", "Baap", "Pankshin Ward"]
+      },
+      "riyom": {
+        "name": "Riyom",
+        "areas": ["Riyom Central", "Barkin Ladi Ward", "Mangu Ward"]
+      },
+      "shendam": {
+        "name": "Shendam",
+        "areas": ["Shendam Central", "Dorok", "Wase Central"]
+      },
+      "wase": {
+        "name": "Wase",
+        "areas": ["Wase Central", "Langtang North Ward", "Shendam Ward"]
+      }
+    }
+  }
+}

@@ -1,1 +1,9 @@
-<p>loader works!</p>
+<!-- src/app/shared/components/loader/loader.component.html -->
+<div class="loader-container" [class.fullscreen]="fullscreen">
+    <div class="loader" [class.loader-sm]="size === 'small'" [class.loader-lg]="size === 'large'">
+        <div class="spinner"></div>
+        @if (message) {
+        <p class="loader-message">{{ message }}</p>
+        }
+    </div>
+</div>

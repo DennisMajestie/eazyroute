@@ -1,1 +1,180 @@
-<p>splash works!</p>
+<!-- src/app/features/auth/pages/splash/splash.component.html -->
+
+<!-- splash.component.html -->
+
+<!-- Loading Screen -->
+<div class="loading" [class.fade-out]="!isLoading">
+    <div class="loading-spinner"></div>
+</div>
+
+<!-- Animated Background -->
+<div class="gradient-bg"></div>
+<canvas #canvas3d id="canvas3d"></canvas>
+
+<!-- Floating Particles -->
+<div *ngFor="let particle of particles" class="particle" [style.left]="particle.left" [style.top]="particle.top"
+    [style.animation-delay]="particle.delay" [style.animation-duration]="particle.duration">
+</div>
+
+<!-- Animated Map Lines -->
+<div *ngFor="let line of mapLines" class="map-line" [style.top]="line.top" [style.width]="line.width"
+    [style.animation-delay]="line.delay" [style.animation-duration]="line.duration">
+</div>
+
+<!-- Pulsing Dots -->
+<div *ngFor="let dot of pulseDots; let i = index" class="pulse-dot" [style.top]="dot.top" [style.left]="dot.left"
+    [style.animation-delay]="(i * 0.4) + 's'">
+</div>
+
+<!-- Main Content -->
+<div class="content">
+    <div class="hero">
+        <!-- Animated Logo -->
+        <div class="logo">
+            <svg viewBox="0 0 24 24">
+                <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z" />
+                <polyline points="12 12 16 8" />
+                <polyline points="8 16 12 12" />
+            </svg>
+        </div>
+
+        <!-- Hero Text -->
+        <h1 class="title">
+            Navigate Your City<br>With Confidence
+        </h1>
+
+        <p class="subtitle">
+            Find bus stops instantly, discover live events, and travel safely.<br>
+            EazyRoute makes urban navigation effortless across Nigeria.
+        </p>
+
+        <!-- Feature Pills -->
+        <div class="features">
+            <div *ngFor="let feature of features" class="feature-pill">
+                <span>{{ feature.icon }} {{ feature.text }}</span>
+            </div>
+        </div>
+
+        <!-- CTA Buttons -->
+        <!-- CTA Buttons -->
+        <div class="cta-group">
+            <button class="btn btn-primary" (click)="navigateToRegister()">
+                <span>Get Started</span>
+                <span>→</span>
+            </button>
+            <button class="btn btn-secondary" (click)="navigateToLogin()">
+                <span>Sign In</span>
+            </button>
+        </div>
+
+        <!-- Quick Action -->
+        <div class="email-capture" style="background: transparent; box-shadow: none;">
+            <!-- Reusing the container for alignment, but changing content -->
+            <button class="btn"
+                style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); width: 100%; max-width: 400px; display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem;"
+                (click)="navigateToPlanner()">
+                <span style="color: rgba(255,255,255,0.8);">Just want to look around?</span>
+                <span style="color: #00ffff; font-weight: 500;">Plan a Trip Guests</span>
+            </button>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator"></div>
+    </div>
+</div>
+
+<!-- <div class="splash-container">
+    <div class="background-gradient">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="logo-container">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path class="logo-path path-1" d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    <path class="logo-path path-2" d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                    <path class="logo-path path-3" d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <h1 class="app-name">EazyRoute</h1>
+            </div>
+
+            <p class="tagline">Your Smart Journey Companion</p>
+            <p class="subtitle">Navigate Abuja with ease. Real-time tracking, smart routes, and seamless travel.</p>
+
+            <div class="cta-buttons">
+                <button class="btn btn-primary" (click)="navigateToRegister()">
+                    <span>Get Started</span>
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+                <button class="btn btn-secondary" (click)="navigateToLogin()">
+                    Sign In
+                </button>
+            </div>
+        </div>
+
+        <div class="phone-mockup">
+            <div class="phone-frame">
+                <div class="phone-screen">
+                    <div class="screen-content">
+                        <div class="map-preview">
+                            <div class="map-marker pulse"></div>
+                            <div class="route-line"></div>
+                        </div>
+                        <div class="bus-card">
+                            <div class="bus-icon">🚌</div>
+                            <div class="bus-info">
+                                <div class="bus-route">Route 245</div>
+                                <div class="bus-status">Arriving in 5 min</div>
+                            </div>
+                            <div class="status-indicator active"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="phone-notch"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="features-section">
+        <h2 class="section-title">Why Choose EazyRoute?</h2>
+        <div class="features-grid">
+            @for (feature of features; track feature.title) {
+            <div class="feature-card">
+                <div class="feature-icon">{{ feature.icon }}</div>
+                <h3 class="feature-title">{{ feature.title }}</h3>
+                <p class="feature-description">{{ feature.description }}</p>
+            </div>
+            }
+        </div>
+    </div>
+
+    <div class="stats-section">
+        <div class="stat-item">
+            <div class="stat-number">10K+</div>
+            <div class="stat-label">Active Users</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <div class="stat-number">50+</div>
+            <div class="stat-label">Bus Routes</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+            <div class="stat-number">98%</div>
+            <div class="stat-label">Satisfaction</div>
+        </div>
+    </div>
+
+    <footer class="splash-footer">
+        <p>&copy; 2024 EazyRoute. Making public transport smarter.</p>
+    </footer>
+</div> -->

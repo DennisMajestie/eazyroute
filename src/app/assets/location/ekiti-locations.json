@@ -1,0 +1,72 @@
+{
+  "ekiti": {
+    "name": "Ekiti State",
+    "capital": "Ado Ekiti",
+    "lgas": {
+      "ado_ekiti": {
+        "name": "Ado Ekiti",
+        "areas": ["Ado Ekiti Central", "Irona", "Oke Ila"]
+      },
+      "efon": {
+        "name": "Efon",
+        "areas": ["Efon Alaaye", "Efon Central", "Itaji Ekiti"]
+      },
+      "ekiti_east": {
+        "name": "Ekiti East",
+        "areas": ["Ekiti East Central", "Omuo Ekiti", "Ikole Ekiti Ward"]
+      },
+      "ekiti_south_west": {
+        "name": "Ekiti South-West",
+        "areas": ["Ilawe Ekiti", "Ekiti South-West Central", "Igbara Odo"]
+      },
+      "ekiti_west": {
+        "name": "Ekiti West",
+        "areas": ["Aramoko", "Ekiti West Central", "Erio Ekiti"]
+      },
+      "emure": {
+        "name": "Emure",
+        "areas": ["Emure Ekiti", "Emure Central", "Eporo"]
+      },
+      "gbonyin": {
+        "name": "Gbonyin",
+        "areas": ["Ode Ekiti", "Gbonyin Central", "Imesi Ekiti"]
+      },
+      "ido_osi": {
+        "name": "Ido Osi",
+        "areas": ["Ido Ekiti", "Ido Osi Central", "Ifaki Ekiti"]
+      },
+      "ijero": {
+        "name": "Ijero",
+        "areas": ["Ijero Ekiti", "Ijero Central", "Epe Ekiti"]
+      },
+      "ikere": {
+        "name": "Ikere",
+        "areas": ["Ikere Ekiti", "Ikere Central", "Ogotun Ekiti"]
+      },
+      "ikole": {
+        "name": "Ikole",
+        "areas": ["Ikole Ekiti", "Ikole Central", "Oke Ako"]
+      },
+      "ilejemeje": {
+        "name": "Ilejemeje",
+        "areas": ["Eda Oniyo", "Ilejemeje Central", "Ieje"]
+      },
+      "irepodun_ifelodun": {
+        "name": "Irepodun/Ifelodun",
+        "areas": ["Igede Ekiti", "Iworoko Ekiti", "Areado"]
+      },
+      "ise_orun": {
+        "name": "Ise/Orun",
+        "areas": ["Ise Ekiti", "Orun Ekiti", "Ise Orun Central"]
+      },
+      "moba": {
+        "name": "Moba",
+        "areas": ["Otun Ekiti", "Moba Central", "Osan Ekiti"]
+      },
+      "oye": {
+        "name": "Oye",
+        "areas": ["Oye Ekiti", "Oye Central", "Itapa Ekiti"]
+      }
+    }
+  }
+}

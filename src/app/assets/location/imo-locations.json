@@ -1,0 +1,116 @@
+{
+  "imo": {
+    "name": "Imo State",
+    "capital": "Owerri",
+    "lgas": {
+      "aboh_mbaise": {
+        "name": "Aboh Mbaise",
+        "areas": ["Aboh Mbaise Central", "Uvuru", "Nguru"]
+      },
+      "ahiazu_mbaise": {
+        "name": "Ahiazu Mbaise",
+        "areas": ["Ahiazu Mbaise Central", "Afor Oru", "Obizi"]
+      },
+      "ehime_mbano": {
+        "name": "Ehime Mbano",
+        "areas": ["Ehime Mbano Central", "Umuelemai", "Umuezeala"]
+      },
+      "ezinihitte": {
+        "name": "Ezinihitte",
+        "areas": ["Ezinihitte Central", "Onicha", "Obiangwu"]
+      },
+      "ideato_north": {
+        "name": "Ideato North",
+        "areas": ["Arondizuogu", "Ideato North Central", "Osina"]
+      },
+      "ideato_south": {
+        "name": "Ideato South",
+        "areas": ["Dikenafai", "Ideato South Central", "Ntueke"]
+      },
+      "ihitte_uboma": {
+        "name": "Ihitte/Uboma",
+        "areas": ["Ihitte Uboma Central", "Amandugba", "Iho"]
+      },
+      "ikeduru": {
+        "name": "Ikeduru",
+        "areas": ["Ikeduru Central", "Amakohia", "Uzoagba"]
+      },
+      "isiala_mbano": {
+        "name": "Isiala Mbano",
+        "areas": ["Isiala Mbano Central", "Umuelemai Ward", "Amauzari"]
+      },
+      "isu": {
+        "name": "Isu",
+        "areas": ["Isu Central", "Umundugba", "Ekwe"]
+      },
+      "mbaitoli": {
+        "name": "Mbaitoli",
+        "areas": ["Mbaitoli Central", "Nwaorieubi", "Ifakala"]
+      },
+      "ngor_okpala": {
+        "name": "Ngor Okpala",
+        "areas": ["Ngor Okpala Central", "Obinze", "Eziama"]
+      },
+      "njaba": {
+        "name": "Njaba",
+        "areas": ["Njaba Central", "Nnenasa", "Amucha"]
+      },
+      "nkwerre": {
+        "name": "Nkwerre",
+        "areas": ["Nkwerre Central", "Eziama Obaire", "Owerre Nkworji"]
+      },
+      "nwangele": {
+        "name": "Nwangele",
+        "areas": ["Nwangele Central", "Amaigbo", "Owerri Nkworji"]
+      },
+      "obowo": {
+        "name": "Obowo",
+        "areas": ["Obowo Central", "Umuna", "Otoko"]
+      },
+      "oguta": {
+        "name": "Oguta",
+        "areas": ["Oguta Central", "Awa", "Egbuoma"]
+      },
+      "ohaji_egbema": {
+        "name": "Ohaji/Egbema",
+        "areas": ["Ohaji Egbema Central", "Asaa", "Mmahu"]
+      },
+      "okigwe": {
+        "name": "Okigwe",
+        "areas": ["Okigwe Central", "Agbobu", "Ihube"]
+      },
+      "orlu": {
+        "name": "Orlu",
+        "areas": ["Orlu Urban", "Amaifeke", "Eziachi"]
+      },
+      "orsu": {
+        "name": "Orsu",
+        "areas": ["Orsu Central", "Awo Omamma", "Ebenato"]
+      },
+      "oru_east": {
+        "name": "Oru East",
+        "areas": ["Oru East Central", "Omuma", "Awomamma"]
+      },
+      "oru_west": {
+        "name": "Oru West",
+        "areas": ["Mgbidi", "Oru West Central", "Omoku"]
+      },
+      "owerri_municipal": {
+        "name": "Owerri Municipal",
+        "areas": ["Owerri Municipal Central", "Amawom", "Church Street"]
+      },
+      "owerri_north": {
+        "name": "Owerri North",
+        "areas": ["Owerri North Central", "Emekuku", "Obinze Ward"]
+      },
+      "owerri_west": {
+        "name": "Owerri West",
+        "areas": ["Owerri West Central", "Irete", "Nekede"]
+      },
+      "unuimo": {
+        "name": "Unuimo",
+        "areas": ["Unuimo Central", "Okwelle", "Mgbee"]
+      }
+    }
+  }
+}

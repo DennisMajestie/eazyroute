@@ -1,0 +1,88 @@
+{
+  "ogun": {
+    "name": "Ogun State",
+    "capital": "Abeokuta",
+    "lgas": {
+      "abeokuta_north": {
+        "name": "Abeokuta North",
+        "areas": ["Abeokuta North Central", "Akomoje", "Eleweeran", "Iberekodo"]
+      },
+      "abeokuta_south": {
+        "name": "Abeokuta South",
+        "areas": ["Abeokuta South Central", "Ake", "Emere", "Ijaye"]
+      },
+      "ado_odo_ota": {
+        "name": "Ado-Odo/Ota",
+        "areas": ["Ado Odo", "Ota", "Igbesa", "Sango Ota"]
+      },
+      "egbado_north": {
+        "name": "Egbado North",
+        "areas": ["Egbado North Central", "Ayetoro", "Igua"]
+      },
+      "egbado_south": {
+        "name": "Egbado South",
+        "areas": ["Egbado South Central", "Ilaro", "Owode"]
+      },
+      "ewekoro": {
+        "name": "Ewekoro",
+        "areas": ["Ewekoro Central", "Itori", "Papalanto"]
+      },
+      "ifo": {
+        "name": "Ifo",
+        "areas": ["Ifo Central", "Agbado", "Ijoko"]
+      },
+      "ijebu_east": {
+        "name": "Ijebu East",
+        "areas": ["Ijebu East Central", "Ogbere", "Itele"]
+      },
+      "ijebu_north": {
+        "name": "Ijebu North",
+        "areas": ["Ijebu North Central", "Atan", "Ijebu Igbo"]
+      },
+      "ijebu_north_east": {
+        "name": "Ijebu North East",
+        "areas": ["Ijebu North East Central", "Oru", "Ago Iwoye"]
+      },
+      "ijebu_ode": {
+        "name": "Ijebu Ode",
+        "areas": ["Ijebu Ode Central", "Iwade", "Molipa"]
+      },
+      "ikenne": {
+        "name": "Ikenne",
+        "areas": ["Ikenne Central", "Ilishan", "Remo North Ward"]
+      },
+      "imeko_afon": {
+        "name": "Imeko Afon",
+        "areas": ["Imeko Central", "Afon", "Ilara"]
+      },
+      "ipokia": {
+        "name": "Ipokia",
+        "areas": ["Ipokia Central", "Idiroko", "Oke Odan"]
+      },
+      "obafemi_owode": {
+        "name": "Obafemi Owode",
+        "areas": ["Obafemi Owode Central", "Owode", "Kajola"]
+      },
+      "odeda": {
+        "name": "Odeda",
+        "areas": ["Odeda Central", "Olodo", "Bode Olude"]
+      },
+      "odogbolu": {
+        "name": "Odogbolu",
+        "areas": ["Odogbolu Central", "Ijebu East Ward", "Oko"]
+      },
+      "ogun_waterside": {
+        "name": "Ogun Waterside",
+        "areas": ["Ogun Waterside Central", "Abigi", "Iwopin"]
+      },
+      "remo_north": {
+        "name": "Remo North",
+        "areas": ["Remo North Central", "Ipara", "Sagamu Ward"]
+      },
+      "shagamu": {
+        "name": "Shagamu",
+        "areas": ["Shagamu Central", "Makun", "Offin", "Sonyindo"]
+      }
+    }
+  }
+}

@@ -1,0 +1,124 @@
+<div class="transport-search-container">
+    <!-- Search Header -->
+    <div class="search-header">
+        <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-input" placeholder="Search by name or local name..."
+                [(ngModel)]="searchQuery" (input)="onSearchInput()" />
+            <button *ngIf="searchQuery" class="clear-button" (click)="clearSearch()" type="button">
+                ×
+            </button>
+        </div>
+    </div>
+
+    <!-- Filter Chips -->
+    <div class="filters-section">
+        <div class="filter-group">
+            <div class="filter-label">Point Type:</div>
+            <div class="filter-chips">
+                <button *ngFor="let type of transportPointTypes" class="filter-chip"
+                    [class.active]="selectedTypes.has(type)" (click)="toggleTypeFilter(type)" type="button">
+                    <span class="chip-icon">{{ TRANSPORT_POINT_TYPES[type].icon }}</span>
+                    <span class="chip-label">{{ TRANSPORT_POINT_TYPES[type].label }}</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <div class="filter-label">Transport Mode:</div>
+            <div class="filter-chips">
+                <button *ngFor="let mode of transportModes" class="filter-chip" [class.active]="selectedModes.has(mode)"
+                    (click)="toggleModeFilter(mode)" type="button">
+                    <span class="chip-icon">{{ TRANSPORT_MODES[mode].icon }}</span>
+                    <span class="chip-label">{{ TRANSPORT_MODES[mode].label }}</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="filter-actions" *ngIf="activeFilterCount > 0">
+            <button class="clear-filters-btn" (click)="clearAllFilters()" type="button">
+                Clear Filters ({{ activeFilterCount }})
+            </button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Searching...</p>
+    </div>
+
+    <!-- Search Results -->
+    <div class="search-results" *ngIf="!isLoading">
+        <div class="results-header">
+            <h3>{{ searchResults.length }} Points Found</h3>
+            <button class="add-point-btn" (click)="onAddNewPoint()" type="button">
+                + Add New Point
+            </button>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="searchResults.length === 0">
+            <div class="empty-icon">📍</div>
+            <h4>No transport points found</h4>
+            <p>Try adjusting your search or filters</p>
+            <button class="add-point-btn-large" (click)="onAddNewPoint()" type="button">
+                + Add This Location
+            </button>
+        </div>
+
+        <!-- Results List -->
+        <div class="results-list">
+            <div *ngFor="let point of searchResults" class="result-card" (click)="selectPoint(point)">
+
+                <!-- Point Icon -->
+                <div class="card-icon">
+                    <app-transport-point-icon [type]="point.type" size="large">
+                    </app-transport-point-icon>
+                </div>
+
+                <!-- Point Info -->
+                <div class="card-content">
+                    <div class="card-header">
+                        <h4 class="point-name">{{ point.name }}</h4>
+                        <app-verification-badge [status]="point.verificationStatus" [showLabel]="false">
+                        </app-verification-badge>
+                    </div>
+
+                    <!-- Local Names -->
+                    <div class="local-names" *ngIf="point.localNames && point.localNames.length > 0">
+                        <span class="local-name-chip" *ngFor="let localName of point.localNames">
+                            {{ localName }}
+                        </span>
+                    </div>
+
+                    <!-- Location Info -->
+                    <div class="point-location">
+                        <span class="location-icon">📍</span>
+                        <span>{{ point.area || point.city || 'Unknown location' }}</span>
+                    </div>
+
+                    <!-- Transport Modes -->
+                    <div class="transport-modes" *ngIf="point.transportModes && point.transportModes.length > 0">
+                        <span *ngFor="let mode of point.transportModes" class="mode-icon"
+                            [title]="TRANSPORT_MODES[mode]?.label">
+                            {{ TRANSPORT_MODES[mode]?.icon }}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Vote Actions -->
+                <div class="card-actions">
+                    <button class="vote-btn upvote" (click)="upvotePoint(point, $event)" type="button">
+                        <span class="vote-icon">👍</span>
+                        <span class="vote-count">{{ point.upvotes || 0 }}</span>
+                    </button>
+                    <button class="vote-btn downvote" (click)="downvotePoint(point, $event)" type="button">
+                        <span class="vote-icon">👎</span>
+                        <span class="vote-count">{{ point.downvotes || 0 }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

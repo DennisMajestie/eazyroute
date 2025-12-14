@@ -1,0 +1,92 @@
+{
+  "kogi": {
+    "name": "Kogi State",
+    "capital": "Lokoja",
+    "lgas": {
+      "adavi": {
+        "name": "Adavi",
+        "areas": ["Adavi Central", "Osara", "Kuroko"]
+      },
+      "ajaokuta": {
+        "name": "Ajaokuta",
+        "areas": ["Ajaokuta Central", "Ganaja Village", "Itobe"]
+      },
+      "ankpa": {
+        "name": "Ankpa",
+        "areas": ["Ankpa Central", "Ojoku", "Ojuwo"]
+      },
+      "bassa": {
+        "name": "Bassa",
+        "areas": ["Bassa Central", "Mozum", "Oguma"]
+      },
+      "dekina": {
+        "name": "Dekina",
+        "areas": ["Dekina Central", "Anyigba", "Okura"]
+      },
+      "ibaji": {
+        "name": "Ibaji",
+        "areas": ["Ibaji Central", "Onyedega", "Idah Ward"]
+      },
+      "idah": {
+        "name": "Idah",
+        "areas": ["Idah Central", "Ajaka", "Ibaji Ward"]
+      },
+      "igalamela_odolu": {
+        "name": "Igalamela Odolu",
+        "areas": ["Igalamela Central", "Odolu", "Ejule"]
+      },
+      "ijumu": {
+        "name": "Ijumu",
+        "areas": ["Ijumu Central", "Iyamoye", "Okoro Gbede"]
+      },
+      "kabba_bunu": {
+        "name": "Kabba/Bunu",
+        "areas": ["Kabba Central", "Bunu", "Egbe"]
+      },
+      "kogi": {
+        "name": "Kogi",
+        "areas": ["Kogi Central", "Koton Karfe", "Patti"]
+      },
+      "lokoja": {
+        "name": "Lokoja",
+        "areas": ["Lokoja A", "Lokoja B", "Oworo", "Phase II", "Sarkin Noma"]
+      },
+      "mopa_muro": {
+        "name": "Mopa Muro",
+        "areas": ["Mopa Central", "Muro", "Takete Ide"]
+      },
+      "ofu": {
+        "name": "Ofu",
+        "areas": ["Ofu Central", "Aloma", "Itobe Ward"]
+      },
+      "ogori_magongo": {
+        "name": "Ogori/Magongo",
+        "areas": ["Ogori Central", "Magongo", "Obajana"]
+      },
+      "okehi": {
+        "name": "Okehi",
+        "areas": ["Okehi Central", "Ihima", "Eika Ohizenyi"]
+      },
+      "okene": {
+        "name": "Okene",
+        "areas": ["Okene Central", "Obehira", "Upogoro"]
+      },
+      "olamaboro": {
+        "name": "Olamaboro",
+        "areas": ["Olamaboro Central", "Abejukolo", "Etuno"]
+      },
+      "omala": {
+        "name": "Omala",
+        "areas": ["Omala Central", "Abejukolo Ward", "Dekina Ward"]
+      },
+      "yagba_east": {
+        "name": "Yagba East",
+        "areas": ["Yagba East Central", "Odo Ere", "Egbe Ward"]
+      },
+      "yagba_west": {
+        "name": "Yagba West",
+        "areas": ["Yagba West Central", "Ejiba", "Okunran"]
+      }
+    }
+  }
+}

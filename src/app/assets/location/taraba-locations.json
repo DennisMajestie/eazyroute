@@ -1,0 +1,80 @@
+{
+  "taraba": {
+    "name": "Taraba State",
+    "capital": "Jalingo",
+    "lgas": {
+      "ardo_kola": {
+        "name": "Ardo Kola",
+        "areas": ["Ardo Kola Central", "Jalingo Ward", "Lau Ward"]
+      },
+      "bali": {
+        "name": "Bali",
+        "areas": ["Bali Central", "Gassol Ward", "Serti Ward"]
+      },
+      "donga": {
+        "name": "Donga",
+        "areas": ["Donga Central", "Takum Ward", "Ussa Ward"]
+      },
+      "gashaka": {
+        "name": "Gashaka",
+        "areas": ["Gashaka Central", "Kurmi Ward", "Sardauna Ward"]
+      },
+      "gassol": {
+        "name": "Gassol",
+        "areas": ["Gassol Central", "Bali Ward", "Mutum Biyu Ward"]
+      },
+      "ibi": {
+        "name": "Ibi",
+        "areas": ["Ibi Central", "Wukari Ward", "Jalingo Ibi"]
+      },
+      "jalingo": {
+        "name": "Jalingo",
+        "areas": ["Jalingo Central", "Ardo Kola Ward", "Yorro Ward"]
+      },
+      "karim_lamido": {
+        "name": "Karim Lamido",
+        "areas": ["Karim Lamido Central", "Lau Central", "Zing Ward"]
+      },
+      "kurmi": {
+        "name": "Kurmi",
+        "areas": ["Kurmi Central", "Gashaka Ward", "Takum Central"]
+      },
+      "lau": {
+        "name": "Lau",
+        "areas": ["Lau Central", "Ardo Kola Central", "Karim Lamido Ward"]
+      },
+      "mutum_biyu": {
+        "name": "Mutum Biyu",
+        "areas": ["Mutum Biyu Central", "Gassol Central", "Serti Central"]
+      },
+      "sardauna": {
+        "name": "Sardauna",
+        "areas": ["Sardauna Central", "Gashaka Central", "Kurmi Central"]
+      },
+      "serti": {
+        "name": "Serti",
+        "areas": ["Serti Central", "Bali Central", "Mutum Biyu Central"]
+      },
+      "takum": {
+        "name": "Takum",
+        "areas": ["Takum Central", "Donga Ward", "Kurmi Ward"]
+      },
+      "ussa": {
+        "name": "Ussa",
+        "areas": ["Ussa Central", "Donga Central", "Takum Ward"]
+      },
+      "wukari": {
+        "name": "Wukari",
+        "areas": ["Wukari Central", "Ibi Ward", "Jalingo Wukari"]
+      },
+      "yorro": {
+        "name": "Yorro",
+        "areas": ["Yorro Central", "Jalingo Central", "Zing Central"]
+      },
+      "zing": {
+        "name": "Zing",
+        "areas": ["Zing Central", "Karim Lamido Central", "Yorro Ward"]
+      }
+    }
+  }
+}

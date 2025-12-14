@@ -1,0 +1,92 @@
+{
+  "anambra": {
+    "name": "Anambra State",
+    "capital": "Awka",
+    "lgas": {
+      "aguata": {
+        "name": "Aguata",
+        "areas": ["Achina", "Aguata Central", "Ekwulobia", "Igbo-Ukwu"]
+      },
+      "anambra_east": {
+        "name": "Anambra East",
+        "areas": ["Aguleri", "Anambra East Central", "Nsugbe"]
+      },
+      "anambra_west": {
+        "name": "Anambra West",
+        "areas": ["Anambra West Central", "Olumbanasa"]
+      },
+      "anaocha": {
+        "name": "Anaocha",
+        "areas": ["Adazi Nnukwu", "Anaocha Central", "Ichida"]
+      },
+      "awka_north": {
+        "name": "Awka North",
+        "areas": ["Achalla", "Awka North Central", "Ugbene"]
+      },
+      "awka_south": {
+        "name": "Awka South",
+        "areas": ["Awka", "Isiagu", "Nibo"]
+      },
+      "ayamelum": {
+        "name": "Ayamelum",
+        "areas": ["Anaku", "Ayamelum Central", "Ifite-Ogwari"]
+      },
+      "dunukofia": {
+        "name": "Dunukofia",
+        "areas": ["Dunukofia Central", "Ifitedunu", "Ukpo"]
+      },
+      "ekwusigo": {
+        "name": "Ekwusigo",
+        "areas": ["Ekwusigo Central", "Ozubulu"]
+      },
+      "idemili_north": {
+        "name": "Idemili North",
+        "areas": ["Abacha", "Idemili North Central", "Ogidi"]
+      },
+      "idemili_south": {
+        "name": "Idemili South",
+        "areas": ["Alor", "Idemili South Central", "Ojoto"]
+      },
+      "ihiala": {
+        "name": "Ihiala",
+        "areas": ["Ihiala Central", "Isseke", "Uli"]
+      },
+      "njikoka": {
+        "name": "Njikoka",
+        "areas": ["Abagana", "Enugwu-Ukwu", "Njikoka Central"]
+      },
+      "nnewi_north": {
+        "name": "Nnewi North",
+        "areas": ["Nnewi", "Otolo"]
+      },
+      "nnewi_south": {
+        "name": "Nnewi South",
+        "areas": ["Ekwusigo", "Nnewi South Central"]
+      },
+      "ogbaru": {
+        "name": "Ogbaru",
+        "areas": ["Atani", "Ogbaru Central", "Ossomala"]
+      },
+      "onitsha_north": {
+        "name": "Onitsha North",
+        "areas": ["Inland Town", "Onitsha", "Woliwo"]
+      },
+      "onitsha_south": {
+        "name": "Onitsha South",
+        "areas": ["Fegge", "Onitsha South Central", "Trans-Nkisi"]
+      },
+      "orumba_north": {
+        "name": "Orumba North",
+        "areas": ["Ajalli", "Nanka", "Orumba North Central"]
+      },
+      "orumba_south": {
+        "name": "Orumba South",
+        "areas": ["Ezza", "Orumba South Central", "Umunze"]
+      },
+      "oyi": {
+        "name": "Oyi",
+        "areas": ["Awkuzu", "Nteje", "Oyi Central"]
+      }
+    }
+  }
+}

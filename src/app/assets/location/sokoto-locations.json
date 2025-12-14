@@ -1,0 +1,100 @@
+{
+  "sokoto": {
+    "name": "Sokoto State",
+    "capital": "Sokoto",
+    "lgas": {
+      "binji": {
+        "name": "Binji",
+        "areas": ["Binji Central", "Silame Ward", "Sokoto Ward"]
+      },
+      "bodinga": {
+        "name": "Bodinga",
+        "areas": ["Bodinga Central", "Dange Ward", "Tambuwal Ward"]
+      },
+      "dange_shuni": {
+        "name": "Dange Shuni",
+        "areas": ["Dange Central", "Shuni", "Bodinga Ward"]
+      },
+      "gada": {
+        "name": "Gada",
+        "areas": ["Gada Central", "Goronyo Ward", "Illela Ward"]
+      },
+      "goronyo": {
+        "name": "Goronyo",
+        "areas": ["Goronyo Central", "Gada Ward", "Gwadabawa Ward"]
+      },
+      "gudu": {
+        "name": "Gudu",
+        "areas": ["Gudu Central", "Tangaza Ward", "Gwadabawa Central"]
+      },
+      "gwadabawa": {
+        "name": "Gwadabawa",
+        "areas": ["Gwadabawa Central", "Goronyo Central", "Gudu Ward"]
+      },
+      "illela": {
+        "name": "Illela",
+        "areas": ["Illela Central", "Gada Central", "Tangaza Central"]
+      },
+      "isa": {
+        "name": "Isa",
+        "areas": ["Isa Central", "Sabon Birni Ward", "Wurno Ward"]
+      },
+      "kebbe": {
+        "name": "Kebbe",
+        "areas": ["Kebbe Central", "Tambuwal Central", "Tureta Ward"]
+      },
+      "kware": {
+        "name": "Kware",
+        "areas": ["Kware Central", "Binji Ward", "Wamako Ward"]
+      },
+      "rabah": {
+        "name": "Rabah",
+        "areas": ["Rabah Central", "Wurno Central", "Yabo Ward"]
+      },
+      "sabon_birni": {
+        "name": "Sabon Birni",
+        "areas": ["Sabon Birni Central", "Isa Ward", "Sokoto Central"]
+      },
+      "shagari": {
+        "name": "Shagari",
+        "areas": ["Shagari Central", "Tureta Central", "Yabo Central"]
+      },
+      "silame": {
+        "name": "Silame",
+        "areas": ["Silame Central", "Binji Central", "Sokoto Silame"]
+      },
+      "sokoto_north": {
+        "name": "Sokoto North",
+        "areas": ["Sokoto North Central", "Arkilla", "Gagi"]
+      },
+      "sokoto_south": {
+        "name": "Sokoto South",
+        "areas": ["Sokoto South Central", "Wamako Central", "Dange Ward"]
+      },
+      "tambuwal": {
+        "name": "Tambuwal",
+        "areas": ["Tambuwal Central", "Bodinga Central", "Kebbe Ward"]
+      },
+      "tangaza": {
+        "name": "Tangaza",
+        "areas": ["Tangaza Central", "Gudu Central", "Illela Ward"]
+      },
+      "tureta": {
+        "name": "Tureta",
+        "areas": ["Tureta Central", "Kebbe Central", "Shagari Ward"]
+      },
+      "wamako": {
+        "name": "Wamako",
+        "areas": ["Wamako Central", "Kware Ward", "Sokoto South Ward"]
+      },
+      "wurno": {
+        "name": "Wurno",
+        "areas": ["Wurno Central", "Isa Central", "Rabah Ward"]
+      },
+      "yabo": {
+        "name": "Yabo",
+        "areas": ["Yabo Central", "Rabah Central", "Shagari Central"]
+      }
+    }
+  }
+}

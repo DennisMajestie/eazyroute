@@ -1,1 +1,128 @@
-<p>otp-verify works!</p>
+<div class="auth-container">
+    <!-- Animated Background -->
+    <div class="background-scene">
+        <div class="animated-gradient"></div>
+
+        <svg class="route-lines" viewBox="0 0 1200 800" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stop-color="rgba(0,127,246,0)" />
+                    <stop offset="50%" stop-color="rgba(0,127,246,0.6)" />
+                    <stop offset="100%" stop-color="rgba(0,127,246,0)" />
+                </linearGradient>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="4" result="coloredBlur" />
+                    <feMerge>
+                        <feMergeNode in="coloredBlur" />
+                        <feMergeNode in="SourceGraphic" />
+                    </feMerge>
+                </filter>
+            </defs>
+
+            <path class="route-path route-1" d="M 0 200 Q 300 100 600 200 T 1200 200" stroke="url(#lineGradient)"
+                stroke-width="3" fill="none" filter="url(#glow)" />
+            <path class="route-path route-2" d="M 0 400 Q 400 300 800 400 T 1200 400" stroke="url(#lineGradient)"
+                stroke-width="3" fill="none" filter="url(#glow)" />
+        </svg>
+
+        <div class="glass-orb orb-1"></div>
+        <div class="glass-orb orb-2"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="auth-content centered">
+        <!-- Verify Email Card -->
+        <div class="login-card verify-card">
+            <div class="card-shimmer"></div>
+
+            <!-- Icon -->
+            <div class="card-icon" *ngIf="!verificationComplete">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <path d="M3 7l9 6 9-6" />
+                </svg>
+            </div>
+
+            <!-- Success Icon -->
+            <div class="card-icon success" *ngIf="verificationComplete">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                    <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+            </div>
+
+            <!-- Header -->
+            <div class="card-header centered">
+                <h1 class="card-title" *ngIf="!verificationComplete">Verify Your Email</h1>
+                <h1 class="card-title" *ngIf="verificationComplete">Email Verified!</h1>
+                <p class="card-subtitle" *ngIf="!verificationComplete">
+                    We've sent a 6-digit code to<br>
+                    <strong>{{ email }}</strong>
+                </p>
+                <p class="card-subtitle" *ngIf="verificationComplete">
+                    Your email has been successfully verified.<br>
+                    Redirecting to dashboard...
+                </p>
+            </div>
+
+            <!-- Verification Form -->
+            <div class="verification-form" *ngIf="!verificationComplete">
+                <div class="code-inputs" [class.error]="verificationError">
+                    <input #codeInput type="text" maxlength="1" class="code-input" [(ngModel)]="code[0]"
+                        (input)="onCodeInput(0, $event)" (keydown)="onKeyDown(0, $event)" [disabled]="isVerifying"
+                        inputmode="numeric" pattern="[0-9]" />
+                    <input #codeInput type="text" maxlength="1" class="code-input" [(ngModel)]="code[1]"
+                        (input)="onCodeInput(1, $event)" (keydown)="onKeyDown(1, $event)" [disabled]="isVerifying"
+                        inputmode="numeric" pattern="[0-9]" />
+                    <input #codeInput type="text" maxlength="1" class="code-input" [(ngModel)]="code[2]"
+                        (input)="onCodeInput(2, $event)" (keydown)="onKeyDown(2, $event)" [disabled]="isVerifying"
+                        inputmode="numeric" pattern="[0-9]" />
+                    <input #codeInput type="text" maxlength="1" class="code-input" [(ngModel)]="code[3]"
+                        (input)="onCodeInput(3, $event)" (keydown)="onKeyDown(3, $event)" [disabled]="isVerifying"
+                        inputmode="numeric" pattern="[0-9]" />
+                    <input #codeInput type="text" maxlength="1" class="code-input" [(ngModel)]="code[4]"
+                        (input)="onCodeInput(4, $event)" (keydown)="onKeyDown(4, $event)" [disabled]="isVerifying"
+                        inputmode="numeric" pattern="[0-9]" />
+                    <input #codeInput type="text" maxlength="1" class="code-input" [(ngModel)]="code[5]"
+                        (input)="onCodeInput(5, $event)" (keydown)="onKeyDown(5, $event)" [disabled]="isVerifying"
+                        inputmode="numeric" pattern="[0-9]" />
+                </div>
+
+                <p class="error-message" *ngIf="verificationError">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    Invalid code. Please try again.
+                </p>
+
+                <div class="verification-status" *ngIf="isVerifying">
+                    <svg class="spinner-small" viewBox="0 0 50 50">
+                        <circle cx="25" cy="25" r="20" fill="none" stroke="currentColor" stroke-width="4" />
+                    </svg>
+                    <span>Verifying...</span>
+                </div>
+
+                <div class="resend-section">
+                    <p class="resend-text">
+                        Didn't receive the code?
+                        <button type="button" class="text-link primary" (click)="resendCode()" [disabled]="isVerifying">
+                            Resend code
+                        </button>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Back to Login -->
+            <div class="card-footer" *ngIf="!verificationComplete">
+                <button type="button" class="back-button" (click)="goToLogin()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
+                    </svg>
+                    <span>Back to Sign In</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

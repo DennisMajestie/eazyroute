@@ -1,0 +1,80 @@
+{
+  "cross_river": {
+    "name": "Cross River State",
+    "capital": "Calabar",
+    "lgas": {
+      "abi": {
+        "name": "Abi",
+        "areas": ["Abi Central", "Ediba", "Igboji", "Usumutong"]
+      },
+      "akamkpa": {
+        "name": "Akamkpa",
+        "areas": ["Akamkpa Central", "Iko Esai", "Ojuk"]
+      },
+      "akpabuyo": {
+        "name": "Akpabuyo",
+        "areas": ["Akpabuyo Central", "Ikang", "Idundu"]
+      },
+      "bakassi": {
+        "name": "Bakassi",
+        "areas": ["Bakassi Central", "Dayspring", "Ikang Ward"]
+      },
+      "bekwarra": {
+        "name": "Bekwarra",
+        "areas": ["Bekwarra Central", "Gabu", "Nyanya"]
+      },
+      "biase": {
+        "name": "Biase",
+        "areas": ["Adim", "Agwagune", "Biase Central"]
+      },
+      "boki": {
+        "name": "Boki",
+        "areas": ["Boje", "Boki Central", "Okundi"]
+      },
+      "calabar_municipal": {
+        "name": "Calabar Municipal",
+        "areas": ["Calabar South", "Creek Town", "Henshaw Town", "Kasuk", "Obutong"]
+      },
+      "calabar_south": {
+        "name": "Calabar South",
+        "areas": ["Anantigha", "Calabar South Central", "Ikot Ansa", "Ikot Ishie"]
+      },
+      "etung": {
+        "name": "Etung",
+        "areas": ["Abanlikom", "Bendeghe Ekiem", "Etung Central"]
+      },
+      "ikom": {
+        "name": "Ikom",
+        "areas": ["Ikom Central", "Nkum", "Ofutop"]
+      },
+      "obanliku": {
+        "name": "Obanliku",
+        "areas": ["Bisu", "Obanliku Central", "Sankwala"]
+      },
+      "obubra": {
+        "name": "Obubra",
+        "areas": ["Adun", "Obubra Central", "Yache"]
+      },
+      "obudu": {
+        "name": "Obudu",
+        "areas": ["Bebi", "Obudu Central", "Utanga"]
+      },
+      "odukpani": {
+        "name": "Odukpani",
+        "areas": ["Creek Town Ward", "Jamestown", "Odukpani Central"]
+      },
+      "ogoja": {
+        "name": "Ogoja",
+        "areas": ["Ekajuk", "Ishibori", "Ogoja Central"]
+      },
+      "yakaar": {
+        "name": "Yakaar",
+        "areas": ["Ipene", "Ugep", "Yakaar Central"]
+      },
+      "yala": {
+        "name": "Yala",
+        "areas": ["Okpoma", "Ugbem", "Yala Central"]
+      }
+    }
+  }
+}

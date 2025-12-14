@@ -1,0 +1,132 @@
+{
+  "akwa_ibom": {
+    "name": "Akwa Ibom State",
+    "capital": "Uyo",
+    "lgas": {
+      "abak": {
+        "name": "Abak",
+        "areas": ["Abak Urban", "Afaha Obong", "Ikot Essien", "Midim"]
+      },
+      "eastern_obolo": {
+        "name": "Eastern Obolo",
+        "areas": ["Agwut Obolo", "Ilile Obolo", "Okoroete"]
+      },
+      "eket": {
+        "name": "Eket",
+        "areas": ["Afaha Eket", "Eket Urban", "Idua", "Okon"]
+      },
+      "esit_eket": {
+        "name": "Esit Eket",
+        "areas": ["Esit Eket Central", "Uquo"]
+      },
+      "essien_udim": {
+        "name": "Essien Udim",
+        "areas": ["Afaha Ikot Ebak", "Essien Udim Central", "Ikot Akpan Okuo"]
+      },
+      "etim_ekpo": {
+        "name": "Etim Ekpo",
+        "areas": ["Etim Ekpo Central", "Utu Etim Ekpo"]
+      },
+      "etinan": {
+        "name": "Etinan",
+        "areas": ["Etinan Urban", "Nsasak"]
+      },
+      "ibeno": {
+        "name": "Ibeno",
+        "areas": ["Ibeno Central", "Mkpanak"]
+      },
+      "ibesikpo_asutan": {
+        "name": "Ibesikpo Asutan",
+        "areas": ["Asutan", "Ibesikpo"]
+      },
+      "ibiono_ibom": {
+        "name": "Ibiono Ibom",
+        "areas": ["Ibiono Central", "Nto Edino"]
+      },
+      "ika": {
+        "name": "Ika",
+        "areas": ["Achan", "Ika Central"]
+      },
+      "ikono": {
+        "name": "Ikono",
+        "areas": ["Ikono Central", "Itak"]
+      },
+      "ikot_abasi": {
+        "name": "Ikot Abasi",
+        "areas": ["Ikot Abasi Urban", "Ukam"]
+      },
+      "ikot_ekpene": {
+        "name": "Ikot Ekpene",
+        "areas": ["Ikot Ekpene Urban", "Obot Akara"]
+      },
+      "ini": {
+        "name": "Ini",
+        "areas": ["Ini Central", "Odoro Ikpe"]
+      },
+      "itu": {
+        "name": "Itu",
+        "areas": ["Itu Central", "Mbierebe Obio"]
+      },
+      "mbo": {
+        "name": "Mbo",
+        "areas": ["Ebughu", "Mbo Central"]
+      },
+      "mkpat_enin": {
+        "name": "Mkpat Enin",
+        "areas": ["Mkpat Enin Central", "Ikot Idem"]
+      },
+      "nsit_atai": {
+        "name": "Nsit Atai",
+        "areas": ["Nsit Atai Central", "Odot"]
+      },
+      "nsit_ibom": {
+        "name": "Nsit Ibom",
+        "areas": ["Nsit Ibom Central", "Afaha Nsit"]
+      },
+      "nsit_ubium": {
+        "name": "Nsit Ubium",
+        "areas": ["Nsit Ubium Central", "Ikot Akpan"]
+      },
+      "obot_akara": {
+        "name": "Obot Akara",
+        "areas": ["Nto Akan", "Obot Akara Central"]
+      },
+      "okobo": {
+        "name": "Okobo",
+        "areas": ["Enwang", "Okobo Central"]
+      },
+      "onna": {
+        "name": "Onna",
+        "areas": ["Abat", "Eket Ono", "Onna Central"]
+      },
+      "oron": {
+        "name": "Oron",
+        "areas": ["Afaha Okpo", "Okoroete", "Oron Urban"]
+      },
+      "oruk_anam": {
+        "name": "Oruk Anam",
+        "areas": ["Ikot Ibritam", "Oruk Anam Central"]
+      },
+      "udung_uko": {
+        "name": "Udung Uko",
+        "areas": ["Udung Uko Central", "Ikot Akpan Okuo"]
+      },
+      "ukanafun": {
+        "name": "Ukanafun",
+        "areas": ["Ikot Akpan Okuo", "Ukanafun Central"]
+      },
+      "uruan": {
+        "name": "Uruan",
+        "areas": ["Nnung Oku", "Uruan Central"]
+      },
+      "urue_offong_oruko": {
+        "name": "Urue-Offong/Oruko",
+        "areas": ["Oruko", "Urue Offong"]
+      },
+      "uyo": {
+        "name": "Uyo",
+        "areas": ["Etoi", "Offot", "Use Offot", "Uyo Urban"]
+      }
+    }
+  }
+}

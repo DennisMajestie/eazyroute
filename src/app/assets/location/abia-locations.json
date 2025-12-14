@@ -1,0 +1,76 @@
+{
+  "abia": {
+    "name": "Abia State",
+    "capital": "Umuahia",
+    "lgas": {
+      "aba_north": {
+        "name": "Aba North",
+        "areas": ["Ariaria Market", "Cemetery", "Eziama", "Industrial", "Ngwa Road", "Ogbor Hill", "Old Aba", "Pkovo Industrial", "School Road", "Waterside"]
+      },
+      "aba_south": {
+        "name": "Aba South",
+        "areas": ["Aba River", "Aba Town Hall", "Brass", "Flying Eagle", "Gloucester", "Ngwa", "Obuda", "Osusu", "Port Harcourt Road"]
+      },
+      "arochukwu": {
+        "name": "Arochukwu",
+        "areas": ["Arochukwu Town", "Ihechiowa", "Ohafia", "Uturu", "Afikpo Road"]
+      },
+      "bende": {
+        "name": "Bende",
+        "areas": ["Bende Central", "Item", "Itumbauzo", "Uzuakoli"]
+      },
+      "ikwuano": {
+        "name": "Ikwuano",
+        "areas": ["Ariam", "Ikwuano Central", "Oboro", "Oloko"]
+      },
+      "isiala_ngwa_north": {
+        "name": "Isiala Ngwa North",
+        "areas": ["Isiala Ngwa North Central", "Nsulu", "Okpuala"]
+      },
+      "isiala_ngwa_south": {
+        "name": "Isiala Ngwa South",
+        "areas": ["Isiala Ngwa South Central", "Ovungwu"]
+      },
+      "isuikwuato": {
+        "name": "Isuikwuato",
+        "areas": ["Isuikwuato Central", "Lokpanta"]
+      },
+      "obi_ngwa": {
+        "name": "Obi Ngwa",
+        "areas": ["Obi Ngwa Central", "Mgboko", "Ndiakata"]
+      },
+      "ohafia": {
+        "name": "Ohafia",
+        "areas": ["Amaeke", "Ebem", "Nkporo", "Ohafia Central"]
+      },
+      "osisioma_ngwa": {
+        "name": "Osisioma Ngwa",
+        "areas": ["Aba", "Ahaba Imenyi", "Osisioma Central"]
+      },
+      "ugwunagbo": {
+        "name": "Ugwunagbo",
+        "areas": ["Obingwa", "Ugwunagbo Central"]
+      },
+      "ukwa_east": {
+        "name": "Ukwa East",
+        "areas": ["Akwete", "Azumini", "Ikot Ikpe"]
+      },
+      "ukwa_west": {
+        "name": "Ukwa West",
+        "areas": ["Asa", "Obokwe", "Ukwa West Central"]
+      },
+      "umuahia_north": {
+        "name": "Umuahia North",
+        "areas": ["Isingwu", "Nkwoegwu", "Umuahia Urban"]
+      },
+      "umuahia_south": {
+        "name": "Umuahia South",
+        "areas": ["Apumiri", "Ezeleke", "Nsirimo"]
+      },
+      "umunneochi": {
+        "name": "Umunneochi",
+        "areas": ["Isuochi", "Lomara", "Nkenechi"]
+      }
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "fct": {
+    "name": "Federal Capital Territory",
+    "capital": "Abuja",
+    "lgas": {
+      "abaji": {
+        "name": "Abaji",
+        "areas": ["Abaji Central", "Gawu Babangida", "Pandogari"]
+      },
+      "bwari": {
+        "name": "Bwari",
+        "areas": ["Bwari Central", "Dutse Alhaji", "Kubwa", "Tokulo"]
+      },
+      "gwagwalada": {
+        "name": "Gwagwalada",
+        "areas": ["Gwagwalada Central", "Kutunku", "Zuba"]
+      },
+      "kuje": {
+        "name": "Kuje",
+        "areas": ["Kuje Central", "Rubochi", "Yenche"]
+      },
+      "kwali": {
+        "name": "Kwali",
+        "areas": ["Kwali Central", "Kilankwa", "Pai"]
+      },
+      "municipal_area_council": {
+        "name": "Municipal Area Council",
+        "areas": ["Abuja Central", "Asokoro", "Garki", "Gwarinpa", "Jabi", "Kado", "Lugbe", "Maitama", "Utako", "Wuse", "Wuye"]
+      }
+    }
+  }
+}

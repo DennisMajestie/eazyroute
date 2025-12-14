@@ -1,1 +1,145 @@
-<p>onboarding works!</p>
+<div class="onboarding-container">
+    <div class="onboarding-wrapper">
+        <!-- Progress Bar -->
+        <div class="progress-section">
+            <div class="progress-info">
+                <span>Step {{ currentStep + 1 }} of 3</span>
+                <span>{{ getProgress() }}%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" [style.width.%]="getProgress()"></div>
+            </div>
+        </div>
+
+        <!-- Main Card -->
+        <div class="onboarding-card">
+            <!-- Header -->
+            <div class="card-header">
+                <div class="header-content">
+                    <div class="logo-box">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M8 6v6" />
+                            <path d="M15 6v6" />
+                            <path d="M2 12h19.6" />
+                            <path
+                                d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3" />
+                            <circle cx="7" cy="18" r="2" />
+                            <path d="M9 18h5" />
+                            <circle cx="16" cy="18" r="2" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="logo-text">EazyRoute</h1>
+                        <p class="logo-subtitle">Navigate Abuja with ease</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="card-content">
+                <!-- Step 0: City Selection -->
+                <div *ngIf="currentStep === 0" class="step-content animate-fade-in">
+                    <h2 class="step-title">Welcome aboard! 👋</h2>
+                    <p class="step-description">Which city are you in?</p>
+
+                    <div class="city-grid">
+                        <button *ngFor="let city of cities" (click)="updateFormData('city', city.name)"
+                            [class.selected]="formData.city === city.name" class="city-card">
+                            <div class="city-icon">{{ city.icon }}</div>
+                            <div class="city-name">{{ city.name }}</div>
+                        </button>
+                    </div>
+                    <p *ngIf="errors['city']" class="error-text">{{ errors['city'] }}</p>
+                </div>
+
+                <!-- Step 1: User Type -->
+                <div *ngIf="currentStep === 1" class="step-content animate-fade-in">
+                    <h2 class="step-title">How will you use EazyRoute?</h2>
+                    <p class="step-description">Choose the option that best describes you</p>
+
+                    <div class="user-type-list">
+                        <button *ngFor="let type of userTypes" (click)="updateFormData('userType', type.type)"
+                            [class.selected]="formData.userType === type.type"
+                            [ngClass]="formData.userType === type.type ? type.gradient : ''" class="user-type-card">
+                            <div class="user-type-content">
+                                <div class="user-type-icon" [innerHTML]="getIcon(type.icon)"></div>
+                                <div class="user-type-text">
+                                    <div class="user-type-label">{{ type.label }}</div>
+                                    <div class="user-type-desc">{{ type.description }}</div>
+                                </div>
+                                <svg *ngIf="formData.userType === type.type" xmlns="http://www.w3.org/2000/svg"
+                                    width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="check-icon">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                            </div>
+                        </button>
+                    </div>
+                    <p *ngIf="errors['userType']" class="error-text">{{ errors['userType'] }}</p>
+                </div>
+
+                <!-- Step 2: Success -->
+                <div *ngIf="currentStep === 2" class="step-content animate-fade-in">
+                    <div class="success-content">
+                        <div class="success-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                                <polyline points="22 4 12 14.01 9 11.01" />
+                            </svg>
+                        </div>
+                        <h2 class="success-title">You're All Set! 🎉</h2>
+                        <p class="success-description">
+                            Your profile has been completed successfully. Let's start exploring!
+                        </p>
+                        <div class="success-details">
+                            <div class="detail-item">
+                                <span class="detail-label">City:</span>
+                                <span class="detail-value">{{ formData.city }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Account Type:</span>
+                                <span class="detail-value">{{ getUserTypeLabel() }}</span>
+                            </div>
+                        </div>
+                        <button (click)="finish()" class="btn btn-primary btn-large">
+                            Explore EazyRoute
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <polyline points="9 18 15 12 9 6" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation -->
+            <div *ngIf="currentStep < 2" class="card-footer">
+                <button *ngIf="currentStep > 0" (click)="handleBack()" class="btn btn-secondary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    Back
+                </button>
+                <button *ngIf="currentStep === 0" (click)="handleNext()" class="btn btn-primary">
+                    Continue
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </button>
+                <button *ngIf="currentStep === 1" (click)="handleSubmit()" class="btn btn-primary">
+                    Complete Setup
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

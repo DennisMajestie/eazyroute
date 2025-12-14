@@ -1,0 +1,116 @@
+{
+  "borno": {
+    "name": "Borno State",
+    "capital": "Maiduguri",
+    "lgas": {
+      "abadam": {
+        "name": "Abadam",
+        "areas": ["Abadam Central", "Cross Kauwa", "Mallam Fatori"]
+      },
+      "askira_uba": {
+        "name": "Askira/Uba",
+        "areas": ["Askira", "Dille", "Uba"]
+      },
+      "bama": {
+        "name": "Bama",
+        "areas": ["Bama Central", "Derege", "Soye"]
+      },
+      "bayo": {
+        "name": "Bayo",
+        "areas": ["Bayo Central", "Kwaya Kusar", "Tilde"]
+      },
+      "biu": {
+        "name": "Biu",
+        "areas": ["Biu Central", "Kwaya Kusar", "Mirnga"]
+      },
+      "chibok": {
+        "name": "Chibok",
+        "areas": ["Chibok Central", "Korongilam", "Kautikari"]
+      },
+      "damboa": {
+        "name": "Damboa",
+        "areas": ["Damboa Central", "Gwoza", "Mulgwai"]
+      },
+      "dikwa": {
+        "name": "Dikwa",
+        "areas": ["Dikwa Central", "Marte", "Ngala Ward"]
+      },
+      "gubio": {
+        "name": "Gubio",
+        "areas": ["Gubio Central", "Magumeri", "Nganzai"]
+      },
+      "guzamala": {
+        "name": "Guzamala",
+        "areas": ["Guzamala Central", "Kukawa", "Monguno"]
+      },
+      "gwoza": {
+        "name": "Gwoza",
+        "areas": ["Gwoza Central", "Pulka", "Wala"]
+      },
+      "hawul": {
+        "name": "Hawul",
+        "areas": ["Hawul Central", "Shaffa", "Whona"]
+      },
+      "jere": {
+        "name": "Jere",
+        "areas": ["Addamari", "Jere Central", "Maimusari"]
+      },
+      "kaga": {
+        "name": "Kaga",
+        "areas": ["Benisheik", "Kaga Central", "Ngamdu"]
+      },
+      "kala_balge": {
+        "name": "Kala/Balge",
+        "areas": ["Kala", "Balge", "Rann"]
+      },
+      "konduga": {
+        "name": "Konduga",
+        "areas": ["Konduga Central", "Dalwa", "Kawuri"]
+      },
+      "kukawa": {
+        "name": "Kukawa",
+        "areas": ["Kukawa Central", "Doro", "Kross Kauwa"]
+      },
+      "kwaya_kusar": {
+        "name": "Kwaya Kusar",
+        "areas": ["Kwaya Kusar Central", "Wuro Bokko", "Warabe"]
+      },
+      "mafa": {
+        "name": "Mafa",
+        "areas": ["Dikwa Ward", "Mafa Central", "Ngala"]
+      },
+      "magumeri": {
+        "name": "Magumeri",
+        "areas": ["Kanem", "Magumeri Central", "Yedseram"]
+      },
+      "maiduguri": {
+        "name": "Maiduguri",
+        "areas": ["Bolori", "Fori", "Gamboru", "Gwange", "Hausari", "Lamisula", "Maisandari", "Shehuri North", "Shehuri South"]
+      },
+      "marte": {
+        "name": "Marte",
+        "areas": ["Kirenowa", "Marte Central", "Musune"]
+      },
+      "mobbar": {
+        "name": "Mobbar",
+        "areas": ["Damasak", "Kareto", "Mobbar Central"]
+      },
+      "monguno": {
+        "name": "Monguno",
+        "areas": ["Kekeno", "Monguno Central", "Rann Ward"]
+      },
+      "ngala": {
+        "name": "Ngala",
+        "areas": ["Fotokol", "Gamboru Ngala", "Ngala Central"]
+      },
+      "nganzai": {
+        "name": "Nganzai",
+        "areas": ["Gajiram", "Gubio Ward", "Nganzai Central"]
+      },
+      "shani": {
+        "name": "Shani",
+        "areas": ["Biu Ward", "Gombe", "Shani Central"]
+      }
+    }
+  }
+}

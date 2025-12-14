@@ -1,0 +1,88 @@
+{
+  "bauchi": {
+    "name": "Bauchi State",
+    "capital": "Bauchi",
+    "lgas": {
+      "alkaleri": {
+        "name": "Alkaleri",
+        "areas": ["Alkaleri Central", "Futuk", "Gwana"]
+      },
+      "bauchi": {
+        "name": "Bauchi",
+        "areas": ["Bauchi Central", "Bauchi South", "Dass Ward", "Warji"]
+      },
+      "bogoro": {
+        "name": "Bogoro",
+        "areas": ["Bogoro Central", "Lusa", "Tafawa Balewa Ward"]
+      },
+      "damban": {
+        "name": "Damban",
+        "areas": ["Damban Central", "Gwaram"]
+      },
+      "darazo": {
+        "name": "Darazo",
+        "areas": ["Darazo Central", "Gabarin", "Wanti"]
+      },
+      "dass": {
+        "name": "Dass",
+        "areas": ["Dass Central", "Durr", "Polchi"]
+      },
+      "gamawa": {
+        "name": "Gamawa",
+        "areas": ["Gamawa Central", "Udubo"]
+      },
+      "ganjuwa": {
+        "name": "Ganjuwa",
+        "areas": ["Ganjuwa Central", "Kafin Madaki"]
+      },
+      "giade": {
+        "name": "Giade",
+        "areas": ["Giade Central", "Shira Ward"]
+      },
+      "itas_gadau": {
+        "name": "Itas/Gadau",
+        "areas": ["Gadau", "Itas"]
+      },
+      "jamaare": {
+        "name": "Jama'are",
+        "areas": ["Jama'are Central", "Tatakume"]
+      },
+      "katagum": {
+        "name": "Katagum",
+        "areas": ["Azare", "Bulkachuwa", "Katagum Central"]
+      },
+      "kirfi": {
+        "name": "Kirfi",
+        "areas": ["Bula", "Kirfi Central", "Tulma"]
+      },
+      "misau": {
+        "name": "Misau",
+        "areas": ["Hardawa", "Misau Central", "Udubo Ward"]
+      },
+      "ningi": {
+        "name": "Ningi",
+        "areas": ["Burra", "Ningi Central", "Warji Ward"]
+      },
+      "shira": {
+        "name": "Shira",
+        "areas": ["Giade Ward", "Kwalam", "Shira Central"]
+      },
+      "tafawa_balewa": {
+        "name": "Tafawa Balewa",
+        "areas": ["Balangu", "Bununu", "Tafawa Balewa Central"]
+      },
+      "toro": {
+        "name": "Toro",
+        "areas": ["Jama'are Ward", "Rishi", "Toro Central"]
+      },
+      "warji": {
+        "name": "Warji",
+        "areas": ["Gwalameji", "Warji Central", "Zungur"]
+      },
+      "zaki": {
+        "name": "Zaki",
+        "areas": ["Katagum Ward", "Sakwa", "Zaki Central"]
+      }
+    }
+  }
+}

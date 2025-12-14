@@ -30,21 +30,40 @@
 //     requiresOtp?: boolean;
 //     message?: string;
 // }
+// src/app/models/user.model.ts
 
+// src/app/models/user.model.ts
 export interface User {
+    avatar: null;
     _id?: string;
-    firstName: string;
-    lastName: string;
+    id?: string;
     email: string;
-    phoneNumber: string;
-    password?: string;
+    firstName?: string;
+    lastName?: string;
+    fullName?: string;
+    phoneNumber?: string;
+    role?: string;
+    isAdmin?: boolean;
+    isVerified?: boolean;
+    onboardingComplete?: boolean; // ⬅️ Add this
     profilePicture?: string;
-    role: 'passenger' | 'driver' | 'admin';
-    isVerified: boolean;
-    isActive: boolean;
-    lastLogin?: Date;
-    createdAt?: Date;
-    updatedAt?: Date;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+// ... rest of your interfaces (LoginRequest, RegisterRequest, etc.)
+export interface AuthResponse {
+    success: boolean;
+    message: string;
+    token?: string;
+    user?: User;
+    data?: {
+        token?: string;
+        user?: User;
+        requiresOtp?: boolean;
+        email?: string;
+    };
+    requiresOtp?: boolean;
 }
 
 export interface LoginRequest {
@@ -53,38 +72,16 @@ export interface LoginRequest {
 }
 
 export interface RegisterRequest {
+    email: string;
+    password: string;
     firstName: string;
     lastName: string;
-    email: string;
-    phoneNumber: string;
-    password: string;
-    role?: 'passenger' | 'driver';
+    phoneNumber?: string;
 }
 
 export interface OTPVerifyRequest {
     email: string;
     otp: string;
-}
-
-export interface AuthResponse {
-    success: boolean;
-    message: string;
-    token?: string;
-    user?: User;
-    requiresOtp?: boolean;
-    data?: {
-        user: User;
-        token: string;
-    };
-}
-
-// Type guard to check if response has user and token
-export function hasAuthData(response: AuthResponse): response is AuthResponse & { user: User; token: string } {
-    return !!(response.user && response.token);
-}
-
-export function hasNestedAuthData(response: AuthResponse): response is AuthResponse & { data: { user: User; token: string } } {
-    return !!(response.data?.user && response.data?.token);
 }
 
 export interface PasswordResetRequest {
@@ -93,6 +90,10 @@ export interface PasswordResetRequest {
 
 export interface PasswordResetConfirm {
     email: string;
-    otp: string;
+    token: string;
     newPassword: string;
+}
+
+export interface ResendOTPRequest {
+    email: string;
 }

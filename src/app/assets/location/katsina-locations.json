@@ -1,0 +1,144 @@
+{
+  "katsina": {
+    "name": "Katsina State",
+    "capital": "Katsina",
+    "lgas": {
+      "bakori": {
+        "name": "Bakori",
+        "areas": ["Bakori Central", "Batagarawa", "Kurfi"]
+      },
+      "batagarawa": {
+        "name": "Batagarawa",
+        "areas": ["Batagarawa Central", "Jino", "Yargoje"]
+      },
+      "batsari": {
+        "name": "Batsari",
+        "areas": ["Batsari Central", "Ruma", "Yantumaki"]
+      },
+      "baure": {
+        "name": "Baure",
+        "areas": ["Baure Central", "Garki", "Yandaki"]
+      },
+      "bindawa": {
+        "name": "Bindawa",
+        "areas": ["Bindawa Central", "Charanchi", "Mai Adua Ward"]
+      },
+      "charanchi": {
+        "name": "Charanchi",
+        "areas": ["Charanchi Central", "Kurfi Ward", "Malumfashi Ward"]
+      },
+      "dandume": {
+        "name": "Dandume",
+        "areas": ["Dandume Central", "Faskari Ward", "Sabuwa Ward"]
+      },
+      "danja": {
+        "name": "Danja",
+        "areas": ["Danja Central", "Mashi Ward", "Zango"]
+      },
+      "dan_musa": {
+        "name": "Dan Musa",
+        "areas": ["Dan Musa Central", "Kaita Ward", "Zango Ward"]
+      },
+      "daura": {
+        "name": "Daura",
+        "areas": ["Daura Central", "Baure Ward", "Zango Daura"]
+      },
+      "dutsi": {
+        "name": "Dutsi",
+        "areas": ["Dutsi Central", "Kurfi Central", "Safana Ward"]
+      },
+      "dutsin_ma": {
+        "name": "Dutsin Ma",
+        "areas": ["Dutsin Ma Central", "Danmusa Ward", "Safana Central"]
+      },
+      "faskari": {
+        "name": "Faskari",
+        "areas": ["Faskari Central", "Dandume Ward", "Sabuwa Central"]
+      },
+      "funtua": {
+        "name": "Funtua",
+        "areas": ["Funtua Central", "Bakori Ward", "Malumfashi Central"]
+      },
+      "ingawa": {
+        "name": "Ingawa",
+        "areas": ["Ingawa Central", "Kankia Ward", "Kusada Ward"]
+      },
+      "jibia": {
+        "name": "Jibia",
+        "areas": ["Jibia Central", "Batsari Ward", "Kaita Central"]
+      },
+      "kafur": {
+        "name": "Kafur",
+        "areas": ["Kafur Central", "Malumfashi Kafur", "Musawa Ward"]
+      },
+      "kaita": {
+        "name": "Kaita",
+        "areas": ["Kaita Central", "Jibia Ward", "Mani Ward"]
+      },
+      "kankara": {
+        "name": "Kankara",
+        "areas": ["Kankara Central", "Malumfashi Kankara", "Rimi Ward"]
+      },
+      "kankia": {
+        "name": "Kankia",
+        "areas": ["Kankia Central", "Ingawa Ward", "Kusada Central"]
+      },
+      "katsina": {
+        "name": "Katsina",
+        "areas": ["Katsina Central", "Dutsin Ma Ward", "Tafoki"]
+      },
+      "kurfi": {
+        "name": "Kurfi",
+        "areas": ["Kurfi Central", "Charanchi Ward", "Dutsi Ward"]
+      },
+      "kusada": {
+        "name": "Kusada",
+        "areas": ["Kusada Central", "Ingawa Central", "Sandamu"]
+      },
+      "mai_adua": {
+        "name": "Mai'Adua",
+        "areas": ["Mai'Adua Central", "Bindawa Ward", "Sandamu Ward"]
+      },
+      "malumfashi": {
+        "name": "Malumfashi",
+        "areas": ["Malumfashi Central", "Kafur Ward", "Kankara Ward"]
+      },
+      "mani": {
+        "name": "Mani",
+        "areas": ["Mani Central", "Kaita Ward", "Mashi Central"]
+      },
+      "mashi": {
+        "name": "Mashi",
+        "areas": ["Mashi Central", "Danja Ward", "Mani Ward"]
+      },
+      "matazu": {
+        "name": "Matazu",
+        "areas": ["Matazu Central", "Musawa Central", "Rimi Central"]
+      },
+      "musawa": {
+        "name": "Musawa",
+        "areas": ["Musawa Central", "Kafur Central", "Matazu Ward"]
+      },
+      "rimi": {
+        "name": "Rimi",
+        "areas": ["Rimi Central", "Kankara Ward", "Matazu Central"]
+      },
+      "sabuwa": {
+        "name": "Sabuwa",
+        "areas": ["Sabuwa Central", "Dandume Central", "Faskari Central"]
+      },
+      "safana": {
+        "name": "Safana",
+        "areas": ["Safana Central", "Dutsi Ward", "Dutsin Ma Ward"]
+      },
+      "sandamu": {
+        "name": "Sandamu",
+        "areas": ["Sandamu Central", "Kusada Ward", "Mai'Adua Ward"]
+      },
+      "zango": {
+        "name": "Zango",
+        "areas": ["Zango Central", "Danja Central", "Dan Musa Ward"]
+      }
+    }
+  }
+}

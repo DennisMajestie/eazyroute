@@ -1,14 +1,12 @@
 // src/app/features/auth/auth.routes.ts
 import { Routes } from '@angular/router';
+
 export const AUTH_ROUTES: Routes = [
     {
         path: 'splash',
         loadComponent: () => import('../auth/splash/splash.component').then(m => m.SplashComponent)
     },
-    {
-        path: 'onboarding',
-        loadComponent: () => import('../auth/onboarding/onboarding.component').then(m => m.OnboardingComponent)
-    },
+    // REMOVE the onboarding route from here - it's now at root level
     {
         path: 'login',
         loadComponent: () => import('../auth/login/login.component').then(m => m.LoginComponent)
@@ -20,6 +18,10 @@ export const AUTH_ROUTES: Routes = [
     {
         path: 'verify-otp',
         loadComponent: () => import('../auth/otp-verify/otp-verify.component').then(m => m.OtpVerifyComponent)
+    },
+    {
+        path: 'forgot-password',
+        loadComponent: () => import('../auth/forgot-password/forgot-password.component').then(m => m.ForgotPasswordComponent)
     },
     { path: '', redirectTo: 'splash', pathMatch: 'full' }
 ];

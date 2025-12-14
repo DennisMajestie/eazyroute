@@ -1,0 +1,40 @@
+{
+  "bayelsa": {
+    "name": "Bayelsa State",
+    "capital": "Yenagoa",
+    "lgas": {
+      "brass": {
+        "name": "Brass",
+        "areas": ["Brass Central", "Twon-Brass", "Okpoama", "Sangana", "Brass Island", "Akassa", "Okuroba", "Odioma", "Cape Formoso", "Fishtown"]
+      },
+      "ekeremor": {
+        "name": "Ekeremor",
+        "areas": ["Ekeremor Central", "Tarakiri", "Lobia", "Oyede", "Adibawa", "Peremabiri", "Foropa", "Kula", "Aleibiri", "Patani"]
+      },
+      "kolokuma_opokuma": {
+        "name": "Kolokuma/Opokuma",
+        "areas": ["Kaiama", "Kolokuma", "Opokuma", "Odi", "Sampou", "Okogbene", "Ayamassa", "Otuaba", "Azagbene", "Korokorosei"]
+      },
+      "nembe": {
+        "name": "Nembe",
+        "areas": ["Nembe Central", "Bassambiri", "Ogbolomabiri", "Nembe Creek", "Mingi", "Okada", "Fantuo", "Liama", "Igbeta", "Ewoama"]
+      },
+      "ogbia": {
+        "name": "Ogbia",
+        "areas": ["Ogbia Central", "Ekeremor Ward", "Otuokpoti", "Anyama", "Kolo", "Otakeme", "Oloibiri", "Imiringi", "Otuasega", "Otuogidi"]
+      },
+      "sagbama": {
+        "name": "Sagbama",
+        "areas": ["Sagbama Central", "Toru-Ebeni", "Ossiama", "Adagbabiri", "Angalabiri", "Trofani", "Sagbama Creek", "Tungbo", "Ekowe", "Gbarain"]
+      },
+      "southern_ijaw": {
+        "name": "Southern Ijaw",
+        "areas": ["Amassoma", "Foropa", "Peremabiri", "Oporoma", "Koroama", "Koluama", "Peretoru", "Ekeni", "Kumbo", "Oyoma", "Azuzuama", "Olugbobiri"]
+      },
+      "yenagoa": {
+        "name": "Yenagoa",
+        "areas": ["Yenagoa Central", "Epie", "Igbogene", "Okaka", "Amarata", "Biogbolo", "Swali", "Opolo", "Azikoro", "Gbarain Ekpetiama", "Zarama"]
+      }
+    }
+  }
+}
