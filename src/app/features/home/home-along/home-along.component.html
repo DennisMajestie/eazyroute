@@ -1,0 +1,123 @@
+<div class="home-along-container">
+    <!-- Header -->
+    <div class="home-header">
+        <div class="logo-section">
+            <h1 class="app-title">🌍 EazyRoute <span class="along-badge">ALONG</span></h1>
+            <p class="tagline">"Where you dey go?"</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+        <!-- Location Error -->
+        <div class="alert alert-error" *ngIf="locationError">
+            ⚠️ {{ locationError }}
+        </div>
+
+        <!-- FROM Field -->
+        <div class="location-field">
+            <label class="field-label">📍 FROM</label>
+            <div class="input-wrapper">
+                <input type="text" class="location-input" [(ngModel)]="fromLocation"
+                    (input)="onSearchInput('from', fromLocation)" placeholder="Your Location"
+                    [class.has-value]="fromLocation" />
+                <button *ngIf="!fromLocation && !isDetectingLocation" class="detect-btn" (click)="detectLocation()"
+                    type="button">
+                    🎯 Use My Location
+                </button>
+                <button *ngIf="fromLocation" class="clear-btn" (click)="clearField('from')" type="button">
+                    ×
+                </button>
+                <div class="loading-spinner" *ngIf="isDetectingLocation">
+                    <div class="spinner"></div>
+                </div>
+            </div>
+            <p class="field-hint" *ngIf="!fromLocation">e.g., "Efab Estate", "Lokogoma"</p>
+        </div>
+
+        <!-- TO Field -->
+        <div class="location-field">
+            <label class="field-label">📍 TO</label>
+            <div class="input-wrapper">
+                <input type="text" class="location-input" [(ngModel)]="toLocation"
+                    (input)="onSearchInput('to', toLocation)" placeholder="Search landmark"
+                    [class.has-value]="toLocation" />
+                <button *ngIf="toLocation" class="clear-btn" (click)="clearField('to')" type="button">
+                    ×
+                </button>
+            </div>
+            <p class="field-hint" *ngIf="!toLocation">e.g., "Berger", "Wuse", "After Shoprite"</p>
+        </div>
+
+        <!-- Search Results Dropdown -->
+        <div class="search-results" *ngIf="showSearchResults && searchResults.length > 0">
+            <div class="search-result-item" *ngFor="let result of searchResults" (click)="selectLocation(result)">
+                <div class="result-icon">📍</div>
+                <div class="result-info">
+                    <div class="result-name">{{ result.name }}</div>
+                    <div class="result-meta">
+                        <span *ngIf="result.area">{{ result.area }}</span>
+                        <span class="badge badge-verified" *ngIf="result.verificationStatus === 'verified'">⭐
+                            Verified</span>
+                    </div>
+                    <div class="result-local-names" *ngIf="result.localNames && result.localNames.length > 0">
+                        Also known as: {{ result.localNames.join(', ') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Find Route Button -->
+        <button class="btn btn-primary btn-xl find-route-btn" (click)="findRoute()"
+            [disabled]="!fromLocation || !toLocation">
+            🚀 Find My Route
+        </button>
+
+        <!-- Divider -->
+        <div class="divider">
+            <span class="divider-text">OR</span>
+        </div>
+
+        <!-- Popular Routes -->
+        <div class="popular-routes-section">
+            <h3 class="section-title">🔥 Popular Routes</h3>
+            <div class="popular-routes-list">
+                <div class="popular-route-card" *ngFor="let route of popularRoutes" (click)="selectPopularRoute(route)">
+                    <div class="route-emoji">{{ route.emoji }}</div>
+                    <div class="route-details">
+                        <div class="route-path">
+                            <span class="route-from">{{ route.from }}</span>
+                            <span class="route-arrow">→</span>
+                            <span class="route-to">{{ route.to }}</span>
+                        </div>
+                    </div>
+                    <div class="route-action">›</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="quick-action-btn" routerLink="/contribute">
+                <span class="action-icon">📍</span>
+                <span class="action-text">Add Landmark</span>
+            </button>
+            <button class="quick-action-btn" routerLink="/favorites">
+                <span class="action-icon">⭐</span>
+                <span class="action-text">Favorites</span>
+            </button>
+            <button class="quick-action-btn" routerLink="/history">
+                <span class="action-icon">🕐</span>
+                <span class="action-text">History</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer Info -->
+    <div class="footer-info">
+        <p class="info-text">
+            💡 <strong>Tip:</strong> Search using local names like "Berger", "Yellow House", or "After Shoprite"
+        </p>
+    </div>
+</div>

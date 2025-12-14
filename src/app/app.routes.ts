@@ -41,6 +41,10 @@ export const routes: Routes = [
         canActivate: [authGuard],
         children: [
             {
+                path: 'home',
+                loadComponent: () => import('./features/home/home-along/home-along.component').then(m => m.HomeAlongComponent)
+            },
+            {
                 path: 'dashboard',
                 loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
             },
