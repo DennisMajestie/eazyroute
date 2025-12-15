@@ -5,6 +5,20 @@
             <h1 class="app-title">🌍 EazyRoute <span class="along-badge">ALONG</span></h1>
             <p class="tagline">"Where you dey go?"</p>
         </div>
+
+        <!-- Area Context (ALONG Framework) -->
+        <div class="area-context" *ngIf="selectedArea">
+            <div class="area-info">
+                <span class="area-icon">📍</span>
+                <div class="area-details">
+                    <span class="area-name">{{ selectedArea.name }}</span>
+                    <span class="area-location">{{ selectedArea.territory }}</span>
+                </div>
+            </div>
+            <button class="change-location-btn" (click)="changeLocation()" type="button">
+                Change Location
+            </button>
+        </div>
     </div>
 
     <!-- Main Content -->

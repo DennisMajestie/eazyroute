@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { BusStop, CreateBusStopRequest, TransportMode, SearchBusStopParams } from '../../models/bus-stop.model';
 import { TransportPointType } from '../../models/transport-point.constants';
@@ -24,6 +25,7 @@ export class BusStopService {
 
   /**
    * Get all stops with optional search and filters
+   * Backend returns { success, data, pagination } format
    */
   getAllStops(params?: SearchBusStopParams): Observable<BusStop[]> {
     let httpParams = new HttpParams();
@@ -37,11 +39,14 @@ export class BusStopService {
       if (params.limit) httpParams = httpParams.set('limit', params.limit.toString());
     }
 
-    return this.http.get<BusStop[]>(this.apiUrl, { params: httpParams });
+    return this.http.get<{ success: boolean; data: BusStop[] }>(this.apiUrl, { params: httpParams }).pipe(
+      map(response => response.data || [])
+    );
   }
 
   /**
    * Search transport points with advanced filtering
+   * Backend returns { success, data, pagination } format
    */
   searchStops(params: SearchBusStopParams): Observable<BusStop[]> {
     let httpParams = new HttpParams();
@@ -53,7 +58,9 @@ export class BusStopService {
     if (params.page !== undefined) httpParams = httpParams.set('page', params.page.toString());
     if (params.limit !== undefined) httpParams = httpParams.set('limit', params.limit.toString());
 
-    return this.http.get<BusStop[]>(this.apiUrl, { params: httpParams });
+    return this.http.get<{ success: boolean; data: BusStop[] }>(this.apiUrl, { params: httpParams }).pipe(
+      map(response => response.data || [])
+    );
   }
 
   /**

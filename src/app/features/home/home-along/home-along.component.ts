@@ -6,6 +6,7 @@ import { GeocodingService } from '../../../core/services/geocoding.service';
 import { BusStopService } from '../../../core/services/bus-stop.service';
 import { LocalityService } from '../../../core/services/locality.service';
 import { Locality, Anchor, LocalitySearchResult } from '../../../models/locality.model';
+import { Area } from '../../../models/area.model';
 import { LocalityCardComponent } from '../../../shared/components/locality-card/locality-card.component';
 import { HierarchyBreadcrumbComponent } from '../../../shared/components/hierarchy-breadcrumb/hierarchy-breadcrumb.component';
 
@@ -32,6 +33,9 @@ interface SelectedLocation {
   styleUrls: ['./home-along.component.scss']
 })
 export class HomeAlongComponent implements OnInit {
+  // Area context (ALONG Framework - Nationwide Coverage)
+  selectedArea: Area | null = null;
+
   // Location state (ALONG Framework)
   fromLocation: SelectedLocation | null = null;
   toLocation: SelectedLocation | null = null;
@@ -63,8 +67,31 @@ export class HomeAlongComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    // Load selected area from localStorage
+    this.loadSelectedArea();
     // Auto-detect location on load (optional)
     // this.detectLocation();
+  }
+
+  /**
+   * Load selected area from localStorage (ALONG Framework)
+   */
+  loadSelectedArea() {
+    const savedArea = localStorage.getItem('selectedArea');
+    if (savedArea) {
+      try {
+        this.selectedArea = JSON.parse(savedArea);
+      } catch (error) {
+        console.error('Error loading selected area:', error);
+      }
+    }
+  }
+
+  /**
+   * Navigate to state selector to change location
+   */
+  changeLocation() {
+    this.router.navigate(['/select-state']);
   }
 
   /**
