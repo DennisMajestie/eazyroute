@@ -4,6 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { GeocodingService } from '../../../core/services/geocoding.service';
 import { BusStopService } from '../../../core/services/bus-stop.service';
+import { LocalityService } from '../../../core/services/locality.service';
+import { Locality, Anchor, LocalitySearchResult } from '../../../models/locality.model';
+import { LocalityCardComponent } from '../../../shared/components/locality-card/locality-card.component';
+import { HierarchyBreadcrumbComponent } from '../../../shared/components/hierarchy-breadcrumb/hierarchy-breadcrumb.component';
 
 interface PopularRoute {
   from: string;
@@ -11,26 +15,36 @@ interface PopularRoute {
   emoji: string;
 }
 
+interface SelectedLocation {
+  type: 'locality' | 'anchor' | 'bus_stop';
+  name: string;
+  hierarchy?: string;
+  coords: { lat: number; lng: number };
+  locality?: Locality;
+  anchor?: Anchor;
+}
+
 @Component({
   selector: 'app-home-along',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LocalityCardComponent, HierarchyBreadcrumbComponent],
   templateUrl: './home-along.component.html',
   styleUrls: ['./home-along.component.scss']
 })
 export class HomeAlongComponent implements OnInit {
-  // Location state
-  fromLocation: string = '';
-  toLocation: string = '';
-  fromCoords: { lat: number; lng: number } | null = null;
-  toCoords: { lat: number; lng: number } | null = null;
+  // Location state (ALONG Framework)
+  fromLocation: SelectedLocation | null = null;
+  toLocation: SelectedLocation | null = null;
+  fromInput: string = '';
+  toInput: string = '';
 
   // UI state
   isDetectingLocation = false;
   locationError: string = '';
-  searchResults: any[] = [];
+  searchResults: LocalitySearchResult[] = [];
   showSearchResults = false;
   activeField: 'from' | 'to' | null = null;
+  isSearching = false;
 
   // Popular routes
   popularRoutes: PopularRoute[] = [
@@ -44,7 +58,8 @@ export class HomeAlongComponent implements OnInit {
   constructor(
     private router: Router,
     private geocodingService: GeocodingService,
-    private busStopService: BusStopService
+    private busStopService: BusStopService,
+    private localityService: LocalityService
   ) { }
 
   ngOnInit() {
@@ -60,7 +75,7 @@ export class HomeAlongComponent implements OnInit {
 
     this.isDetectingLocation = true;
     this.locationError = '';
-    this.fromLocation = '📍 Detecting your location...';
+    this.fromInput = '📍 Detecting your location...';
 
     try {
       if (!navigator.geolocation) {
@@ -78,14 +93,26 @@ export class HomeAlongComponent implements OnInit {
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
 
-      this.fromCoords = { lat, lng };
-      this.fromLocation = `📍 Your Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+      // Create SelectedLocation object
+      const detectedLocation: SelectedLocation = {
+        type: 'bus_stop',
+        name: `Your Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`,
+        coords: { lat, lng }
+      };
+
+      this.fromLocation = detectedLocation;
+      this.fromInput = detectedLocation.name;
 
       // Try to get address name
       this.geocodingService.reverseGeocode(lat, lng).subscribe({
         next: (result) => {
           if (result && (result.name || result.area)) {
-            this.fromLocation = `📍 ${result.name || result.area}`;
+            const locationName = `📍 ${result.name || result.area}`;
+            this.fromLocation = {
+              ...detectedLocation,
+              name: locationName
+            };
+            this.fromInput = locationName;
           }
         },
         error: () => {
@@ -106,14 +133,14 @@ export class HomeAlongComponent implements OnInit {
         this.locationError = 'Could not detect location. Please enter manually.';
       }
 
-      this.fromLocation = '';
+      this.fromInput = '';
     } finally {
       this.isDetectingLocation = false;
     }
   }
 
   /**
-   * Search for landmarks/locations
+   * Search for localities, anchors, and landmarks (ALONG Framework)
    */
   onSearchInput(field: 'from' | 'to', query: string) {
     this.activeField = field;
@@ -124,35 +151,61 @@ export class HomeAlongComponent implements OnInit {
       return;
     }
 
-    // Search bus stops/landmarks
-    this.busStopService.searchStops({ search: query, limit: 10 }).subscribe({
+    this.isSearching = true;
+
+    // Search localities first (ALONG Framework)
+    this.localityService.search(query).subscribe({
       next: (results) => {
         this.searchResults = results;
         this.showSearchResults = true;
+        this.isSearching = false;
       },
       error: (error) => {
-        console.error('Search error:', error);
-        this.searchResults = [];
+        console.error('Locality search error:', error);
+        // Fallback to bus stop search
+        this.busStopService.searchStops({ search: query, limit: 10 }).subscribe({
+          next: (busStops) => {
+            this.searchResults = busStops.map(stop => ({
+              type: 'bus_stop' as const,
+              id: typeof stop.id === 'number' ? stop.id : parseInt(stop.id as string, 10),
+              name: stop.name,
+              hierarchy: stop.city || '',
+              latitude: stop.latitude,
+              longitude: stop.longitude
+            }));
+            this.showSearchResults = true;
+          },
+          error: () => {
+            this.searchResults = [];
+          }
+        });
+        this.isSearching = false;
       }
     });
   }
 
   /**
-   * Select a search result
+   * Select a search result (ALONG Framework)
    */
-  selectLocation(result: any) {
+  selectLocation(result: LocalitySearchResult) {
+    const selected: SelectedLocation = {
+      type: result.type as any,
+      name: result.name,
+      hierarchy: result.hierarchy,
+      coords: {
+        lat: result.latitude,
+        lng: result.longitude
+      },
+      locality: result.locality,
+      anchor: result.anchor
+    };
+
     if (this.activeField === 'from') {
-      this.fromLocation = result.name;
-      this.fromCoords = {
-        lat: result.latitude,
-        lng: result.longitude
-      };
+      this.fromLocation = selected;
+      this.fromInput = result.name;
     } else if (this.activeField === 'to') {
-      this.toLocation = result.name;
-      this.toCoords = {
-        lat: result.latitude,
-        lng: result.longitude
-      };
+      this.toLocation = selected;
+      this.toInput = result.name;
     }
 
     this.showSearchResults = false;
@@ -160,30 +213,44 @@ export class HomeAlongComponent implements OnInit {
   }
 
   /**
-   * Select a popular route
+   * Select a popular route (ALONG Framework)
    */
   selectPopularRoute(route: PopularRoute) {
-    this.fromLocation = route.from;
-    this.toLocation = route.to;
+    this.fromInput = route.from;
+    this.toInput = route.to;
 
-    // Search for coordinates
-    this.busStopService.searchStops({ search: route.from, limit: 1 }).subscribe({
+    // Search for localities/anchors
+    this.localityService.search(route.from).subscribe({
       next: (results) => {
         if (results.length > 0) {
-          this.fromCoords = {
-            lat: results[0].latitude,
-            lng: results[0].longitude
+          this.fromLocation = {
+            type: results[0].type as any,
+            name: results[0].name,
+            hierarchy: results[0].hierarchy,
+            coords: {
+              lat: results[0].latitude,
+              lng: results[0].longitude
+            },
+            locality: results[0].locality,
+            anchor: results[0].anchor
           };
         }
       }
     });
 
-    this.busStopService.searchStops({ search: route.to, limit: 1 }).subscribe({
+    this.localityService.search(route.to).subscribe({
       next: (results) => {
         if (results.length > 0) {
-          this.toCoords = {
-            lat: results[0].latitude,
-            lng: results[0].longitude
+          this.toLocation = {
+            type: results[0].type as any,
+            name: results[0].name,
+            hierarchy: results[0].hierarchy,
+            coords: {
+              lat: results[0].latitude,
+              lng: results[0].longitude
+            },
+            locality: results[0].locality,
+            anchor: results[0].anchor
           };
         }
       }
@@ -191,7 +258,7 @@ export class HomeAlongComponent implements OnInit {
   }
 
   /**
-   * Find route
+   * Find route (ALONG Framework)
    */
   findRoute() {
     if (!this.fromLocation || !this.toLocation) {
@@ -199,20 +266,19 @@ export class HomeAlongComponent implements OnInit {
       return;
     }
 
-    if (!this.fromCoords || !this.toCoords) {
-      alert('Please select valid locations from the search results');
-      return;
-    }
-
-    // Navigate to route display with query params
-    this.router.navigate(['/trip-planner'], {
+    // Navigate to boarding inference or route display
+    this.router.navigate(['/boarding-inference'], {
       queryParams: {
-        fromLat: this.fromCoords.lat,
-        fromLng: this.fromCoords.lng,
-        fromName: this.fromLocation,
-        toLat: this.toCoords.lat,
-        toLng: this.toCoords.lng,
-        toName: this.toLocation
+        fromLat: this.fromLocation.coords.lat,
+        fromLng: this.fromLocation.coords.lng,
+        fromName: this.fromLocation.name,
+        fromHierarchy: this.fromLocation.hierarchy,
+        fromType: this.fromLocation.type,
+        toLat: this.toLocation.coords.lat,
+        toLng: this.toLocation.coords.lng,
+        toName: this.toLocation.name,
+        toHierarchy: this.toLocation.hierarchy,
+        toType: this.toLocation.type
       }
     });
   }
@@ -222,11 +288,24 @@ export class HomeAlongComponent implements OnInit {
    */
   clearField(field: 'from' | 'to') {
     if (field === 'from') {
-      this.fromLocation = '';
-      this.fromCoords = null;
+      this.fromLocation = null;
+      this.fromInput = '';
     } else {
-      this.toLocation = '';
-      this.toCoords = null;
+      this.toLocation = null;
+      this.toInput = '';
     }
+  }
+
+  /**
+   * Get type icon for search results
+   */
+  getTypeIcon(type: string): string {
+    const icons = {
+      'locality': '🏘️',
+      'anchor': '📍',
+      'micro_node': '🎯',
+      'bus_stop': '🚏'
+    };
+    return icons[type as keyof typeof icons] || '📍';
   }
 }

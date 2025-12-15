@@ -19,50 +19,45 @@
         <div class="location-field">
             <label class="field-label">📍 FROM</label>
             <div class="input-wrapper">
-                <input type="text" class="location-input" [(ngModel)]="fromLocation"
-                    (input)="onSearchInput('from', fromLocation)" placeholder="Your Location"
-                    [class.has-value]="fromLocation" />
-                <button *ngIf="!fromLocation && !isDetectingLocation" class="detect-btn" (click)="detectLocation()"
+                <input type="text" class="location-input" [(ngModel)]="fromInput"
+                    (input)="onSearchInput('from', fromInput)" placeholder="Your Location"
+                    [class.has-value]="fromInput" />
+                <button *ngIf="!fromInput && !isDetectingLocation" class="detect-btn" (click)="detectLocation()"
                     type="button">
                     🎯 Use My Location
                 </button>
-                <button *ngIf="fromLocation" class="clear-btn" (click)="clearField('from')" type="button">
+                <button *ngIf="fromInput" class="clear-btn" (click)="clearField('from')" type="button">
                     ×
                 </button>
                 <div class="loading-spinner" *ngIf="isDetectingLocation">
                     <div class="spinner"></div>
                 </div>
             </div>
-            <p class="field-hint" *ngIf="!fromLocation">e.g., "Efab Estate", "Lokogoma"</p>
+            <p class="field-hint" *ngIf="!fromInput">e.g., "Efab Estate", "Lokogoma"</p>
         </div>
 
         <!-- TO Field -->
         <div class="location-field">
             <label class="field-label">📍 TO</label>
             <div class="input-wrapper">
-                <input type="text" class="location-input" [(ngModel)]="toLocation"
-                    (input)="onSearchInput('to', toLocation)" placeholder="Search landmark"
-                    [class.has-value]="toLocation" />
-                <button *ngIf="toLocation" class="clear-btn" (click)="clearField('to')" type="button">
+                <input type="text" class="location-input" [(ngModel)]="toInput" (input)="onSearchInput('to', toInput)"
+                    placeholder="Search landmark" [class.has-value]="toInput" />
+                <button *ngIf="toInput" class="clear-btn" (click)="clearField('to')" type="button">
                     ×
                 </button>
             </div>
-            <p class="field-hint" *ngIf="!toLocation">e.g., "Berger", "Wuse", "After Shoprite"</p>
+            <p class="field-hint" *ngIf="!toInput">e.g., "Berger", "Wuse", "After Shoprite"</p>
         </div>
 
-        <!-- Search Results Dropdown -->
+        <!-- Search Results Dropdown (ALONG Framework) -->
         <div class="search-results" *ngIf="showSearchResults && searchResults.length > 0">
             <div class="search-result-item" *ngFor="let result of searchResults" (click)="selectLocation(result)">
-                <div class="result-icon">📍</div>
+                <div class="result-icon">{{ getTypeIcon(result.type) }}</div>
                 <div class="result-info">
                     <div class="result-name">{{ result.name }}</div>
                     <div class="result-meta">
-                        <span *ngIf="result.area">{{ result.area }}</span>
-                        <span class="badge badge-verified" *ngIf="result.verificationStatus === 'verified'">⭐
-                            Verified</span>
-                    </div>
-                    <div class="result-local-names" *ngIf="result.localNames && result.localNames.length > 0">
-                        Also known as: {{ result.localNames.join(', ') }}
+                        <span class="result-hierarchy">{{ result.hierarchy }}</span>
+                        <span class="result-type-badge">{{ result.type | titlecase }}</span>
                     </div>
                 </div>
             </div>

@@ -82,7 +82,7 @@ export interface LocalityHierarchy {
  * Search Result - Unified search response
  */
 export interface LocalitySearchResult {
-    type: 'locality' | 'anchor' | 'micro_node';
+    type: 'locality' | 'anchor' | 'micro_node' | 'bus_stop';
     id: number;
     name: string;
     hierarchy: string;  // "Lokogoma → Efab Estate Axis → Efab Gate"
