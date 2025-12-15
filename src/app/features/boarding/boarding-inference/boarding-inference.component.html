@@ -7,7 +7,7 @@
         <h1 class="page-title">Where to Board?</h1>
     </div>
 
-    <!-- Current Location -->
+    <!-- Current Location (ALONG Framework) -->
     <div class="current-location-section">
         <div class="location-icon">📍</div>
         <div class="location-info">
@@ -15,6 +15,11 @@
             <div class="location-name">{{ currentLocation?.name || 'Your Location' }}</div>
         </div>
     </div>
+
+    <!-- Hierarchy Breadcrumb (ALONG Framework) -->
+    <app-hierarchy-breadcrumb *ngIf="currentLocation?.hierarchy" [area]="getAreaFromHierarchy()"
+        [locality]="getLocalityFromHierarchy()" [anchor]="getAnchorFromHierarchy()">
+    </app-hierarchy-breadcrumb>
 
     <!-- Loading State -->
     <div class="loading-state" *ngIf="isLoading">

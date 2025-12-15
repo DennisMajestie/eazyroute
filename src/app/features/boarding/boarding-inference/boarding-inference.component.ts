@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { MicroPositionCardComponent } from '../../../shared/components/micro-position-card/micro-position-card.component';
+import { HierarchyBreadcrumbComponent } from '../../../shared/components/hierarchy-breadcrumb/hierarchy-breadcrumb.component';
+import { LocalityService } from '../../../core/services/locality.service';
+import { MicroNode } from '../../../models/locality.model';
 
 interface BoardingPoint {
     anchor: {
@@ -17,19 +21,20 @@ interface BoardingPoint {
     walkingDistance: number;
     boardingProbability: number;
     estimatedWalkTime: number;
+    microNode?: MicroNode;  // ALONG Framework
 }
 
 @Component({
     selector: 'app-boarding-inference',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, MicroPositionCardComponent, HierarchyBreadcrumbComponent],
     templateUrl: './boarding-inference.component.html',
     styleUrls: ['./boarding-inference.component.scss']
 })
 export class BoardingInferenceComponent implements OnInit {
-    // Location data
-    currentLocation: { lat: number; lng: number; name?: string } | null = null;
-    destination: { lat: number; lng: number; name?: string } | null = null;
+    // Location data (ALONG Framework)
+    currentLocation: { lat: number; lng: number; name?: string; hierarchy?: string; type?: string } | null = null;
+    destination: { lat: number; lng: number; name?: string; hierarchy?: string; type?: string } | null = null;
 
     // Boarding points
     boardingPoints: BoardingPoint[] = [];
@@ -42,17 +47,20 @@ export class BoardingInferenceComponent implements OnInit {
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private http: HttpClient
+        private http: HttpClient,
+        private localityService: LocalityService
     ) { }
 
     ngOnInit() {
-        // Get location from query params
+        // Get location from query params (ALONG Framework)
         this.route.queryParams.subscribe(params => {
             if (params['fromLat'] && params['fromLng']) {
                 this.currentLocation = {
                     lat: parseFloat(params['fromLat']),
                     lng: parseFloat(params['fromLng']),
-                    name: params['fromName'] || 'Your Location'
+                    name: params['fromName'] || 'Your Location',
+                    hierarchy: params['fromHierarchy'],
+                    type: params['fromType']
                 };
             }
 
@@ -60,7 +68,9 @@ export class BoardingInferenceComponent implements OnInit {
                 this.destination = {
                     lat: parseFloat(params['toLat']),
                     lng: parseFloat(params['toLng']),
-                    name: params['toName'] || 'Destination'
+                    name: params['toName'] || 'Destination',
+                    hierarchy: params['toHierarchy'],
+                    type: params['toType']
                 };
             }
 
@@ -164,6 +174,33 @@ export class BoardingInferenceComponent implements OnInit {
                 toName: this.destination.name
             }
         });
+    }
+
+    /**
+     * Get area from hierarchy string (ALONG Framework)
+     */
+    getAreaFromHierarchy(): string | undefined {
+        if (!this.currentLocation?.hierarchy) return undefined;
+        const parts = this.currentLocation.hierarchy.split(' → ');
+        return parts[0];
+    }
+
+    /**
+     * Get locality from hierarchy string (ALONG Framework)
+     */
+    getLocalityFromHierarchy(): string | undefined {
+        if (!this.currentLocation?.hierarchy) return undefined;
+        const parts = this.currentLocation.hierarchy.split(' → ');
+        return parts[1];
+    }
+
+    /**
+     * Get anchor from hierarchy string (ALONG Framework)
+     */
+    getAnchorFromHierarchy(): string | undefined {
+        if (!this.currentLocation?.hierarchy) return undefined;
+        const parts = this.currentLocation.hierarchy.split(' → ');
+        return parts[2];
     }
 
     /**
