@@ -1,0 +1,327 @@
+/* ============================================
+   BOARDING INFERENCE - WHERE TO BOARD?
+   Nigerian-centric design
+   ============================================ */
+
+.boarding-inference-container {
+  min-height: 100vh;
+  background-color: var(--bg-secondary);
+  padding-bottom: var(--space-20);
+}
+
+/* ==================== HEADER ==================== */
+
+.boarding-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  padding: var(--space-4);
+  color: white;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.back-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: var(--font-extrabold);
+  margin: 0;
+  flex: 1;
+}
+
+/* ==================== CURRENT LOCATION ==================== */
+
+.current-location-section {
+  background-color: white;
+  padding: var(--space-6);
+  margin: var(--space-4);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.location-icon {
+  font-size: var(--text-4xl);
+}
+
+.location-info {
+  flex: 1;
+}
+
+.location-label {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+}
+
+.location-name {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+/* ==================== LOADING STATE ==================== */
+
+.loading-state {
+  text-align: center;
+  padding: var(--space-16) var(--space-4);
+}
+
+.spinner-large {
+  width: 64px;
+  height: 64px;
+  border: 6px solid rgba(var(--primary-rgb), 0.2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto var(--space-4);
+}
+
+.loading-state p {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+}
+
+/* ==================== ERROR STATE ==================== */
+
+.error-state {
+  text-align: center;
+  padding: var(--space-16) var(--space-4);
+}
+
+.error-icon {
+  font-size: var(--text-5xl);
+  margin-bottom: var(--space-4);
+}
+
+.error-message {
+  font-size: var(--text-lg);
+  color: var(--error);
+  margin-bottom: var(--space-6);
+}
+
+/* ==================== BOARDING POINTS ==================== */
+
+.boarding-points-section {
+  padding: 0 var(--space-4);
+}
+
+.section-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+/* ==================== BOARDING CARD ==================== */
+
+.boarding-card {
+  background-color: white;
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-4);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+}
+
+.boarding-card:hover {
+  box-shadow: var(--shadow-xl);
+  transform: translateY(-4px);
+}
+
+/* Best Option Styling */
+.boarding-card.best-option {
+  border: 3px solid var(--accent);
+  background: linear-gradient(135deg, #FFFBF0 0%, white 100%);
+}
+
+.best-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--accent);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-6);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-extrabold);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Alternative Option Styling */
+.boarding-card.alternative-option {
+  border: 2px solid var(--border);
+}
+
+/* ==================== CARD CONTENT ==================== */
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.point-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.point-icon {
+  font-size: var(--text-4xl);
+  flex-shrink: 0;
+}
+
+.point-info {
+  flex: 1;
+}
+
+.point-name {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1);
+}
+
+.local-names {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+/* ==================== POINT DETAILS ==================== */
+
+.point-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+}
+
+.detail-icon {
+  font-size: var(--text-2xl);
+}
+
+.detail-text {
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+}
+
+.probability-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-lg);
+}
+
+.probability-text {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* ==================== MICRO INSTRUCTIONS ==================== */
+
+.micro-instructions {
+  background-color: rgba(var(--accent), 0.1);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--accent);
+  display: flex;
+  gap: var(--space-3);
+}
+
+.instructions-icon {
+  font-size: var(--text-2xl);
+  flex-shrink: 0;
+}
+
+.instructions-text {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  font-style: italic;
+  line-height: var(--leading-relaxed);
+}
+
+/* ==================== SHOW MAP BUTTON ==================== */
+
+.show-map-btn {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+/* ==================== ALTERNATIVE OPTIONS ==================== */
+
+.alternative-options {
+  margin-top: var(--space-8);
+}
+
+.alternatives-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+/* ==================== EMPTY STATE ==================== */
+
+.empty-state {
+  text-align: center;
+  padding: var(--space-16) var(--space-4);
+}
+
+.empty-icon {
+  font-size: var(--text-5xl);
+  margin-bottom: var(--space-4);
+}
+
+.empty-state h3 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state p {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-6);
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: var(--text-2xl);
+  }
+  
+  .point-name {
+    font-size: var(--text-lg);
+  }
+}

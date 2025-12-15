@@ -1,0 +1,175 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment';
+
+interface BoardingPoint {
+    anchor: {
+        name: string;
+        localNames: string[];
+        type: string;
+        transportModes: string[];
+        microInstructions?: string;
+        latitude: number;
+        longitude: number;
+    };
+    walkingDistance: number;
+    boardingProbability: number;
+    estimatedWalkTime: number;
+}
+
+@Component({
+    selector: 'app-boarding-inference',
+    standalone: true,
+    imports: [CommonModule],
+    templateUrl: './boarding-inference.component.html',
+    styleUrls: ['./boarding-inference.component.scss']
+})
+export class BoardingInferenceComponent implements OnInit {
+    // Location data
+    currentLocation: { lat: number; lng: number; name?: string } | null = null;
+    destination: { lat: number; lng: number; name?: string } | null = null;
+
+    // Boarding points
+    boardingPoints: BoardingPoint[] = [];
+    bestOption: BoardingPoint | null = null;
+
+    // UI state
+    isLoading = false;
+    error: string = '';
+
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+        private http: HttpClient
+    ) { }
+
+    ngOnInit() {
+        // Get location from query params
+        this.route.queryParams.subscribe(params => {
+            if (params['fromLat'] && params['fromLng']) {
+                this.currentLocation = {
+                    lat: parseFloat(params['fromLat']),
+                    lng: parseFloat(params['fromLng']),
+                    name: params['fromName'] || 'Your Location'
+                };
+            }
+
+            if (params['toLat'] && params['toLng']) {
+                this.destination = {
+                    lat: parseFloat(params['toLat']),
+                    lng: parseFloat(params['toLng']),
+                    name: params['toName'] || 'Destination'
+                };
+            }
+
+            if (this.currentLocation) {
+                this.inferBoardingPoints();
+            }
+        });
+    }
+
+    /**
+     * Call ALONG API to infer boarding points
+     */
+    inferBoardingPoints() {
+        if (!this.currentLocation) return;
+
+        this.isLoading = true;
+        this.error = '';
+
+        const url = `${environment.apiUrl}/along/infer-boarding`;
+        const params = {
+            latitude: this.currentLocation.lat.toString(),
+            longitude: this.currentLocation.lng.toString(),
+            maxWalkingDistance: '500' // 500 meters
+        };
+
+        this.http.get<{ success: boolean; data: BoardingPoint[] }>(url, { params })
+            .subscribe({
+                next: (response) => {
+                    if (response.success && response.data) {
+                        this.boardingPoints = response.data;
+
+                        // Sort by boarding probability (highest first)
+                        this.boardingPoints.sort((a, b) => b.boardingProbability - a.boardingProbability);
+
+                        // Set best option (highest probability)
+                        if (this.boardingPoints.length > 0) {
+                            this.bestOption = this.boardingPoints[0];
+                        }
+                    }
+                    this.isLoading = false;
+                },
+                error: (error) => {
+                    console.error('Boarding inference error:', error);
+                    this.error = 'Could not find boarding points. Please try again.';
+                    this.isLoading = false;
+                }
+            });
+    }
+
+    /**
+     * Get transport mode emoji
+     */
+    getTransportModeEmoji(mode: string): string {
+        const emojiMap: { [key: string]: string } = {
+            'keke': '🛺',
+            'okada': '🏍️',
+            'cab': '🚕',
+            'taxi': '🚕',
+            'bus': '🚌',
+            'walking': '🚶'
+        };
+        return emojiMap[mode.toLowerCase()] || '🚏';
+    }
+
+    /**
+     * Get probability stars
+     */
+    getProbabilityStars(probability: number): string {
+        const starCount = Math.round(probability * 5);
+        return '⭐'.repeat(starCount);
+    }
+
+    /**
+     * Show on map
+     */
+    showOnMap(point: BoardingPoint) {
+        // Navigate to map view with this point
+        this.router.navigate(['/map'], {
+            queryParams: {
+                lat: point.anchor.latitude,
+                lng: point.anchor.longitude,
+                name: point.anchor.name
+            }
+        });
+    }
+
+    /**
+     * Select boarding point and continue to route
+     */
+    selectBoardingPoint(point: BoardingPoint) {
+        if (!this.destination) return;
+
+        // Navigate to route display with boarding point as new start
+        this.router.navigate(['/route-display'], {
+            queryParams: {
+                fromLat: point.anchor.latitude,
+                fromLng: point.anchor.longitude,
+                fromName: point.anchor.name,
+                toLat: this.destination.lat,
+                toLng: this.destination.lng,
+                toName: this.destination.name
+            }
+        });
+    }
+
+    /**
+     * Go back
+     */
+    goBack() {
+        this.router.navigate(['/home']);
+    }
+}
