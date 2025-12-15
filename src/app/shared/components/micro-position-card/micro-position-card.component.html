@@ -1,0 +1,51 @@
+<div class="micro-position-card" (click)="onSelect()" [class.selectable]="selectable">
+    <div class="card-header">
+        <div class="position-icon">🎯</div>
+        <div class="position-info">
+            <h4 class="position-title">{{ microNode.relativePosition | titlecase }}</h4>
+            <p class="anchor-name" *ngIf="microNode.anchorName">
+                📍 {{ microNode.anchorName }}
+            </p>
+        </div>
+    </div>
+
+    <div class="card-content">
+        <!-- Micro Instructions -->
+        <div class="instructions-section">
+            <div class="instructions-icon">💡</div>
+            <p class="instructions-text">"{{ microNode.microInstructions }}"</p>
+        </div>
+
+        <!-- Distance from Anchor -->
+        <div class="distance-info">
+            <span class="distance-icon">📏</span>
+            <span class="distance-text">{{ microNode.distanceFromAnchor }}m from anchor</span>
+        </div>
+
+        <!-- Visibility Badge -->
+        <div class="badge-row">
+            <div class="status-badge" [style.background-color]="getVisibilityColor()">
+                <span class="badge-icon">{{ getVisibilityIcon() }}</span>
+                <span class="badge-text">{{ getVisibilityLabel() }}</span>
+            </div>
+        </div>
+
+        <!-- Safety Badge -->
+        <div class="badge-row">
+            <div class="status-badge" [style.background-color]="getSafetyColor()">
+                <span class="badge-icon">{{ getSafetyIcon() }}</span>
+                <span class="badge-text">{{ getSafetyLabel() }}</span>
+            </div>
+        </div>
+
+        <!-- Barriers -->
+        <div class="barriers-section" *ngIf="microNode.barriers && microNode.barriers.length > 0">
+            <div class="barriers-label">⚠️ Nearby Barriers:</div>
+            <div class="barriers-list">
+                <span *ngFor="let barrier of microNode.barriers" class="barrier-tag">
+                    {{ barrier | titlecase }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>

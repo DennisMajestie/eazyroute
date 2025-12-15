@@ -1,0 +1,153 @@
+/* ============================================
+   LOCALITY CARD - Nigerian Design
+   ============================================ */
+
+.locality-card {
+  background-color: white;
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-md);
+  transition: all var(--transition-base);
+  border: 2px solid transparent;
+}
+
+.locality-card.selectable {
+  cursor: pointer;
+}
+
+.locality-card.selectable:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary);
+}
+
+/* ==================== HEADER ==================== */
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 2px solid var(--border);
+}
+
+.locality-icon {
+  font-size: var(--text-4xl);
+  flex-shrink: 0;
+}
+
+.locality-info {
+  flex: 1;
+}
+
+.locality-name {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-1);
+  font-family: var(--font-display);
+}
+
+.locality-type {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* ==================== CONTENT ==================== */
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.section-label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+/* Vehicles */
+.vehicles-section {
+  margin-bottom: var(--space-2);
+}
+
+.vehicles-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.vehicle-badge {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+/* Info Row */
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+}
+
+.info-icon {
+  font-size: var(--text-2xl);
+}
+
+.info-text {
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+}
+
+/* Density Badge */
+.density-badge {
+  display: inline-block;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  color: white;
+}
+
+/* Peak Hours */
+.peak-hours-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.peak-badge {
+  background-color: rgba(var(--accent), 0.1);
+  color: var(--accent-dark);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+}
+
+/* Area Info */
+.area-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.area-icon {
+  font-size: var(--text-lg);
+}
+
+.area-name {
+  font-weight: var(--font-medium);
+}

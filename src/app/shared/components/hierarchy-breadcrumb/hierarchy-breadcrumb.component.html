@@ -1,0 +1,6 @@
+<div class="hierarchy-breadcrumb" *ngIf="breadcrumbItems.length > 0">
+    <span *ngFor="let item of breadcrumbItems; let last = last" class="breadcrumb-item">
+        <span class="item-text">{{ item }}</span>
+        <span *ngIf="!last" class="separator">→</span>
+    </span>
+</div>
