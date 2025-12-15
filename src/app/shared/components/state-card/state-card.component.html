@@ -1,0 +1,8 @@
+<div class="state-card" (click)="onSelect()" [class.selectable]="selectable">
+    <div class="state-icon">{{ getStateEmoji() }}</div>
+    <div class="state-info">
+        <h3 class="state-name">{{ territory.name }}</h3>
+        <p class="area-count">{{ territory.areaCount }} areas available</p>
+    </div>
+    <div class="arrow-icon" *ngIf="selectable">›</div>
+</div>

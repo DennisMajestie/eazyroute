@@ -1,0 +1,21 @@
+<div class="area-card" (click)="onSelect()" [class.selectable]="selectable">
+    <div class="area-header">
+        <h4 class="area-name">{{ area.name }}</h4>
+        <span class="type-badge" [style.background-color]="getTypeBadgeColor()">
+            {{ area.type || 'Mixed' | titlecase }}
+        </span>
+    </div>
+
+    <div class="area-location">
+        <span class="location-text">{{ area.territory }} • {{ area.lga }}</span>
+    </div>
+
+    <div class="area-stats">
+        <span class="stat-item" *ngIf="area.localityCount">
+            📍 {{ area.localityCount }} localities mapped
+        </span>
+        <span class="status-badge" [style.background-color]="getStatusBadgeColor()">
+            {{ area.status || 'Unmapped' | titlecase }}
+        </span>
+    </div>
+</div>
