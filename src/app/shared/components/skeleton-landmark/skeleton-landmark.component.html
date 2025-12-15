@@ -1,0 +1,14 @@
+<div class="skeleton-landmark-container">
+    <div *ngFor="let item of skeletonArray" class="skeleton-landmark" [class.pulse]="animation === 'pulse'"
+        [class.wave]="animation === 'wave'">
+
+        <!-- Icon Circle -->
+        <div class="skeleton-icon"></div>
+
+        <!-- Text Lines -->
+        <div class="skeleton-content">
+            <div class="skeleton-line skeleton-line-primary"></div>
+            <div class="skeleton-line skeleton-line-secondary"></div>
+        </div>
+    </div>
+</div>

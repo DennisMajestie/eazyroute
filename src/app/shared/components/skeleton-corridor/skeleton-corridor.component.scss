@@ -1,0 +1,113 @@
+/* ============================================
+   SKELETON CORRIDOR
+   ============================================ */
+
+.skeleton-corridor-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.skeleton-corridor {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--border);
+}
+
+/* Vehicle Icon */
+.skeleton-vehicle-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  flex-shrink: 0;
+}
+
+/* Route Content */
+.skeleton-route-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Route Line */
+.skeleton-route-line {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.skeleton-route-start,
+.skeleton-route-end {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+}
+
+.skeleton-route-path {
+  flex: 1;
+  height: 2px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+}
+
+/* Details */
+.skeleton-details {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.skeleton-time-badge,
+.skeleton-cost-badge {
+  width: 60px;
+  height: 24px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+}
+
+/* Pulse Animation */
+.pulse .skeleton-vehicle-icon,
+.pulse .skeleton-route-start,
+.pulse .skeleton-route-end,
+.pulse .skeleton-route-path,
+.pulse .skeleton-time-badge,
+.pulse .skeleton-cost-badge {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Wave Animation */
+.wave .skeleton-vehicle-icon,
+.wave .skeleton-route-start,
+.wave .skeleton-route-end,
+.wave .skeleton-route-path,
+.wave .skeleton-time-badge,
+.wave .skeleton-cost-badge {
+  animation: wave 1.5s linear infinite;
+}
+
+/* Shimmer Animation (left to right) */
+.shimmer .skeleton-route-path {
+  animation: shimmer-lr 1.5s linear infinite;
+}
+
+@keyframes shimmer-lr {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Stagger for multiple corridors */
+.skeleton-corridor:nth-child(2) * {
+  animation-delay: 0.3s;
+}

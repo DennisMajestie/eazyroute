@@ -1,0 +1,34 @@
+<div class="loading-progress-container">
+    <!-- Primary Message -->
+    <div class="loading-message">{{ message }}</div>
+
+    <!-- Secondary Message -->
+    <div class="loading-secondary" *ngIf="secondaryMessage">
+        {{ secondaryMessage }}
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-bar-container">
+        <div class="progress-bar" [style.width.%]="progress"></div>
+    </div>
+
+    <!-- Progress Steps -->
+    <div class="progress-steps" *ngIf="showSteps">
+        <div *ngFor="let step of steps; let i = index" class="progress-step" [class.complete]="isStepComplete(i)"
+            [class.active]="isStepActive(i)">
+            <div class="step-indicator">
+                <span *ngIf="isStepComplete(i)">✓</span>
+                <span *ngIf="isStepActive(i)">●</span>
+                <span *ngIf="!isStepComplete(i) && !isStepActive(i)">○</span>
+            </div>
+            <div class="step-label">{{ step }}</div>
+        </div>
+    </div>
+
+    <!-- Thinking Dots -->
+    <div class="thinking-dots">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+    </div>
+</div>

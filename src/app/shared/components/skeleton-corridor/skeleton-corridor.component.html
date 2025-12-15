@@ -1,0 +1,24 @@
+<div class="skeleton-corridor-container">
+    <div *ngFor="let item of skeletonArray" class="skeleton-corridor" [class.pulse]="animation === 'pulse'"
+        [class.wave]="animation === 'wave'" [class.shimmer]="animation === 'shimmer'">
+
+        <!-- Vehicle Icon -->
+        <div class="skeleton-vehicle-icon"></div>
+
+        <!-- Route Content -->
+        <div class="skeleton-route-content">
+            <!-- Route Line -->
+            <div class="skeleton-route-line">
+                <div class="skeleton-route-start"></div>
+                <div class="skeleton-route-path"></div>
+                <div class="skeleton-route-end"></div>
+            </div>
+
+            <!-- Details -->
+            <div class="skeleton-details">
+                <div class="skeleton-time-badge"></div>
+                <div class="skeleton-cost-badge"></div>
+            </div>
+        </div>
+    </div>
+</div>
