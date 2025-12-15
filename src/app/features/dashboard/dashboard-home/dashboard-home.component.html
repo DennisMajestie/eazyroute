@@ -3,8 +3,8 @@
     <header class="dashboard-header">
         <div class="header-content">
             <div class="greeting-section">
-                <h1 class="greeting">{{ greeting }}, {{ userName }}!👋</h1>
-                <p class="subtitle">Where are you heading today?</p>
+                <h1 class="greeting">{{ greeting }}, {{ userName }}! 👋</h1>
+                <p class="subtitle">Where you dey go today? 🇳🇬</p>
             </div>
 
             <!-- <div class="header-actions">
@@ -75,21 +75,21 @@
     <main class="dashboard-main">
         <!-- Quick Actions -->
         <section class="quick-actions">
-            <button class="action-card action-primary" routerLink="/trip-planner">
+            <button class="action-card action-primary" routerLink="/home">
                 <div class="action-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10" />
-                        <polyline points="12 6 12 12 16 14" />
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                        <polyline points="9 22 9 12 15 12 15 22" />
                     </svg>
                 </div>
                 <div class="action-text">
-                    <div class="action-title">Use Along</div>
-                    <div class="action-subtitle">Real-time tracking</div>
+                    <div class="action-title">Plan Trip</div>
+                    <div class="action-subtitle">Where you dey go?</div>
                 </div>
             </button>
 
-            <button class="action-card action-secondary" routerLink="/trip-planner">
+            <button class="action-card action-secondary" routerLink="/bus-stops">
                 <div class="action-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -99,7 +99,7 @@
                 </div>
                 <div class="action-text">
                     <div class="action-title">Nearby</div>
-                    <div class="action-subtitle">Bus stops to you</div>
+                    <div class="action-subtitle">Bus stops near you</div>
                 </div>
             </button>
 
@@ -113,7 +113,7 @@
                 </div>
                 <div class="action-text">
                     <div class="action-title">Saved</div>
-                    <div class="action-subtitle">Favorites routes</div>
+                    <div class="action-subtitle">Favorite routes</div>
                 </div>
             </button>
         </section>

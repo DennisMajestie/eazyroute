@@ -11,11 +11,11 @@
 
 // ===== HEADER =====
 .dashboard-header {
-  background: linear-gradient(135deg, #2563eb 0%, #9333ea 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   padding: 1.5rem 1rem 2rem;
   color: white;
   border-radius: 0 0 2rem 2rem;
-  box-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 10px 30px -10px rgba(var(--primary-rgb), 0.3);
 }
 
 .header-content {
@@ -208,7 +208,7 @@
 }
 
 .action-primary {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
   color: white;
 
   .action-icon {
@@ -217,7 +217,7 @@
 }
 
 .action-secondary {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
   color: white;
 
   .action-icon {
@@ -226,7 +226,7 @@
 }
 
 .action-tertiary {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
   color: white;
 
   .action-icon {
