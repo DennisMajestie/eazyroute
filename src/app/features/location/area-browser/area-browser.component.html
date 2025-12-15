@@ -1,1 +1,62 @@
-<p>area-browser works!</p>
+<div class="area-browser-container">
+    <!-- Header -->
+    <div class="browser-header">
+        <button class="back-btn" (click)="goBack()">
+            ← Back
+        </button>
+        <h1 class="page-title">{{ territory }}</h1>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-section" *ngIf="!isLoading">
+        <div class="stat-card">
+            <div class="stat-value">{{ areas.length }}</div>
+            <div class="stat-label">areas in {{ territory }}</div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-section">
+        <input type="text" class="search-input" [(ngModel)]="areaSearch" (input)="onSearchInput()"
+            placeholder="🔍 Search areas..." />
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <div class="spinner-large"></div>
+        <p>Loading areas...</p>
+    </div>
+
+    <!-- Content -->
+    <div class="browser-content" *ngIf="!isLoading">
+
+        <!-- Grouped Areas -->
+        <div class="area-groups" *ngIf="groupedAreas.length > 0">
+            <div class="area-group" *ngFor="let group of groupedAreas">
+                <h3 class="group-title">
+                    {{ getGroupIcon(group.type) }} {{ group.type | titlecase }} Districts
+                </h3>
+                <div class="areas-list">
+                    <app-area-card *ngFor="let area of group.areas" [area]="area" (selected)="onAreaSelected($event)">
+                    </app-area-card>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Results -->
+        <div class="no-results" *ngIf="areaSearch && filteredAreas.length === 0">
+            <div class="no-results-icon">🔍</div>
+            <p>No areas found matching "{{ areaSearch }}"</p>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!areaSearch && areas.length === 0">
+            <div class="empty-icon">📍</div>
+            <h3>No areas available</h3>
+            <p>This state doesn't have mapped areas yet</p>
+            <button class="btn btn-primary" (click)="goBack()">
+                Choose Another State
+            </button>
+        </div>
+    </div>
+</div>

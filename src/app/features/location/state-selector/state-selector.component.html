@@ -1,1 +1,58 @@
-<p>state-selector works!</p>
+<div class="state-selector-container">
+    <!-- Header -->
+    <div class="selector-header">
+        <h1 class="page-title">📍 Select Your State</h1>
+        <p class="page-subtitle">Choose your location to get started</p>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-section">
+        <input type="text" class="search-input" [(ngModel)]="searchQuery" (input)="onSearchInput()"
+            placeholder="🔍 Search states..." />
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <div class="spinner-large"></div>
+        <p>Loading states...</p>
+    </div>
+
+    <!-- Content -->
+    <div class="selector-content" *ngIf="!isLoading">
+
+        <!-- Popular States -->
+        <div class="popular-section" *ngIf="!searchQuery && popularTerritories.length > 0">
+            <h3 class="section-title">🔥 Popular States</h3>
+            <div class="states-list">
+                <app-state-card *ngFor="let territory of popularTerritories" [territory]="territory"
+                    (selected)="onStateSelected($event)">
+                </app-state-card>
+            </div>
+        </div>
+
+        <!-- All States -->
+        <div class="all-states-section">
+            <h3 class="section-title">
+                {{ searchQuery ? 'Search Results' : '📂 All States (37)' }}
+            </h3>
+            <div class="states-list">
+                <app-state-card *ngFor="let territory of filteredTerritories" [territory]="territory"
+                    (selected)="onStateSelected($event)">
+                </app-state-card>
+            </div>
+
+            <!-- No Results -->
+            <div class="no-results" *ngIf="searchQuery && filteredTerritories.length === 0">
+                <div class="no-results-icon">🔍</div>
+                <p>No states found matching "{{ searchQuery }}"</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skip Button -->
+    <div class="skip-section">
+        <button class="btn btn-outline" (click)="skipSelection()">
+            Skip for now
+        </button>
+    </div>
+</div>

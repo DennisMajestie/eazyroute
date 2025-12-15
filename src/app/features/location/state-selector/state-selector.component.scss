@@ -1,0 +1,122 @@
+/* ============================================
+   STATE SELECTOR
+   ============================================ */
+
+.state-selector-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  padding: var(--space-6);
+}
+
+/* Header */
+.selector-header {
+  text-align: center;
+  margin-bottom: var(--space-6);
+  color: white;
+}
+
+.page-title {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-display);
+}
+
+.page-subtitle {
+  font-size: var(--text-base);
+  opacity: 0.9;
+  margin: 0;
+}
+
+/* Search */
+.search-section {
+  margin-bottom: var(--space-6);
+}
+
+.search-input {
+  width: 100%;
+  padding: var(--space-4);
+  font-size: var(--text-base);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.95);
+  transition: all var(--transition-base);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: white;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/* Loading */
+.loading-state {
+  text-align: center;
+  padding: var(--space-8);
+  color: white;
+}
+
+/* Content */
+.selector-content {
+  background: white;
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-xl);
+}
+
+.section-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-display);
+}
+
+.popular-section {
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-6);
+  border-bottom: 2px solid var(--border);
+}
+
+.states-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* No Results */
+.no-results {
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.no-results-icon {
+  font-size: var(--text-5xl);
+  margin-bottom: var(--space-4);
+}
+
+/* Skip Section */
+.skip-section {
+  text-align: center;
+  margin-top: var(--space-6);
+}
+
+.skip-section .btn {
+  color: white;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.skip-section .btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .state-selector-container {
+    padding: var(--space-4);
+  }
+
+  .page-title {
+    font-size: var(--text-2xl);
+  }
+}

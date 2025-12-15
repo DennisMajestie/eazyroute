@@ -45,6 +45,14 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/home/home-along/home-along.component').then(m => m.HomeAlongComponent)
             },
             {
+                path: 'select-state',
+                loadComponent: () => import('./features/location/state-selector/state-selector.component').then(m => m.StateSelectorComponent)
+            },
+            {
+                path: 'browse-areas/:territory',
+                loadComponent: () => import('./features/location/area-browser/area-browser.component').then(m => m.AreaBrowserComponent)
+            },
+            {
                 path: 'boarding-inference',
                 loadComponent: () => import('./features/boarding/boarding-inference/boarding-inference.component').then(m => m.BoardingInferenceComponent)
             },
