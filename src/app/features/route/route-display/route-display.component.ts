@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
+import { HierarchyBreadcrumbComponent } from '../../../shared/components/hierarchy-breadcrumb/hierarchy-breadcrumb.component';
+import { LocalityService } from '../../../core/services/locality.service';
 
 interface RouteSegment {
     type: 'walk' | 'keke' | 'okada' | 'cab' | 'taxi' | 'bus' | 'transfer';
@@ -28,7 +30,7 @@ interface GeneratedRoute {
 @Component({
     selector: 'app-route-display',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, HierarchyBreadcrumbComponent],
     templateUrl: './route-display.component.html',
     styleUrls: ['./route-display.component.scss']
 })
