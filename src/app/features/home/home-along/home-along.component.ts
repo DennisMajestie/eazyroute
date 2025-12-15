@@ -5,10 +5,14 @@ import { Router } from '@angular/router';
 import { GeocodingService } from '../../../core/services/geocoding.service';
 import { BusStopService } from '../../../core/services/bus-stop.service';
 import { LocalityService } from '../../../core/services/locality.service';
+import { LoadingStateService } from '../../../core/services/loading-state.service';
 import { Locality, Anchor, LocalitySearchResult } from '../../../models/locality.model';
 import { Area } from '../../../models/area.model';
 import { LocalityCardComponent } from '../../../shared/components/locality-card/locality-card.component';
 import { HierarchyBreadcrumbComponent } from '../../../shared/components/hierarchy-breadcrumb/hierarchy-breadcrumb.component';
+import { SkeletonLandmarkComponent } from '../../../shared/components/skeleton-landmark/skeleton-landmark.component';
+import { LoadingProgressComponent } from '../../../shared/components/loading-progress/loading-progress.component';
+import { NIGERIAN_COPY } from '../../../shared/constants/nigerian-copy.constants';
 
 interface PopularRoute {
   from: string;
@@ -17,7 +21,7 @@ interface PopularRoute {
 }
 
 interface SelectedLocation {
-  type: 'locality' | 'anchor' | 'bus_stop';
+  type: 'locality' | 'anchor' | 'bus_stop' | 'micro_node';
   name: string;
   hierarchy?: string;
   coords: { lat: number; lng: number };
@@ -28,7 +32,14 @@ interface SelectedLocation {
 @Component({
   selector: 'app-home-along',
   standalone: true,
-  imports: [CommonModule, FormsModule, LocalityCardComponent, HierarchyBreadcrumbComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LocalityCardComponent,
+    HierarchyBreadcrumbComponent,
+    SkeletonLandmarkComponent,
+    LoadingProgressComponent
+  ],
   templateUrl: './home-along.component.html',
   styleUrls: ['./home-along.component.scss']
 })
@@ -59,11 +70,15 @@ export class HomeAlongComponent implements OnInit {
     { from: 'Lugbe', to: 'City Gate', emoji: '🚏' }
   ];
 
+  // Nigerian copy
+  readonly COPY = NIGERIAN_COPY;
+
   constructor(
     private router: Router,
     private geocodingService: GeocodingService,
     private busStopService: BusStopService,
-    private localityService: LocalityService
+    private localityService: LocalityService,
+    public loadingState: LoadingStateService
   ) { }
 
   ngOnInit() {
@@ -175,10 +190,13 @@ export class HomeAlongComponent implements OnInit {
     if (query.length < 2) {
       this.searchResults = [];
       this.showSearchResults = false;
+      this.loadingState.reset();
       return;
     }
 
     this.isSearching = true;
+    // Set initial loading state with Nigerian copy
+    this.loadingState.setInitialLoading(NIGERIAN_COPY.LOADING.SEARCHING);
 
     // Search localities first (ALONG Framework)
     this.localityService.search(query).subscribe({
@@ -186,6 +204,8 @@ export class HomeAlongComponent implements OnInit {
         this.searchResults = results;
         this.showSearchResults = true;
         this.isSearching = false;
+        // Set success state
+        this.loadingState.setSuccess(NIGERIAN_COPY.SUCCESS.READY);
       },
       error: (error) => {
         console.error('Locality search error:', error);
@@ -201,9 +221,11 @@ export class HomeAlongComponent implements OnInit {
               longitude: stop.longitude
             }));
             this.showSearchResults = true;
+            this.loadingState.setSuccess(NIGERIAN_COPY.SUCCESS.READY);
           },
           error: () => {
             this.searchResults = [];
+            this.loadingState.setHardFailure('data_unavailable', NIGERIAN_COPY.HARD_FAILURE.NO_ROUTE_YET);
           }
         });
         this.isSearching = false;
@@ -212,31 +234,30 @@ export class HomeAlongComponent implements OnInit {
   }
 
   /**
-   * Select a search result (ALONG Framework)
+   * Select a location from search results
    */
-  selectLocation(result: LocalitySearchResult) {
-    const selected: SelectedLocation = {
-      type: result.type as any,
+  selectLocation(field: 'from' | 'to', result: LocalitySearchResult) {
+    const selectedLocation: SelectedLocation = {
+      type: result.type,
       name: result.name,
       hierarchy: result.hierarchy,
       coords: {
         lat: result.latitude,
         lng: result.longitude
-      },
-      locality: result.locality,
-      anchor: result.anchor
+      }
     };
 
-    if (this.activeField === 'from') {
-      this.fromLocation = selected;
+    if (field === 'from') {
+      this.fromLocation = selectedLocation;
       this.fromInput = result.name;
-    } else if (this.activeField === 'to') {
-      this.toLocation = selected;
+    } else {
+      this.toLocation = selectedLocation;
       this.toInput = result.name;
     }
 
     this.showSearchResults = false;
     this.searchResults = [];
+    this.loadingState.reset();
   }
 
   /**

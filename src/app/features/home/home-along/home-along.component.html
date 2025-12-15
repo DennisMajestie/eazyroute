@@ -63,17 +63,37 @@
             <p class="field-hint" *ngIf="!toInput">e.g., "Berger", "Wuse", "After Shoprite"</p>
         </div>
 
-        <!-- Search Results Dropdown (ALONG Framework) -->
-        <div class="search-results" *ngIf="showSearchResults && searchResults.length > 0">
-            <div class="search-result-item" *ngFor="let result of searchResults" (click)="selectLocation(result)">
-                <div class="result-icon">{{ getTypeIcon(result.type) }}</div>
-                <div class="result-info">
-                    <div class="result-name">{{ result.name }}</div>
-                    <div class="result-meta">
-                        <span class="result-hierarchy">{{ result.hierarchy }}</span>
-                        <span class="result-type-badge">{{ result.type | titlecase }}</span>
+        <!-- Search Results -->
+        <div class="search-results" *ngIf="showSearchResults && activeField">
+
+            <!-- Loading State with Skeleton -->
+            <div *ngIf="loadingState.isLoading()">
+                <app-loading-progress [progress]="(loadingState.state$ | async)?.progress || 0"
+                    [message]="(loadingState.state$ | async)?.message || COPY.LOADING.SEARCHING">
+                </app-loading-progress>
+                <app-skeleton-landmark [count]="3" animation="wave"></app-skeleton-landmark>
+            </div>
+
+            <!-- Success State - Results -->
+            <div *ngIf="!loadingState.isLoading() && searchResults.length > 0" class="results-list">
+                <div *ngFor="let result of searchResults" class="result-item"
+                    (click)="selectLocation(activeField, result)">
+                    <div class="result-icon">{{ getTypeIcon(result.type) }}</div>
+                    <div class="result-info">
+                        <div class="result-name">{{ result.name }}</div>
+                        <div class="result-hierarchy" *ngIf="result.hierarchy">
+                            {{ result.hierarchy }}
+                        </div>
+                        <div class="result-type">{{ result.type }}</div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Hard Failure State - No Results -->
+            <div *ngIf="!loadingState.isLoading() && searchResults.length === 0" class="no-results">
+                <div class="no-results-icon">🔍</div>
+                <p>{{ COPY.HARD_FAILURE.NO_ROUTE_YET }}</p>
+                <p class="no-results-hint">{{ COPY.REASSURANCE.WORKING_ON_IT }}</p>
             </div>
         </div>
 
