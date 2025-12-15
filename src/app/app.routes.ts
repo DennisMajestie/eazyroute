@@ -49,6 +49,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/boarding/boarding-inference/boarding-inference.component').then(m => m.BoardingInferenceComponent)
             },
             {
+                path: 'route-display',
+                loadComponent: () => import('./features/route/route-display/route-display.component').then(m => m.RouteDisplayComponent)
+            },
+            {
                 path: 'dashboard',
                 loadChildren: () => import('./features/dashboard/dashboard.routes').then(m => m.DASHBOARD_ROUTES)
             },

@@ -1,0 +1,142 @@
+<div class="route-display-container">
+    <!-- Header -->
+    <div class="route-header">
+        <button class="back-btn" (click)="goBack()" type="button">
+            ← Back
+        </button>
+        <div class="route-title">
+            <h1 class="from-to">{{ route?.from }} → {{ route?.to }}</h1>
+        </div>
+    </div>
+
+    <!-- Route Summary Bar -->
+    <div class="route-summary" *ngIf="route">
+        <div class="summary-item">
+            <span class="summary-icon">⏱️</span>
+            <span class="summary-value">{{ route.totalTime }} min</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-item">
+            <span class="summary-icon">💰</span>
+            <span class="summary-value">₦{{ route.totalCost }}</span>
+        </div>
+        <div class="summary-divider"></div>
+        <div class="summary-item">
+            <span class="summary-icon">📏</span>
+            <span class="summary-value">{{ (route.totalDistance / 1000).toFixed(1) }}km</span>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <div class="spinner-large"></div>
+        <p>Generating your route...</p>
+    </div>
+
+    <!-- Error State -->
+    <div class="error-state" *ngIf="error && !isLoading">
+        <div class="error-icon">⚠️</div>
+        <p class="error-message">{{ error }}</p>
+        <button class="btn btn-primary" (click)="generateRoute()">
+            Try Again
+        </button>
+    </div>
+
+    <!-- Route Content -->
+    <div class="route-content" *ngIf="!isLoading && !error && route">
+
+        <!-- Map Placeholder -->
+        <div class="map-section">
+            <div class="map-placeholder">
+                🗺️ Interactive Map
+                <p class="map-hint">Shows route with landmarks</p>
+            </div>
+        </div>
+
+        <!-- Journey Steps -->
+        <div class="journey-section">
+            <h2 class="section-title">📋 Your Journey</h2>
+
+            <div class="journey-steps">
+                <div class="step-card" *ngFor="let segment of route.segments; let i = index"
+                    [class.expanded]="isSegmentExpanded(i)" (click)="toggleSegment(i)">
+
+                    <!-- Step Header -->
+                    <div class="step-header" [style.border-left-color]="getSegmentColor(segment.type)">
+                        <div class="step-number">{{ i + 1 }}️⃣</div>
+
+                        <div class="step-icon" [style.background-color]="getSegmentColor(segment.type)">
+                            {{ getSegmentEmoji(segment.type) }}
+                        </div>
+
+                        <div class="step-info">
+                            <div class="step-type">{{ segment.type | uppercase }}</div>
+                            <div class="step-details">
+                                <span *ngIf="segment.estimatedTime">{{ segment.estimatedTime }} min</span>
+                                <span *ngIf="segment.distance"> • {{ segment.distance }}m</span>
+                                <span *ngIf="segment.cost"> • ₦{{ segment.cost }}</span>
+                            </div>
+                        </div>
+
+                        <div class="expand-icon">
+                            {{ isSegmentExpanded(i) ? '▼' : '▶' }}
+                        </div>
+                    </div>
+
+                    <!-- Step Content (Expanded) -->
+                    <div class="step-content" *ngIf="isSegmentExpanded(i)">
+                        <div class="instruction-box">
+                            <p class="instruction-text">{{ segment.instruction }}</p>
+                        </div>
+
+                        <div class="stop-info" *ngIf="segment.fromStop || segment.toStop">
+                            <div class="stop-item" *ngIf="segment.fromStop">
+                                <span class="stop-label">📍 From:</span>
+                                <span class="stop-name">{{ segment.fromStop }}</span>
+                            </div>
+                            <div class="stop-item" *ngIf="segment.toStop">
+                                <span class="stop-label">📍 To:</span>
+                                <span class="stop-name">{{ segment.toStop }}</span>
+                            </div>
+                        </div>
+
+                        <div class="drop-instruction" *ngIf="segment.dropInstruction">
+                            <div class="drop-icon">💡</div>
+                            <div class="drop-text">"{{ segment.dropInstruction }}"</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="btn btn-primary btn-xl" (click)="startJourney()">
+                🚀 Start Journey
+            </button>
+            <button class="btn btn-secondary btn-lg" (click)="shareRoute()">
+                📤 Share via WhatsApp
+            </button>
+        </div>
+
+        <!-- Quick Instructions -->
+        <div class="quick-instructions">
+            <h3 class="instructions-title">📝 Quick Summary</h3>
+            <ol class="instructions-list">
+                <li *ngFor="let instruction of route.instructions">
+                    {{ instruction }}
+                </li>
+            </ol>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && !error && !route">
+        <div class="empty-icon">🗺️</div>
+        <h3>No route data</h3>
+        <p>Please start from the home screen</p>
+        <button class="btn btn-primary" (click)="goBack()">
+            Go to Home
+        </button>
+    </div>
+</div>

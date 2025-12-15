@@ -1,0 +1,377 @@
+/* ============================================
+   ROUTE DISPLAY - STEP-BY-STEP JOURNEY
+   Nigerian-centric design
+   ============================================ */
+
+.route-display-container {
+  min-height: 100vh;
+  background-color: var(--bg-secondary);
+  padding-bottom: var(--space-20);
+}
+
+/* ==================== HEADER ==================== */
+
+.route-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  padding: var(--space-4);
+  color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.back-btn {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  margin-bottom: var(--space-3);
+}
+
+.back-btn:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+.route-title {
+  text-align: center;
+}
+
+.from-to {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-extrabold);
+  margin: 0;
+}
+
+/* ==================== ROUTE SUMMARY BAR ==================== */
+
+.route-summary {
+  background-color: white;
+  padding: var(--space-4);
+  margin: var(--space-4);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.summary-icon {
+  font-size: var(--text-3xl);
+}
+
+.summary-value {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.summary-divider {
+  width: 1px;
+  height: 40px;
+  background-color: var(--border);
+}
+
+/* ==================== LOADING & ERROR STATES ==================== */
+
+.loading-state,
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: var(--space-16) var(--space-4);
+}
+
+.spinner-large {
+  width: 64px;
+  height: 64px;
+  border: 6px solid rgba(var(--primary-rgb), 0.2);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto var(--space-4);
+}
+
+.error-icon,
+.empty-icon {
+  font-size: var(--text-5xl);
+  margin-bottom: var(--space-4);
+}
+
+.error-message {
+  font-size: var(--text-lg);
+  color: var(--error);
+  margin-bottom: var(--space-6);
+}
+
+/* ==================== MAP SECTION ==================== */
+
+.map-section {
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.map-placeholder {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  border: 2px dashed var(--primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-16) var(--space-4);
+  text-align: center;
+  font-size: var(--text-4xl);
+  color: var(--primary);
+}
+
+.map-hint {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin-top: var(--space-2);
+}
+
+/* ==================== JOURNEY SECTION ==================== */
+
+.journey-section {
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.section-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.journey-steps {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ==================== STEP CARD ==================== */
+
+.step-card {
+  background-color: white;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.step-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.step-card.expanded {
+  box-shadow: var(--shadow-xl);
+}
+
+/* Step Header */
+.step-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-left: 6px solid var(--primary);
+}
+
+.step-number {
+  font-size: var(--text-3xl);
+  flex-shrink: 0;
+}
+
+.step-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-3xl);
+  color: white;
+  flex-shrink: 0;
+}
+
+.step-info {
+  flex: 1;
+}
+
+.step-type {
+  font-size: var(--text-lg);
+  font-weight: var(--font-extrabold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.step-details {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  font-weight: var(--font-medium);
+}
+
+.step-details span {
+  margin-right: var(--space-2);
+}
+
+.expand-icon {
+  font-size: var(--text-2xl);
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+/* Step Content (Expanded) */
+.step-content {
+  padding: 0 var(--space-4) var(--space-4);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.instruction-box {
+  background-color: var(--bg-secondary);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-3);
+}
+
+.instruction-text {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+.stop-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.stop-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+}
+
+.stop-label {
+  font-weight: var(--font-semibold);
+  color: var(--text-secondary);
+}
+
+.stop-name {
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+.drop-instruction {
+  background-color: rgba(var(--accent), 0.1);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  border-left: 4px solid var(--accent);
+  display: flex;
+  gap: var(--space-2);
+}
+
+.drop-icon {
+  font-size: var(--text-xl);
+  flex-shrink: 0;
+}
+
+.drop-text {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  font-style: italic;
+  line-height: var(--leading-relaxed);
+}
+
+/* ==================== ACTION BUTTONS ==================== */
+
+.action-buttons {
+  padding: 0 var(--space-4);
+  margin-bottom: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.action-buttons .btn {
+  width: 100%;
+}
+
+/* ==================== QUICK INSTRUCTIONS ==================== */
+
+.quick-instructions {
+  background-color: white;
+  padding: var(--space-6);
+  margin: 0 var(--space-4);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+}
+
+.instructions-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.instructions-list {
+  list-style-position: inside;
+  padding: 0;
+  margin: 0;
+}
+
+.instructions-list li {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--space-3);
+  padding-left: var(--space-2);
+}
+
+.instructions-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* ==================== RESPONSIVE ==================== */
+
+@media (max-width: 768px) {
+  .from-to {
+    font-size: var(--text-xl);
+  }
+  
+  .summary-value {
+    font-size: var(--text-base);
+  }
+  
+  .step-icon {
+    width: 48px;
+    height: 48px;
+    font-size: var(--text-2xl);
+  }
+  
+  .step-type {
+    font-size: var(--text-base);
+  }
+}
