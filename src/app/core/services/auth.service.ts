@@ -105,6 +105,10 @@ export class AuthService {
             .pipe(tap(response => this.handleAuth(response)));
     }
 
+    resendOTP(data: { email: string }): Observable<AuthResponse> {
+        return this.http.post<AuthResponse>(`${this.API_URL}/resend-otp`, data);
+    }
+
     login(credentials: LoginRequest): Observable<AuthResponse> {
         return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials)
             .pipe(tap(response => this.handleAuth(response)));

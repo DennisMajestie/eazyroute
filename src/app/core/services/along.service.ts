@@ -49,8 +49,8 @@ export class AlongService {
         };
 
         const payload = {
-            fromLocation: mapLocation(from),
-            toLocation: mapLocation(to)
+            from: mapLocation(from),
+            to: mapLocation(to)
         };
 
         return this.http.post<ApiResponse<AlongRoute>>(`${this.apiUrl}/generate-route`, payload);

@@ -191,16 +191,31 @@ export class OtpVerifyComponent implements OnInit {
     this.errorMessage = '';
     this.successMessage = '';
 
-    // ⬅️ You'll need to add a resendOTP method to AuthService
-    // For now, keep using ApiService or implement in AuthService
     const resendRequest = { email: this.email };
+    // ⬅️ Use AuthService instead
+    this.authService.resendOTP(resendRequest).subscribe({
+      next: (response) => {
+        this.isResending = false;
+        if (response.success) {
+          this.successMessage = 'Verification code sent successfully!';
+          this.code = ['', '', '', '', '', '']; // Clear previous code
+        } else {
+          this.errorMessage = response.message || 'Failed to resend code';
+        }
+      },
+      error: (error) => {
+        this.isResending = false;
+        console.error('❌ Resend OTP Error:', error);
 
-    // TODO: Implement authService.resendOTP()
-    // this.authService.resendOTP(resendRequest).subscribe({...});
-
-    // Temporary: You can keep this as is for now
-    this.isResending = false;
-    this.successMessage = 'Verification code sent!';
+        if (error.status === 429) {
+          this.errorMessage = 'Please wait before requesting another code';
+        } else if (error.status === 0) {
+          this.errorMessage = 'Cannot connect to server';
+        } else {
+          this.errorMessage = error.error?.message || 'Failed to resend code. Please try again.';
+        }
+      }
+    });
   }
 
   clearCode(): void {
