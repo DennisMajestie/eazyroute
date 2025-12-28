@@ -712,8 +712,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
             lng: this.currentUserLocation.lng
           },
           toLocation: {
-            lat: stop.latitude,
-            lng: stop.longitude
+            lat: stop.lat || stop.latitude,
+            lng: stop.lng || stop.longitude
           },
           fromName: 'Current Location',
           toName: stop.name
@@ -724,8 +724,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       this.router.navigate(['/trip-planner'], {
         queryParams: {
           to: stop.name,
-          lat: stop.latitude,
-          lng: stop.longitude
+          lat: stop.lat || stop.latitude,
+          lng: stop.lng || stop.longitude
         }
       });
     }
