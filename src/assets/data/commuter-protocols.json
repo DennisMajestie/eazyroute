@@ -1,0 +1,135 @@
+{
+    "hubs": {
+        "lokogoma-junction": {
+            "name": "Lokogoma Junction",
+            "localNames": [
+                "Lokogoma",
+                "Ebeano",
+                "Loko"
+            ],
+            "protocols": [
+                {
+                    "destination": "Area 1",
+                    "location": "Ebeano Supermarket Service Lane",
+                    "shout": "Area 1! Underbridge!",
+                    "price": {
+                        "min": 300,
+                        "max": 400
+                    },
+                    "mode": "taxi",
+                    "tip": "In the morning (7-9am), cars fill up in seconds. Wave down moving ones flashing their lights."
+                },
+                {
+                    "destination": "Wuse",
+                    "location": "Main Road Junction",
+                    "shout": "Wuse! Wuse Market!",
+                    "price": {
+                        "min": 400,
+                        "max": 500
+                    },
+                    "mode": "bus",
+                    "tip": "Buses are more frequent after 8am. Look for the big blue buses."
+                }
+            ]
+        },
+        "berger-junction": {
+            "name": "Berger Junction",
+            "localNames": [
+                "Berger",
+                "Utako Berger"
+            ],
+            "protocols": [
+                {
+                    "destination": "Jabi",
+                    "location": "Under the flyover",
+                    "shout": "Jabi! Jabi Park!",
+                    "price": {
+                        "min": 150,
+                        "max": 200
+                    },
+                    "mode": "keke",
+                    "tip": "Kekes here are fast but negotiate the price before boarding."
+                },
+                {
+                    "destination": "Maitama",
+                    "location": "Opposite the filling station",
+                    "shout": "Maitama! Maitama!",
+                    "price": {
+                        "min": 300,
+                        "max": 400
+                    },
+                    "mode": "taxi",
+                    "tip": "Painted taxis are safer at night. Avoid unmarked vehicles."
+                }
+            ]
+        },
+        "wuse-market": {
+            "name": "Wuse Market",
+            "localNames": [
+                "Wuse",
+                "Zone 5"
+            ],
+            "protocols": [
+                {
+                    "destination": "Garki",
+                    "location": "Gate 2 Exit",
+                    "shout": "Garki! Area 11!",
+                    "price": {
+                        "min": 200,
+                        "max": 300
+                    },
+                    "mode": "bus",
+                    "tip": "Buses leave when full. Be prepared to wait 10-15 minutes."
+                },
+                {
+                    "destination": "Nyanya",
+                    "location": "Main Gate Parking",
+                    "shout": "Nyanya! Maraba!",
+                    "price": {
+                        "min": 400,
+                        "max": 600
+                    },
+                    "mode": "bus",
+                    "tip": "These routes get crowded after 5pm. Consider leaving earlier."
+                }
+            ]
+        },
+        "area-1": {
+            "name": "Area 1 Roundabout",
+            "localNames": [
+                "Area 1",
+                "MKO",
+                "Abacha Barracks"
+            ],
+            "protocols": [
+                {
+                    "destination": "Kubwa",
+                    "location": "By the Total Filling Station",
+                    "shout": "Kubwa! Kubwa!",
+                    "price": {
+                        "min": 400,
+                        "max": 500
+                    },
+                    "mode": "bus",
+                    "tip": "Look for the green and white buses. They're more reliable."
+                },
+                {
+                    "destination": "Gwagwalada",
+                    "location": "Near the overhead bridge",
+                    "shout": "Gwagwa! Gwagwalada!",
+                    "price": {
+                        "min": 600,
+                        "max": 800
+                    },
+                    "mode": "bus",
+                    "tip": "Long journey, bring water. Buses leave every 30 minutes."
+                }
+            ]
+        }
+    },
+    "generalTips": [
+        "Always have small denominations (₦50, ₦100, ₦200) for transport.",
+        "Know your destination's local name - conductors may not recognize official names.",
+        "If unsure, ask other passengers waiting at the stop."
+    ]
+}

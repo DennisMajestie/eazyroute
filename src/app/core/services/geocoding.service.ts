@@ -54,6 +54,13 @@ export class GeocodingService {
     }
 
     /**
+     * Search Place (Alias for consistency)
+     */
+    searchPlace(query: string): Observable<GeocodingResult[]> {
+        return this.search(query);
+    }
+
+    /**
      * Reverse geocode - get location name from coordinates
      */
     reverseGeocode(latitude: number, longitude: number): Observable<GeocodingResult | null> {

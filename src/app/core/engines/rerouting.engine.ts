@@ -35,6 +35,9 @@ import {
   NOTIFICATION_SERVICE
 } from './adapters/engine-adapters.provider';
 import { RouteGenerationEngine } from './route-generation.engine';
+import { AlongService } from '../services/along.service';
+import { BusStop as CoreBusStop } from '../../models/bus-stop.model';
+import { firstValueFrom } from 'rxjs';
 
 // ═══════════════════════════════════════════════════════════════
 // LOCAL TYPES (specific to rerouting)
@@ -107,7 +110,8 @@ export class ReroutingEngine {
   constructor(
     @Inject(LOCATION_SERVICE) private locationService: ILocationService,
     @Inject(NOTIFICATION_SERVICE) private notificationService: INotificationService,
-    private routeGenerationEngine: RouteGenerationEngine
+    private routeGenerationEngine: RouteGenerationEngine,
+    private alongService: AlongService
   ) { }
 
   /**
@@ -304,6 +308,11 @@ export class ReroutingEngine {
    * GENERATE ALTERNATIVE ROUTE
    * ═══════════════════════════════════════════════════════════════
    */
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * GENERATE ALTERNATIVE ROUTE
+   * ═══════════════════════════════════════════════════════════════
+   */
   private async generateAlternativeRoute(
     tripState: TripState
   ): Promise<GeneratedRoute | null> {
@@ -316,34 +325,91 @@ export class ReroutingEngine {
 
       const destination = tripState.destinationLocation;
 
-      console.log('[Rerouting] Generating alternative route from current location');
+      console.log('[Rerouting] Generating alternative route from current location via AlongService');
+      console.log('[Rerouting] Current Location:', currentLocation);
+      console.log('[Rerouting] Destination:', destination);
 
-      // Use RouteGenerationEngine to generate new routes
-      const alternatives = await this.routeGenerationEngine.generateRoutes(
-        currentLocation,
-        destination,
-        3 // maxAlternatives
-      );
-
-      if (alternatives.length === 0) {
-        console.error('[Rerouting] No alternative routes found');
+      if (!this.isValidLocation(currentLocation) || !this.isValidLocation(destination)) {
+        console.error('[Rerouting] Invalid location data for reroute');
         return null;
       }
 
-      // Select best alternative (first one is usually optimal)
-      const newRoute = alternatives[0];
+      // Use AlongService for re-routing (supporting hybrid search)
+      const fromPayload = {
+        latitude: Number(currentLocation.latitude),
+        longitude: Number(currentLocation.longitude),
+        name: 'Current Location'
+      };
 
-      console.log('[Rerouting] Alternative route generated', {
-        segments: newRoute.segments.length,
-        totalTime: newRoute.totalTime,
-        totalCost: newRoute.totalCost
-      });
+      const toPayload = {
+        latitude: Number(destination.latitude),
+        longitude: Number(destination.longitude),
+        name: 'Destination'
+      };
 
-      return newRoute;
+      console.log('[Rerouting] Payload:', { from: fromPayload, to: toPayload });
+
+      const response = await firstValueFrom(this.alongService.generateRoute(fromPayload, toPayload));
+
+      if (response && response.success && response.data) {
+        const mappedRoute = this.mapAlongRouteToGeneratedRoute(response.data);
+        console.log('[Rerouting] Alternative route generated:', mappedRoute);
+        return mappedRoute;
+      } else {
+        console.warn('[Rerouting] AlongService returned no routes for reroute');
+      }
+
+      // Fallback to legacy if needed, or just return null
+      return null;
+
     } catch (error) {
       console.error('[Rerouting] Failed to generate alternative route:', error);
       return null;
     }
+  }
+
+  private mapAlongRouteToGeneratedRoute(alongRoute: any): GeneratedRoute {
+    // Map segments (AlongSegment -> RouteSegment)
+    const segments: RouteSegment[] = alongRoute.segments.map((seg: any, index: number) => {
+      return {
+        id: `seg-${index}-${Date.now()}`,
+        fromStop: {
+          id: 'reroute-from',
+          name: seg.fromStop || 'Current Location',
+          latitude: 0,
+          longitude: 0,
+          type: 'landmark'
+        } as any,
+        toStop: {
+          id: 'reroute-to',
+          name: seg.toStop || 'Waypoint',
+          latitude: 0,
+          longitude: 0,
+          type: 'landmark'
+        } as any,
+        distance: seg.distance,
+        estimatedTime: seg.estimatedTime,
+        mode: {
+          type: seg.type || seg.vehicleType || 'walk',
+          name: (seg.type || 'walk').toUpperCase(),
+          availabilityFactor: 1,
+          avgSpeedKmh: 0
+        } as any,
+        cost: seg.cost || 0,
+        instructions: seg.instruction
+      };
+    });
+
+    return {
+      id: `route-reroute-${Date.now()}`,
+      segments: segments,
+      totalDistance: alongRoute.totalDistance,
+      totalTime: alongRoute.totalTime,
+      totalCost: alongRoute.totalCost,
+      rankingScore: { shortest: 0, cheapest: 0, balanced: 100 },
+      generatedAt: new Date(),
+      strategy: 'balanced'
+    };
   }
 
   /**
@@ -505,8 +571,8 @@ export class ReroutingEngine {
       return false;
     }
 
-    // Severe deviations always trigger
-    if (severity === 'severe') {
+    // Severe deviations trigger after a small warm-up period (to avoid GPS glitch/init alerts)
+    if (severity === 'severe' && duration > 10) {
       return true;
     }
 
@@ -607,6 +673,14 @@ export class ReroutingEngine {
   private emitDeviationEvent(event: DeviationEvent): void {
     this.rerouteEventsSubject.next(event);
     console.log('[Rerouting] Event emitted:', event.type);
+  }
+
+  private isValidLocation(location: any): boolean {
+    return location &&
+      typeof location.latitude === 'number' &&
+      typeof location.longitude === 'number' &&
+      !isNaN(location.latitude) &&
+      !isNaN(location.longitude);
   }
 
   /**

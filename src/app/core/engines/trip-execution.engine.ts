@@ -45,8 +45,19 @@ import {
     providedIn: 'root'
 })
 export class TripExecutionEngine {
-    initializeTrip(currentTripState: TripState) {
-        throw new Error('Method not implemented.');
+    /**
+     * Initialize/Hydrate a trip (e.g., from Orchestrator)
+     */
+    async initializeTrip(tripState: TripState): Promise<void> {
+        console.log('[TripExecution] Initializing trip:', tripState.tripId);
+
+        // precise hydration of state
+        this.activeTripSubject.next(tripState);
+
+        // Start tracking
+        this.startLocationTracking(tripState.tripId);
+
+        console.log('[TripExecution] Trip initialized and tracking started');
     }
     // Configuration
     private config: EasyRouteConfig = DEFAULT_CONFIG;

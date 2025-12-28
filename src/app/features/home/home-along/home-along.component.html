@@ -24,6 +24,19 @@
     <!-- Main Content -->
     <div class="main-content">
 
+        <!-- Smart Boarding Card -->
+        <div class="smart-boarding-card" *ngIf="showSmartBoarding" (click)="findRoute()">
+            <div class="boarding-header">
+                <span class="boarding-icon">🧠</span>
+                <span class="boarding-title">Smart Boarding</span>
+            </div>
+            <p class="boarding-message">{{ smartBoardingMessage }}</p>
+            <div class="boarding-action">
+                <span>View Options</span>
+                <span class="arrow">→</span>
+            </div>
+        </div>
+
         <!-- Location Error -->
         <div class="alert alert-error" *ngIf="locationError">
             ⚠️ {{ locationError }}

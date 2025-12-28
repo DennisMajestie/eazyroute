@@ -1,0 +1,118 @@
+.toast-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 90%;
+    max-width: 400px;
+    pointer-events: none;
+}
+
+.toast-item {
+    pointer-events: auto;
+    background: var(--surface, #ffffff);
+    border-radius: var(--radius-lg, 16px);
+    padding: 16px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border-left: 5px solid var(--primary);
+    animation: slideIn 0.3s ease-out;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+
+    &:active {
+        transform: scale(0.98);
+    }
+
+    &.success {
+        border-left-color: #10b981;
+        .toast-icon { color: #10b981; }
+    }
+
+    &.warning {
+        border-left-color: #f59e0b;
+        .toast-icon { color: #f59e0b; }
+    }
+
+    &.error {
+        border-left-color: #ef4444;
+        .toast-icon { color: #ef4444; }
+    }
+
+    &.info {
+        border-left-color: var(--primary);
+        .toast-icon { color: var(--primary); }
+    }
+}
+
+.toast-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.toast-content {
+    flex-grow: 1;
+}
+
+.toast-title {
+    margin: 0 0 4px 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary, #1a1a1a);
+}
+
+.toast-message {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-secondary, #666);
+    line-height: 1.4;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    color: var(--text-tertiary, #999);
+    padding: 2px;
+    cursor: pointer;
+    margin-top: -4px;
+    margin-right: -4px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+
+    &:hover {
+        background: rgba(0, 0, 0, 0.05);
+        color: var(--text-primary);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Dark mode support if applicable */
+@media (prefers-color-scheme: dark) {
+    .toast-item {
+        background: #2a2a2a;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        
+        .toast-title { color: #f0f0f0; }
+        .toast-message { color: #b0b0b0; }
+        .toast-close:hover { background: rgba(255, 255, 255, 0.1); }
+    }
+}

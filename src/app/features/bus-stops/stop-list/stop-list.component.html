@@ -1,1 +1,108 @@
-<p>stop-list works!</p>
+<div class="bus-stops-container">
+    <!-- Header -->
+    <header class="stops-header">
+        <button class="back-btn" (click)="goBack()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m15 18-6-6 6-6" />
+            </svg>
+        </button>
+        <h1 class="header-title">All Bus Stops</h1>
+        <div class="header-spacer"></div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="search-section">
+        <div class="search-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="search-icon">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+            </svg>
+            <input type="text" [(ngModel)]="searchTerm" (input)="onSearch($event)" placeholder="Search bus stops..."
+                class="search-input">
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    @if (loading && page === 1) {
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading bus stops...</p>
+    </div>
+    }
+
+    <!-- Bus Stops List -->
+    @if (!loading || page > 1) {
+    <div class="stops-content">
+        <!-- Results Count -->
+        <div class="results-header">
+            <p class="results-count">
+                Showing <strong>{{ filteredStops.length }}</strong> of <strong>{{ totalStops }}</strong> stops
+            </p>
+        </div>
+
+        <!-- Stops List -->
+        <div class="stops-list">
+            @for (stop of filteredStops; track stop._id || stop.id) {
+            <div class="stop-item" (click)="onStopClick(stop)">
+                <div class="stop-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                        <circle cx="12" cy="10" r="3" />
+                    </svg>
+                </div>
+                <div class="stop-info">
+                    <h3 class="stop-name">{{ stop.name }}</h3>
+                    <p class="stop-address">{{ stop.address || stop.area || 'No address' }}</p>
+                    @if (stop.localNames && stop.localNames.length > 0) {
+                    <div class="local-names">
+                        @for (localName of stop.localNames.slice(0, 2); track localName) {
+                        <span class="local-name-badge">{{ localName }}</span>
+                        }
+                    </div>
+                    }
+                </div>
+                <div class="stop-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m9 18 6-6-6-6" />
+                    </svg>
+                </div>
+            </div>
+            }
+
+            @if (filteredStops.length === 0 && !loading) {
+            <div class="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                    <circle cx="12" cy="10" r="3" />
+                </svg>
+                <h3>No bus stops found</h3>
+                <p>Try adjusting your search</p>
+            </div>
+            }
+        </div>
+
+        <!-- Load More Button -->
+        @if (page < totalPages && !searchTerm) { <div class="load-more-section">
+            <button class="load-more-btn" (click)="loadMore()" [disabled]="loading">
+                @if (loading) {
+                <div class="btn-spinner"></div>
+                <span>Loading...</span>
+                } @else {
+                <span>Load More</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m6 9 6 6 6-6" />
+                </svg>
+                }
+            </button>
+    </div>
+    }
+</div>
+}
+</div>

@@ -21,15 +21,19 @@
                     </div>
                 </button>
             </div> -->
-            <button class="notification-btn">
+            <button class="notification-btn" (click)="toggleNotifications()">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                     <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
                 </svg>
-                <span class="notification-badge">3</span>
+                @if ((unreadCount$ | async); as count) {
+                <span class="notification-badge">{{ count }}</span>
+                }
             </button>
         </div>
+
+        <app-notification-center [isOpen]="isNotificationCenterOpen" (close)="isNotificationCenterOpen = false" />
 
         <!-- Search Bar -->
         <div class="search-container">
@@ -53,8 +57,10 @@
             </div>
 
             <!-- Search Results Dropdown -->
-            <div class="search-dropdown" *ngIf="searchResults.length > 0">
-                <div *ngFor="let result of searchResults" class="search-result-item" (click)="selectResult(result)">
+            @if (searchResults.length > 0) {
+            <div class="search-dropdown">
+                @for (result of searchResults; track result.id) {
+                <div class="search-result-item" (click)="selectResult(result)">
                     <div class="result-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -67,7 +73,9 @@
                         <div class="result-location">{{ result.address || result.city }}</div>
                     </div>
                 </div>
+                }
             </div>
+            }
         </div>
     </header>
 
@@ -89,19 +97,7 @@
                 </div>
             </button>
 
-            <button class="action-card action-secondary" routerLink="/bus-stops">
-                <div class="action-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                        <circle cx="12" cy="10" r="3" />
-                    </svg>
-                </div>
-                <div class="action-text">
-                    <div class="action-title">Nearby</div>
-                    <div class="action-subtitle">Bus stops near you</div>
-                </div>
-            </button>
+
 
             <button class="action-card action-tertiary" routerLink="/profile">
                 <div class="action-icon">
@@ -116,6 +112,31 @@
                     <div class="action-subtitle">Favorite routes</div>
                 </div>
             </button>
+
+            <button class="action-card action-quaternary" routerLink="/bus-stops/add">
+                <div class="action-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                </div>
+                <div class="action-text">
+                    <div class="action-title">Contribute</div>
+                    <div class="action-subtitle">Add places</div>
+                </div>
+            </button>
+
+            @if (authService.isAdmin()) {
+            <button class="action-card action-quinary" routerLink="/bus-stops/verify-portal">
+                <div class="action-icon">
+                    <i class="fas fa-certificate"></i>
+                </div>
+                <div class="action-text">
+                    <div class="action-title">Verify</div>
+                    <div class="action-subtitle">Earn points</div>
+                </div>
+            </button>
+            }
         </section>
 
         <!-- Tabs -->
@@ -155,14 +176,16 @@
         </section>
 
         <!-- Nearby Bus Stops -->
-        <section class="nearby-stops" *ngIf="activeTab === 'routes'">
+        @if (activeTab === 'routes') {
+        <section class="nearby-stops">
             <div class="section-header">
                 <h2 class="section-title">Nearby Bus Stops</h2>
-                <button class="see-all-btn">See all</button>
+                <button class="see-all-btn" (click)="navigateToBusStops()">See all</button>
             </div>
 
             <div class="stops-grid">
-                <div *ngFor="let stop of nearbyStops" class="stop-card" (click)="viewBusStop(stop)">
+                @for (stop of nearbyStops; track stop.id) {
+                <div class="stop-card" (click)="planRouteToStop(stop)">
                     <div class="stop-header">
                         <div class="stop-info">
                             <h3 class="stop-name">{{ stop.name }}</h3>
@@ -173,7 +196,9 @@
                         </div>
                     </div>
                     <div class="stop-routes">
-                        <span *ngFor="let route of stop.routes" class="route-badge">{{ route }}</span>
+                        @for (route of stop.routes; track route) {
+                        <span class="route-badge">{{ route }}</span>
+                        }
                     </div>
                     <div class="stop-footer">
                         <div class="next-bus">
@@ -183,24 +208,30 @@
                                 <circle cx="12" cy="12" r="10" />
                                 <polyline points="12 6 12 12 16 14" />
                             </svg>
-                            Next bus: <strong>{{ stop.nextBus }}</strong>
+                            Next Busstop: <strong>{{ stop.travelTime }}</strong>
                         </div>
                     </div>
                 </div>
+                }
             </div>
         </section>
+        }
 
         <!-- Popular Routes -->
-        <section class="popular-routes" *ngIf="activeTab === 'routes'">
+        @if (activeTab === 'routes') {
+        <section class="popular-routes">
             <div class="section-header">
                 <h2 class="section-title">Popular Routes</h2>
                 <button class="see-all-btn">See all</button>
             </div>
 
             <div class="routes-grid">
-                <div *ngFor="let route of popularRoutes" class="route-card" (click)="viewRoute(route)">
+                @for (route of popularRoutes; track route.id) {
+                <div class="route-card" (click)="viewRoute(route)">
                     <div class="route-badge-container">
-                        <span *ngIf="route.trending" class="trending-badge">🔥 Trending</span>
+                        @if (route.trending) {
+                        <span class="trending-badge">🔥 Trending</span>
+                        }
                     </div>
                     <h3 class="route-name">{{ route.name }}</h3>
                     <div class="route-details">
@@ -227,18 +258,22 @@
                         <span class="buses-count">{{ route.buses }} buses available</span>
                     </div>
                 </div>
+                }
             </div>
         </section>
+        }
 
         <!-- Upcoming Events -->
-        <section class="upcoming-events" *ngIf="activeTab === 'events'">
+        @if (activeTab === 'events') {
+        <section class="upcoming-events">
             <div class="section-header">
                 <h2 class="section-title">Happening in Abuja</h2>
                 <button class="see-all-btn">See all</button>
             </div>
 
             <div class="events-list">
-                <div *ngFor="let event of upcomingEvents" class="event-card" (click)="viewEvent(event)">
+                @for (event of upcomingEvents; track event.id) {
+                <div class="event-card" (click)="viewEvent(event)">
                     <div class="event-image">{{ event.image }}</div>
                     <div class="event-content">
                         <div class="event-category">{{ event.category }}</div>
@@ -271,21 +306,25 @@
                         </div>
                     </div>
                 </div>
+                }
             </div>
         </section>
+        }
 
         <!-- Tag-Along Rides -->
-        <section class="tagalong-rides" *ngIf="activeTab === 'rides'">
+        @if (activeTab === 'rides') {
+        <section class="tagalong-rides">
             <div class="section-header">
                 <h2 class="section-title">Available Rides</h2>
                 <button class="see-all-btn">See all</button>
             </div>
 
             <div class="rides-list">
-                <div *ngFor="let ride of tagAlongRides" class="ride-card">
+                @for (ride of tagAlongRides; track ride.id) {
+                <div class="ride-card">
                     <div class="ride-header">
                         <div class="driver-info">
-                            <div class="driver-avatar">{{ ride.avatar }}</div>
+                            <img [src]="ride.avatar" [alt]="ride.driver" class="driver-avatar">
                             <div>
                                 <div class="driver-name">{{ ride.driver }}</div>
                                 <div class="driver-rating">
@@ -320,12 +359,14 @@
                         <button (click)="bookRide(ride)" class="book-btn">Book Now</button>
                     </div>
                 </div>
+                }
             </div>
         </section>
+        }
     </main>
 
     <!-- Floating Action Button -->
-    <button class="fab">
+    <button class="fab" routerLink="/bus-stops/add">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19" />
@@ -333,31 +374,5 @@
         </svg>
     </button>
 
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-        <button class="nav-item active">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-            <span>Home</span>
-        </button>
-        <button class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
-            </svg>
-            <span>Explore</span>
-        </button>
-        <button class="nav-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-            </svg>
-            <span>Profile</span>
-        </button>
-    </nav>
+
 </div>

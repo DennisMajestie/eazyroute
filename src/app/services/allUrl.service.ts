@@ -6,7 +6,9 @@ import { Injectable } from '@angular/core';
  * Easy to update and manage from one location
  */
 
-const API_URL = 'http://localhost:3000/api/v1';
+import { environment } from '../../environments/environment';
+
+const API_URL = environment.apiUrl;
 
 @Injectable({
   providedIn: 'root'
@@ -158,7 +160,7 @@ export class AllUrlService {
 
     // ==================== HEALTH CHECK ====================
     health: {
-      check: 'http://localhost:3000/health',
+      check: environment.socketUrl + '/health',
     },
   };
 

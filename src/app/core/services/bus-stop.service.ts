@@ -1,10 +1,20 @@
+/**
+ * Unified Bus Stop Service
+ * Handles all bus stop related API calls
+ */
+
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { BusStop, CreateBusStopRequest, TransportMode, SearchBusStopParams } from '../../models/bus-stop.model';
+import { BusStop, CreateBusStopRequest, TransportMode, SearchBusStopParams, FuzzySearchResult } from '../../models/bus-stop.model';
+import { EnhancedBusStop, BusStopSearchResponse } from '../../models/enhanced-bus-stop.model';
 import { TransportPointType } from '../../models/transport-point.constants';
+
+// ═══════════════════════════════════════════════════════════════
+// INTERFACES
+// ═══════════════════════════════════════════════════════════════
 
 export interface UnverifiedBusStop {
   name: string;
@@ -13,6 +23,49 @@ export interface UnverifiedBusStop {
   description: string;
   localNames?: string[];
   transportModes?: TransportMode[];
+  type?: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data?: T;
+  error?: string;
+}
+
+export interface BusStopResponse {
+  _id: string;
+  id?: string;
+  name: string;
+  location: {
+    type: string;
+    coordinates: [number, number];
+  };
+  type?: string;
+  localNames?: string[];
+  routes: string[];
+  verified: boolean;
+  description?: string;
+  activeBuses?: number;
+  area?: string;
+  address?: string;
+  landmarks?: string[];
+  dist?: { calculated: number };
+  backboneSide?: 'L' | 'R' | 'C';
+  tier?: 'primary' | 'sub-landmark' | 'node';
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PaginatedResponse<T> {
+  success: boolean;
+  data: T[];
+  pagination: {
+    total: number;
+    page: number;
+    limit: number;
+    pages: number;
+  };
 }
 
 @Injectable({
@@ -23,9 +76,12 @@ export class BusStopService {
 
   constructor(private http: HttpClient) { }
 
+  // ═══════════════════════════════════════════════════════════════
+  // SEARCH & QUERY METHODS
+  // ═══════════════════════════════════════════════════════════════
+
   /**
    * Get all stops with optional search and filters
-   * Backend returns { success, data, pagination } format
    */
   getAllStops(params?: SearchBusStopParams): Observable<BusStop[]> {
     let httpParams = new HttpParams();
@@ -37,6 +93,7 @@ export class BusStopService {
       if (params.verificationStatus) httpParams = httpParams.set('verificationStatus', params.verificationStatus);
       if (params.page) httpParams = httpParams.set('page', params.page.toString());
       if (params.limit) httpParams = httpParams.set('limit', params.limit.toString());
+      if (params.sort) httpParams = httpParams.set('sort', params.sort);
     }
 
     return this.http.get<{ success: boolean; data: BusStop[] }>(this.apiUrl, { params: httpParams }).pipe(
@@ -45,8 +102,19 @@ export class BusStopService {
   }
 
   /**
+   * Get all bus stops with pagination (from BusStopHttpService)
+   */
+  getAllBusStops(page: number = 1, limit: number = 20, isActive: boolean = true): Observable<PaginatedResponse<BusStopResponse>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('isActive', isActive.toString());
+
+    return this.http.get<PaginatedResponse<BusStopResponse>>(this.apiUrl, { params });
+  }
+
+  /**
    * Search transport points with advanced filtering
-   * Backend returns { success, data, pagination } format
    */
   searchStops(params: SearchBusStopParams): Observable<BusStop[]> {
     let httpParams = new HttpParams();
@@ -57,6 +125,7 @@ export class BusStopService {
     if (params.verificationStatus) httpParams = httpParams.set('verificationStatus', params.verificationStatus);
     if (params.page !== undefined) httpParams = httpParams.set('page', params.page.toString());
     if (params.limit !== undefined) httpParams = httpParams.set('limit', params.limit.toString());
+    if (params.sort) httpParams = httpParams.set('sort', params.sort);
 
     return this.http.get<{ success: boolean; data: BusStop[] }>(this.apiUrl, { params: httpParams }).pipe(
       map(response => response.data || [])
@@ -64,17 +133,78 @@ export class BusStopService {
   }
 
   /**
-   * Get nearby stops within radius
+   * Search bus stops (simple query - from BusStopHttpService)
    */
-  getNearbyStops(latitude: number, longitude: number, radiusMeters: number): Observable<BusStop[]> {
-    return this.http.get<BusStop[]>(`${this.apiUrl}/nearby`, {
-      params: {
-        latitude: latitude.toString(),
-        longitude: longitude.toString(),
-        radius: radiusMeters.toString()
-      }
+  searchBusStops(query: string): Observable<ApiResponse<BusStopResponse[]>> {
+    const params = new HttpParams().set('search', query);
+    return this.http.get<ApiResponse<BusStopResponse[]>>(`${this.apiUrl}/search`, { params });
+  }
+
+  /**
+   * Search with local names and tier information (from BusStopHttpService)
+   */
+  searchWithLocalNames(query: string, limit: number = 10): Observable<BusStopSearchResponse> {
+    const params = new HttpParams()
+      .set('search', query)
+      .set('limit', limit.toString());
+
+    return this.http.get<BusStopSearchResponse>(`${this.apiUrl}/search`, { params });
+  }
+
+  /**
+   * Search bus stops by name or local names (legacy)
+   */
+  searchByLocalName(query: string): Observable<BusStop[]> {
+    return this.http.get<BusStop[]>(`${this.apiUrl}/search`, {
+      params: { q: query }
     });
   }
+
+  /**
+   * Fuzzy search with relevance scoring
+   */
+  fuzzySearch(query: string, city?: string, limit: number = 10): Observable<FuzzySearchResult[]> {
+    let params = new HttpParams().set('q', query).set('limit', limit.toString());
+    if (city) {
+      params = params.set('city', city);
+    }
+
+    return this.http.get<{ success: boolean; data: FuzzySearchResult[] }>(
+      `${this.apiUrl}/fuzzy-search`,
+      { params }
+    ).pipe(
+      map(response => response.data || [])
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // LOCATION-BASED METHODS
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Get nearby stops (enhanced with limit parameter)
+   */
+  getNearbyStops(latitude: number, longitude: number, radius: number = 2000, limit: number = 10): Observable<BusStopSearchResponse> {
+    const params = new HttpParams()
+      .set('lat', latitude.toString())
+      .set('lng', longitude.toString())
+      .set('radius', radius.toString())
+      .set('limit', limit.toString());
+
+    return this.http.get<BusStopSearchResponse>(`${this.apiUrl}/nearby`, { params });
+  }
+
+  /**
+   * Get bus stops by area
+   */
+  getBusStopsByArea(area: string): Observable<ApiResponse<BusStopResponse[]>> {
+    const params = new HttpParams().set('area', area);
+    return this.http.get<ApiResponse<BusStopResponse[]>>(`${this.apiUrl}/by-area`, { params });
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // SINGLE RECORD METHODS
+  // ═══════════════════════════════════════════════════════════════
 
   /**
    * Get single stop by ID
@@ -84,10 +214,34 @@ export class BusStopService {
   }
 
   /**
+   * Get bus stop by ID (returns ApiResponse wrapper)
+   */
+  getBusStopById(id: string): Observable<ApiResponse<BusStopResponse>> {
+    return this.http.get<ApiResponse<BusStopResponse>>(`${this.apiUrl}/${id}`);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // CREATE & SUBMIT METHODS
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
    * Add new stop (basic creation)
    */
   addStop(stop: CreateBusStopRequest): Observable<BusStop> {
     return this.http.post<BusStop>(this.apiUrl, stop);
+  }
+
+  /**
+   * Create bus stop (from BusStopHttpService)
+   */
+  createBusStop(data: {
+    name: string;
+    latitude: number;
+    longitude: number;
+    area?: string;
+    landmarks?: string[];
+  }): Observable<ApiResponse<BusStopResponse>> {
+    return this.http.post<ApiResponse<BusStopResponse>>(this.apiUrl, data);
   }
 
   /**
@@ -126,9 +280,8 @@ export class BusStopService {
     if (data.area) formData.append('area', data.area);
     if (data.description) formData.append('description', data.description);
 
-    // Append photos
     if (data.photos && data.photos.length > 0) {
-      data.photos.forEach((photo, index) => {
+      data.photos.forEach((photo) => {
         formData.append('photos', photo, photo.name);
       });
     }
@@ -137,26 +290,48 @@ export class BusStopService {
   }
 
   /**
-   * Submit missing stop (legacy method)
+   * Submit missing stop
+   */
+  submitPlace(data: any): Observable<any> {
+    const payload = {
+      ...data,
+      localNames: data.localName ? [data.localName] : (data.localNames || [])
+    };
+    return this.http.post(`${this.apiUrl}/submit`, payload);
+  }
+
+  /**
+   * Submit missing stop (legacy alias)
    */
   submitMissingStop(stop: UnverifiedBusStop): Observable<any> {
-    return this.http.post(`${this.apiUrl}/submit`, stop);
+    return this.submitPlace(stop);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // VERIFICATION & VOTING METHODS
+  // ═══════════════════════════════════════════════════════════════
+
+  /**
+   * Get all pending stops for verification
+   */
+  getPendingStops(): Observable<BusStop[]> {
+    return this.http.get<{ success: boolean; data: BusStop[] }>(`${this.apiUrl}/pending`).pipe(
+      map(response => response.data || [])
+    );
   }
 
   /**
-   * Verify a stop (admin only)
+   * Verify a stop (with action)
    */
-  verifyStop(stopId: number | string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/verify/${stopId}`, {});
+  verifyStop(stopId: number | string, action: 'verify' | 'reject' = 'verify'): Observable<any> {
+    return this.http.post(`${this.apiUrl}/verify/${stopId}`, { action });
   }
 
   /**
-   * Search bus stops by name or local names (legacy method)
+   * Verify bus stop (simple - from BusStopHttpService)
    */
-  searchByLocalName(query: string): Observable<BusStop[]> {
-    return this.http.get<BusStop[]>(`${this.apiUrl}/search`, {
-      params: { q: query }
-    });
+  verifyBusStop(id: string): Observable<ApiResponse<any>> {
+    return this.http.post<ApiResponse<any>>(`${this.apiUrl}/${id}/verify`, {});
   }
 
   /**
@@ -173,11 +348,15 @@ export class BusStopService {
     return this.http.post(`${this.apiUrl}/${stopId}/downvote`, {});
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  // HELPER METHODS
+  // ═══════════════════════════════════════════════════════════════
+
   /**
-   * Helper: Validate photo file
+   * Validate photo file
    */
   validatePhoto(file: File): { valid: boolean; error?: string } {
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 
     if (!allowedTypes.includes(file.type)) {
@@ -192,7 +371,7 @@ export class BusStopService {
   }
 
   /**
-   * Helper: Validate multiple photos
+   * Validate multiple photos
    */
   validatePhotos(files: File[]): { valid: boolean; errors: string[] } {
     const errors: string[] = [];

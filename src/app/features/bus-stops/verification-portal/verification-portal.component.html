@@ -1,0 +1,93 @@
+<div class="portal-root animate-fade-in">
+    <!-- Theme Background -->
+    <div class="mesh-gradient"></div>
+
+    <!-- Header -->
+    <div class="premium-header">
+        <button class="glass-back-btn" (click)="goBack()">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="header-title">
+            <h1>Verification Portal</h1>
+            <p>Help the community build a better map</p>
+        </div>
+    </div>
+
+    <!-- Rewards Card -->
+    <div class="rewards-banner glass-glow">
+        <div class="reward-info">
+            <i class="fas fa-gem gold-icon"></i>
+            <div>
+                <h3>Earn EasyPoints</h3>
+                <p>Verify 3 places to earn 10 points!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <p>Finding places near you...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && pendingStops.length === 0">
+        <div class="empty-icon">
+            <i class="fas fa-map-marked-alt"></i>
+        </div>
+        <h3>No Pending Places</h3>
+        <p>Everything in your area is verified. Check back later!</p>
+        <button class="btn-primary-glass" (click)="goBack()">Back to Dashboard</button>
+    </div>
+
+    <!-- List of Verification Cards -->
+    <div class="scroll-container" *ngIf="!isLoading && pendingStops.length > 0">
+        <div class="cards-grid">
+            <div class="verification-card glass-glow animate-slide-up" *ngFor="let stop of pendingStops; let i = index"
+                [style.animation-delay]="i * 0.1 + 's'">
+
+                <!-- Mini Map Snippet -->
+                <div class="mini-map-wrapper">
+                    <app-map [center]="getSafeCoords(stop)" [zoom]="16" [markers]="getMarkers(stop)"></app-map>
+                    <div class="place-tag">
+                        <i class="fas" [class.fa-bus]="stop.type === 'bus_stop'"
+                            [class.fa-university]="stop.type === 'landmark'" [class.fa-road]="stop.type === 'junction'"
+                            [class.fa-home]="stop.type === 'village_entry'"></i>
+                        {{stop.type | titlecase}}
+                    </div>
+                </div>
+
+                <div class="card-content">
+                    <div class="place-info">
+                        <h2>{{stop.name}}</h2>
+                        <p class="local-name" *ngIf="stop.localNames && stop.localNames.length > 0">
+                            Also known as: <span>{{stop.localNames[0]}}</span>
+                        </p>
+                        <p class="description" *ngIf="stop.description">{{stop.description}}</p>
+                        <div class="meta-footer">
+                            <span class="submitted-by" *ngIf="stop.submittedBy">
+                                <i class="fas fa-user-edit"></i> {{stop.submittedBy}}
+                            </span>
+                            <span class="verification-badge" [class.verified]="(stop.verificationCount || 0) >= 3">
+                                <i class="fas fa-shield-alt"></i>
+                                This place has {{stop.verificationCount || 0}}/3 verifications.
+                                <span *ngIf="(stop.verificationCount || 0) < 3">It will go live after {{3 -
+                                    (stop.verificationCount || 0)}} more admin approvals.</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-reject" (click)="rejectPlace(stop)">
+                            <i class="fas fa-times"></i> Incorrect
+                        </button>
+                        <button class="btn-verify" (click)="verifyPlace(stop)">
+                            <i class="fas fa-check"></i> Verify Real
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-spacer"></div>
+    </div>
+</div>

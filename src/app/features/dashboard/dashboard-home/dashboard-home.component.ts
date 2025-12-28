@@ -6,33 +6,39 @@
  * File: src/app/features/dashboard/dashboard-home/dashboard-home.component.ts
  */
 
-import { Component, OnInit, OnDestroy, effect } from '@angular/core';
+import { Component, OnInit, OnDestroy, effect, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { Subject } from 'rxjs';
+import { Subject, Observable, firstValueFrom } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 // Import services
 import { AuthService } from '../../../core/services/auth.service';
 import { User } from '../../../models/user.model';
 import { EasyrouteOrchestratorService } from '../../../core/services/easyroute-orchestrator.service';
+import { GeolocationService } from '../../../core/services/geolocation.service';
 import { TripHttpService } from '../../../core/services/trip-http.service';
-import { BusStopHttpService } from '../../../core/services/bus-stop-http.service';
+import { BusStopService } from '../../../core/services/bus-stop.service';
 import { RouteHttpService } from '../../../core/services/route-http.service';
 import { TagAlongService } from '../../../core/services/tag-along.service';
 import { EventService, EasyRouteEvent } from '../../../core/services/event.service';
 import { environment } from '../../../../environments/environment';
+import { BusStop } from '../../../models/bus-stop.model';
+import { NotificationCenterComponent } from '../../../shared/components/notification-center/notification-center.component';
+import { NotificationHttpService } from '../../../core/services/notification-http.service';
 
-interface BusStop {
-  id: string;
+// Use shared BusStop model
+export interface DashboardBusStop {
+  id: string | number;
   name: string;
+  type: string;
   distance: string;
   routes: string[];
-  nextBus: string;
+  travelTime: string;
   status: 'active' | 'busy' | 'quiet';
-  latitude?: number;
-  longitude?: number;
+  latitude: number;
+  longitude: number;
 }
 
 interface Route {
@@ -74,7 +80,7 @@ interface TagAlongRide {
 @Component({
   selector: 'app-dashboard-home',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, NotificationCenterComponent],
   templateUrl: './dashboard-home.component.html',
   styleUrls: ['./dashboard-home.component.scss']
 })
@@ -111,22 +117,29 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   currentUserLocation: { latitude: number; longitude: number } | null = null;
 
   // Data arrays
-  nearbyStops: BusStop[] = [];
+  nearbyStops: DashboardBusStop[] = [];
   popularRoutes: Route[] = [];
   upcomingEvents: Event[] = [];
   tagAlongRides: TagAlongRide[] = [];
 
+  // Notifications
+  isNotificationCenterOpen: boolean = false;
+  unreadCount$: Observable<number>;
+
   constructor(
     public authService: AuthService,  // ✅ Auth service for user info
     private orchestrator: EasyrouteOrchestratorService,
+    private router: Router,
+    private geolocationService: GeolocationService,
     private tripHttpService: TripHttpService,
-    private busStopHttpService: BusStopHttpService,
+    private busStopService: BusStopService,
     private routeHttpService: RouteHttpService,
     private tagAlongService: TagAlongService,
     private eventService: EventService,
-    private router: Router
+    private notificationService: NotificationHttpService
   ) {
     this.orchestratorState$ = this.orchestrator.state$;
+    this.unreadCount$ = this.notificationService.unreadCount$;
 
     // Search
     this.searchSubject.pipe(
@@ -174,29 +187,19 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
    */
 
   private loadUserInfo(): void {
-    // Subscribe to current user changes
-    this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(user => {
-        if (user) {
-          this.updateUserInfo(user);
-          console.log('[Dashboard] User loaded:', this.userName);
-        } else {
-          this.resetUserInfo();
-        }
-      });
-
-    // Get initial user from signal
+    // Get initial user from signal (effect() in constructor handles reactivity)
     const user = this.authService.currentUser();
     if (user) {
       this.updateUserInfo(user);
+    } else {
+      this.resetUserInfo();
     }
 
     // Optional: Refresh user data from server
     if (this.authService.isUserAuthenticated()) {
       this.authService.getCurrentUser().subscribe({
         next: (user) => {
-          console.log('[Dashboard] User profile refreshed');
+          this.updateUserInfo(user);
         },
         error: (error) => {
           console.error('[Dashboard] Error loading user:', error);
@@ -265,25 +268,12 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         return;
       }
 
-      if ('geolocation' in navigator) {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(
-            resolve,
-            reject,
-            {
-              enableHighAccuracy: environment.geolocation.enableHighAccuracy,
-              timeout: environment.geolocation.timeout,
-              maximumAge: environment.geolocation.maximumAge
-            }
-          );
-        });
-
+      if (environment.geolocation.enabled) {
+        const coords = await firstValueFrom(this.geolocationService.getCurrentPosition());
         this.currentUserLocation = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude
+          latitude: coords.latitude,
+          longitude: coords.longitude
         };
-
-        console.log('[Dashboard] Current location:', this.currentUserLocation);
       } else {
         this.currentUserLocation = {
           latitude: environment.geolocation.defaultCenter.lat,
@@ -317,25 +307,29 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     this.isLoadingStops = true;
 
     try {
-      const response = await this.busStopHttpService.getNearbyStops(
+      const response = await this.busStopService.getNearbyStops(
         this.currentUserLocation.latitude,
         this.currentUserLocation.longitude,
-        5000
+        2000 // 2km radius as per integration guide
       ).toPromise();
 
       if (response?.success && response.data) {
-        this.nearbyStops = response.data.map((stop: any) => ({
+        // ⭐ ONLY TAKE FIRST 5 FOR DASHBOARD
+        const allNearbyStops = response.data.map((stop: any) => ({
           id: stop._id || stop.id,
           name: stop.name,
-          distance: this.calculateDistance(stop.location),
+          distance: stop.dist?.calculated ? `${stop.dist.calculated}m` : this.calculateDistance(stop.location),
           routes: stop.routes || [],
-          nextBus: this.estimateNextBus(),
+          travelTime: this.calculateTravelTime(stop.dist?.calculated || this.calculateDistanceMeters(stop.location)),
           status: this.determineStopStatus(stop),
+          type: stop.type || 'bus_stop',
           latitude: stop.location?.coordinates?.[1] || stop.latitude,
           longitude: stop.location?.coordinates?.[0] || stop.longitude
         }));
 
-        console.log('[Dashboard] Loaded nearby stops:', this.nearbyStops.length);
+        // Limit to 5 stops for dashboard
+        this.nearbyStops = allNearbyStops.slice(0, 5);
+
       }
     } catch (error) {
       console.error('[Dashboard] Error loading nearby stops:', error);
@@ -362,7 +356,6 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
           trending: false,
         }));
 
-        console.log('[Dashboard] Loaded popular routes:', this.popularRoutes.length);
       }
     } catch (error) {
       console.error('[Dashboard] Error loading popular routes:', error);
@@ -434,7 +427,6 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         }
 
         this.activeTripProgress = this.calculateTripProgress(activeTrip);
-        console.log('[Dashboard] Active trip found:', this.activeTripId);
       } else {
         this.hasActiveTrip = false;
       }
@@ -541,6 +533,55 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     return `${distance.toFixed(1)} km`;
   }
 
+  private calculateDistanceMeters(stopLocation: any): number {
+    if (!this.currentUserLocation || !stopLocation) return 0;
+
+    const lat1 = this.currentUserLocation.latitude;
+    const lon1 = this.currentUserLocation.longitude;
+    const lat2 = stopLocation.coordinates?.[1] || stopLocation.latitude;
+    const lon2 = stopLocation.coordinates?.[0] || stopLocation.longitude;
+
+    if (!lat2 || !lon2) return 0;
+
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distanceMeters = R * c * 1000;
+    return distanceMeters;
+  }
+
+  private calculateTravelTime(distanceMeters: number | string): string {
+    // If distance is string (e.g. "1.2 km"), try to parse it
+    let meters = 0;
+    if (typeof distanceMeters === 'string') {
+      if (distanceMeters.includes('km')) {
+        meters = parseFloat(distanceMeters) * 1000;
+      } else if (distanceMeters.includes('m')) {
+        meters = parseFloat(distanceMeters);
+      }
+    } else {
+      meters = distanceMeters;
+    }
+
+    if (meters <= 0) return '1 min';
+
+    // Average driving speed: 400 meters per minute (approx 24 km/h)
+    const minutes = Math.ceil(meters / 400);
+
+    if (minutes >= 60) {
+      const hours = Math.floor(minutes / 60);
+      const remainingMins = minutes % 60;
+      return `${hours}h ${remainingMins}m drive`;
+    }
+
+    return `${minutes} mins drive`;
+  }
+
   private estimateNextBus(): string {
     const mins = Math.floor(Math.random() * 15) + 3;
     return `${mins} mins`;
@@ -597,8 +638,15 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     ];
   }
 
+  // Notification Center
+  toggleNotifications(): void {
+    this.isNotificationCenterOpen = !this.isNotificationCenterOpen;
+    if (this.isNotificationCenterOpen) {
+      this.notificationService.loadNotifications().subscribe();
+    }
+  }
+
   onSearch(): void {
-    console.log('[Dashboard] Searching for:', this.searchQuery);
     if (this.searchQuery.trim()) {
       this.router.navigate(['/trip-planner'], {
         queryParams: { to: this.searchQuery }
@@ -611,7 +659,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   }
 
   performSearch(query: string): void {
-    this.busStopHttpService.searchBusStops(query).subscribe({
+    this.busStopService.searchBusStops(query).subscribe({
       next: (res) => {
         if (res.success && res.data) {
           this.searchResults = res.data;
@@ -638,7 +686,44 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   }
 
   viewBusStop(stop: BusStop): void {
-    console.log('[Dashboard] Viewing bus stop:', stop);
+    console.log('[Dashboard] Planning route to bus stop:', stop);
+    this.planRouteToStop(stop);
+  }
+
+  /**
+   * Navigate to the full bus stops list page
+   */
+  navigateToBusStops(): void {
+    this.router.navigate(['/bus-stops']);
+  }
+
+  async planRouteToStop(stop: any): Promise<void> {
+    // If we have current location, pass it
+    if (this.currentUserLocation) {
+      this.router.navigate(['/trip-planner'], {
+        state: {
+          fromLocation: {
+            lat: this.currentUserLocation.latitude,
+            lng: this.currentUserLocation.longitude
+          },
+          toLocation: {
+            lat: stop.latitude,
+            lng: stop.longitude
+          },
+          fromName: 'Current Location',
+          toName: stop.name
+        }
+      });
+    } else {
+      // Fallback to just destination
+      this.router.navigate(['/trip-planner'], {
+        queryParams: {
+          to: stop.name,
+          lat: stop.latitude,
+          lng: stop.longitude
+        }
+      });
+    }
   }
 
   viewRoute(route: Route): void {

@@ -1,5 +1,5 @@
 
-import { Component, AfterViewInit, OnDestroy, Input, ElementRef, ViewChild, OnChanges, SimpleChanges, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, AfterViewInit, OnDestroy, Input, ElementRef, ViewChild, OnChanges, SimpleChanges, Inject, PLATFORM_ID, EventEmitter, Output } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { LeafletMapService } from '../../../core/services/leaflet-map.service';
 
@@ -24,9 +24,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     @Input() center: { lat: number, lng: number } = { lat: 9.0765, lng: 7.3986 }; // Abuja default
     @Input() zoom: number = 13;
-    @Input() markers: Array<{ lat: number, lng: number, title?: string }> = [];
+    @Input() markers: Array<{ lat: number, lng: number, title?: string, tier?: 'primary' | 'sub-landmark' | 'node' }> = [];
+    @Input() polylines: Array<{ path: any[], color?: string, weight?: number, isBackbone?: boolean }> = [];
+
+    @Output() mapClick = new EventEmitter<{ lat: number, lng: number }>();
 
     private map: any;
+    private routeLayers: any[] = [];
 
     constructor(
         private mapService: LeafletMapService,
@@ -42,7 +46,16 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes['center'] && this.map) {
-            this.map.setView([this.center.lat, this.center.lng], this.zoom);
+            const center = changes['center'].currentValue;
+            if (center && typeof center.lat === 'number' && typeof center.lng === 'number' && !isNaN(center.lat) && !isNaN(center.lng)) {
+                this.map.setView([center.lat, center.lng], this.zoom);
+            }
+        }
+        if (changes['markers'] && this.map) {
+            this.addMarkers();
+        }
+        if (changes['polylines'] && this.map) {
+            this.drawRoutes();
         }
     }
 
@@ -55,26 +68,74 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
             this.zoom
         );
 
+        // Handle Map Click
+        this.map.on('click', (e: any) => {
+            this.mapClick.emit({ lat: e.latlng.lat, lng: e.latlng.lng });
+        });
+
         this.addMarkers();
+        this.drawRoutes();
+    }
+
+    private drawRoutes() {
+        if (!this.map || !this.polylines) return;
+
+        // Clear existing routes
+        this.routeLayers.forEach(layer => this.map.removeLayer(layer));
+        this.routeLayers = [];
+
+        this.mapService.loadLeaflet().then(L => {
+            this.polylines.forEach(p => {
+                if (!p.path || p.path.length < 2) return;
+
+                const color = p.color || '#0ea5e9';
+                const weight = p.isBackbone ? (p.weight || 6) : (p.weight || 4);
+                const opacity = p.isBackbone ? 0.9 : 0.7;
+
+                // Add glowing effect to backbone
+                if (p.isBackbone) {
+                    const glowLayer = L.polyline(p.path, {
+                        color: '#8b5cf6',
+                        weight: weight + 4,
+                        opacity: 0.3
+                    }).addTo(this.map);
+                    this.routeLayers.push(glowLayer);
+                }
+
+                const polyline = L.polyline(p.path, {
+                    color: color,
+                    weight: weight,
+                    opacity: opacity,
+                    lineJoin: 'round'
+                }).addTo(this.map);
+
+                this.routeLayers.push(polyline);
+            });
+        });
     }
 
     private addMarkers() {
         if (!this.map || !this.markers.length) return;
 
-        // We need access to L to create markers, but mapService wraps it.
-        // Ideally mapService should handle this to keep L encapsulated, 
-        // or we expose L from service. 
-        // For now, let's assume we implement addMarker in service effectively.
-        // But since I didn't add addMarker to service yet, I'll obtain L from service instance if possible
-        // or better, I will update service in next step if needed. 
-        // Actually, looking at my service code, I didn't implement addMarker. 
-        // I will use raw L from the service load for now if I can, or better, 
-        // I made `loadLeaflet` implementation return `this.L`.
-
-        // So I can get L instance:
         this.mapService.loadLeaflet().then(L => {
+            const primaryIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
             this.markers.forEach(m => {
-                L.marker([m.lat, m.lng]).addTo(this.map).bindPopup(m.title || '');
+                const options: any = {};
+                if (m.tier === 'primary') {
+                    options.icon = primaryIcon;
+                }
+
+                const marker = L.marker([m.lat, m.lng], options)
+                    .addTo(this.map)
+                    .bindPopup(m.title || '');
             });
         });
     }

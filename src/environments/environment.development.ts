@@ -1,15 +1,18 @@
-// src/environments/environment.development.ts (Development)
+/**
+ * Development Environment Configuration
+ * Used for local development: ng serve
+ */
 import { Environment } from './environment.interface';
 
 export const environment: Environment = {
     production: false,
-    apiUrl: 'http://localhost:3000/api/v1',
-    appName: 'EazyRoute',
-    useMockSockets: false, // Backend now supports sockets
+    apiUrl: 'http://172.20.10.2:3000/api/v1',
+    socketUrl: 'http://172.20.10.2:3000',
+    appName: 'Along_9ja',
+    useMockSockets: false,
 
     googleMapsApiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
 
-    // Storage keys
     storageKeys: {
         token: 'eazyroute_token',
         user: 'eazyroute_user',
@@ -18,15 +21,14 @@ export const environment: Environment = {
         recentSearches: 'eazyroute_recent_searches'
     },
 
-    // Geolocation settings
     geolocation: {
         enabled: true,
         defaultCenter: {
-            lat: 9.0765, // Abuja, Nigeria
+            lat: 9.0765,
             lng: 7.3986
         },
-        timeout: 10000,
-        maximumAge: 30000,
+        timeout: 15000,
+        maximumAge: 0,
         enableHighAccuracy: true
     }
 };

@@ -2,6 +2,8 @@ import { Component, OnInit, Output, EventEmitter, ViewChild, ElementRef } from '
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BusStopService } from '../../../core/services/bus-stop.service';
+import { GeolocationService } from '../../../core/services/geolocation.service';
+import { firstValueFrom } from 'rxjs';
 import { TransportMode } from '../../../models/bus-stop.model';
 import { TransportPointType, TRANSPORT_POINT_TYPES, TRANSPORT_MODES, getAllTransportPointTypes, getAllTransportModes } from '../../../models/transport-point.constants';
 import { ChipInputComponent } from '../../../shared/components/chip-input/chip-input.component';
@@ -48,7 +50,8 @@ export class AddTransportPointDialogComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private busStopService: BusStopService
+    private busStopService: BusStopService,
+    private geolocationService: GeolocationService
   ) { }
 
   ngOnInit() {
@@ -69,20 +72,16 @@ export class AddTransportPointDialogComponent implements OnInit {
     });
   }
 
-  getCurrentLocation() {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          this.mapCenter = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          };
-          this.setLocation(this.mapCenter.lat, this.mapCenter.lng);
-        },
-        (error) => {
-          console.log('Location access denied, using default location');
-        }
-      );
+  async getCurrentLocation() {
+    try {
+      const coords = await firstValueFrom(this.geolocationService.getCurrentPosition());
+      this.mapCenter = {
+        lat: coords.latitude,
+        lng: coords.longitude
+      };
+      this.setLocation(this.mapCenter.lat, this.mapCenter.lng);
+    } catch (error) {
+      console.warn('[AddPoint] Location access failed or timeout, using default');
     }
   }
 

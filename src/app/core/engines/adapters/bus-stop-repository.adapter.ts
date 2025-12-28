@@ -258,14 +258,15 @@ export class BusStopRepositoryAdapter implements IBusStopRepository {
 
   async findNearby(location: Location, radiusMeters: number): Promise<BusStop[]> {
     try {
-      const stops = await firstValueFrom(
+      const response = await firstValueFrom(
         this.busStopService.getNearbyStops(
           location.latitude,
           location.longitude,
           radiusMeters
         )
       );
-      return stops;
+      // Extract data array from response, cast to BusStop[]
+      return (response.data || []) as unknown as BusStop[];
     } catch (error) {
       console.error('[BusStopRepo] Error finding nearby stops:', error);
       return [];

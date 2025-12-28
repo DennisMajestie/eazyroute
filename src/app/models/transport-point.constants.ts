@@ -1,6 +1,7 @@
 // src/app/models/transport-point.constants.ts
 
-import { TransportMode } from './bus-stop.model';
+export type TransportMode = 'bus' | 'okada' | 'keke' | 'taxi' | 'walking';
+export type VerificationStatus = 'pending' | 'community' | 'verified' | 'flagged';
 
 export type TransportPointType =
     | 'bus_stop'
@@ -10,6 +11,7 @@ export type TransportPointType =
     | 'keke_park'
     | 'terminal'
     | 'landmark'
+    | 'village_entry'
     | 'roundabout';
 
 export interface TransportPointTypeConfig {
@@ -67,6 +69,12 @@ export const TRANSPORT_POINT_TYPES: Record<TransportPointType, TransportPointTyp
         icon: '⭕',
         color: '#607D8B',
         description: 'Traffic roundabout'
+    },
+    village_entry: {
+        label: 'Village',
+        icon: '🏘️',
+        color: '#795548',
+        description: 'Entry point to a village or gated community'
     }
 };
 

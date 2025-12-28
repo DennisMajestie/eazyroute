@@ -1,66 +1,188 @@
+/**
+ * WebSocket Service - JWT Authenticated Socket.io Connection
+ * 
+ * Features:
+ * - JWT token authentication
+ * - Angular Signal-based connection status
+ * - Automatic token refresh on expiry
+ * - Reconnection with exponential backoff
+ */
 
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID, signal, computed } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { io, Socket } from 'socket.io-client';
 import { Observable, Subject } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
+
+export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting' | 'reconnecting' | 'error';
 
 @Injectable({
     providedIn: 'root'
 })
 export class WebSocketService {
     private socket: Socket | undefined;
-    private isConnected = false;
     private mockSubjects: Map<string, Subject<any>> = new Map();
+    private reconnectAttempts = 0;
+    private maxReconnectAttempts = 5;
 
-    constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    // ═══════════════════════════════════════════════════════════════
+    // STATE - Angular Signals
+    // ═══════════════════════════════════════════════════════════════
+
+    /** Current connection status */
+    readonly connectionStatus = signal<ConnectionStatus>('disconnected');
+
+    /** Last connection error message */
+    readonly connectionError = signal<string | null>(null);
+
+    /** Computed: Is socket connected */
+    readonly isConnected = computed(() => this.connectionStatus() === 'connected');
+
+    /** Computed: Is socket reconnecting */
+    readonly isReconnecting = computed(() => this.connectionStatus() === 'reconnecting');
+
+    constructor(
+        @Inject(PLATFORM_ID) private platformId: Object,
+        private authService: AuthService
+    ) {
         if (isPlatformBrowser(this.platformId)) {
             this.initSocket();
         }
     }
 
+    // ═══════════════════════════════════════════════════════════════
+    // SOCKET INITIALIZATION
+    // ═══════════════════════════════════════════════════════════════
+
     private initSocket(): void {
         if (environment.useMockSockets) {
-            console.log(' Using Mock WebSockets');
-            this.isConnected = true;
+            console.log('🔌 Using Mock WebSockets');
+            this.connectionStatus.set('connected');
             return;
         }
 
-        // Assuming API URL base for socket, or separate config
-        // Usually socket.io connects to the base URL or specified path
-        const url = environment.apiUrl.replace('/api/v1', ''); // simple heuristic
+        this.connectSocket();
+    }
 
-        this.socket = io(url, {
+    private connectSocket(): void {
+        const token = this.authService.getToken();
+
+        if (!token) {
+            console.warn('[WebSocket] No auth token available, skipping connection');
+            this.connectionStatus.set('disconnected');
+            return;
+        }
+
+        const socketUrl = environment.socketUrl || environment.apiUrl.replace('/api/v1', '');
+
+        this.connectionStatus.set('connecting');
+        console.log('[WebSocket] Connecting to:', socketUrl);
+
+        this.socket = io(socketUrl, {
             path: '/socket.io',
             autoConnect: true,
-            transports: ['polling', 'websocket'], // Try polling first, then upgrade
+            transports: ['polling', 'websocket'],
             reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000
+            reconnectionAttempts: this.maxReconnectAttempts,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            auth: {
+                token: token
+            }
         });
+
+        this.setupEventHandlers();
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // EVENT HANDLERS
+    // ═══════════════════════════════════════════════════════════════
+
+    private setupEventHandlers(): void {
+        if (!this.socket) return;
 
         this.socket.on('connect', () => {
-            console.log('WebSocket connected');
-            this.isConnected = true;
+            console.log('✅ WebSocket connected');
+            this.reconnectAttempts = 0;
+            this.connectionStatus.set('connected');
+            this.connectionError.set(null);
         });
 
-        this.socket.on('disconnect', () => {
-            console.log('WebSocket disconnected');
-            this.isConnected = false;
+        this.socket.on('disconnect', (reason) => {
+            console.log('🔌 WebSocket disconnected:', reason);
+            this.connectionStatus.set('disconnected');
         });
 
         this.socket.on('connect_error', (error: any) => {
-            console.error('WebSocket connection error:', error);
+            console.error('❌ WebSocket connection error:', error.message);
+            this.connectionStatus.set('error');
+            this.connectionError.set(error.message);
+
+            if (error.message === 'Token expired' || error.message === 'jwt expired') {
+                console.log('[WebSocket] Token expired, attempting refresh...');
+                this.handleTokenExpiry();
+            }
+        });
+
+        this.socket.io.on('reconnect_attempt', (attempt) => {
+            console.log(`🔄 WebSocket reconnecting... attempt ${attempt}`);
+            this.reconnectAttempts = attempt;
+            this.connectionStatus.set('reconnecting');
+        });
+
+        this.socket.io.on('reconnect', () => {
+            console.log('✅ WebSocket reconnected');
+            this.reconnectAttempts = 0;
+            this.connectionStatus.set('connected');
+            this.connectionError.set(null);
+        });
+
+        this.socket.io.on('reconnect_failed', () => {
+            console.error('❌ WebSocket reconnection failed after max attempts');
+            this.connectionStatus.set('error');
+            this.connectionError.set('Connection failed after maximum retry attempts');
+        });
+
+        this.socket.on('trip_update', (update: any) => {
+            console.log('🚍 Trip Update:', update);
+        });
+
+        this.socket.on('deviation_update', (update: any) => {
+            console.log('⚠️ Deviation Update:', update);
         });
     }
 
-    // Emit event
+    private async handleTokenExpiry(): Promise<void> {
+        try {
+            await this.authService.refreshUserData().toPromise();
+            console.log('[WebSocket] Token refreshed, reconnecting...');
+            this.reconnect();
+        } catch (error) {
+            console.error('[WebSocket] Token refresh failed:', error);
+            this.connectionError.set('Authentication failed - please login again');
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PUBLIC API
+    // ═══════════════════════════════════════════════════════════════
+
+    reconnect(): void {
+        if (this.socket) {
+            this.socket.disconnect();
+        }
+        this.connectSocket();
+    }
+
+    isSocketConnected(): boolean {
+        return this.isConnected();
+    }
+
     emit(eventName: string, data: any): void {
         if (environment.useMockSockets) {
             console.log(`[Mock WS] Emitting: ${eventName}`, data);
 
-            // If we are emitting 'joinRoom', we might want to simulate a response or just log it
-            // This acts as a simple event bus for now
             if (!this.mockSubjects.has(eventName)) {
                 this.mockSubjects.set(eventName, new Subject<any>());
             }
@@ -68,12 +190,21 @@ export class WebSocketService {
             return;
         }
 
-        if (this.socket && this.isConnected) {
+        if (this.socket && this.isConnected()) {
             this.socket.emit(eventName, data);
+        } else {
+            console.warn('[WebSocket] Cannot emit - socket not connected');
         }
     }
 
-    // Listen to event
+    joinRoom(roomId: string): void {
+        this.emit('joinRoom', { roomId });
+    }
+
+    leaveRoom(roomId: string): void {
+        this.emit('leaveRoom', { roomId });
+    }
+
     on(eventName: string): Observable<any> {
         if (environment.useMockSockets) {
             if (!this.mockSubjects.has(eventName)) {
@@ -84,8 +215,6 @@ export class WebSocketService {
 
         return new Observable((observer) => {
             if (!this.socket) {
-                // If not browser or not init, complete immediately or error?
-                // Just return empty for SSR safety
                 return;
             }
 
@@ -102,6 +231,7 @@ export class WebSocketService {
     disconnect(): void {
         if (this.socket) {
             this.socket.disconnect();
+            this.connectionStatus.set('disconnected');
         }
     }
 }

@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -91,8 +92,10 @@ export class LoginComponent {
                     }, 2000);
                 } else if (error.status === 0) {
                     this.errorMessage = 'Cannot connect to server. Please check your connection.';
+                    alert('Network Error: Cannot connect to server at ' + environment.apiUrl);
                 } else {
                     this.errorMessage = error.error?.message || 'Login failed. Please try again.';
+                    alert('Login Error: ' + this.errorMessage);
                 }
 
                 console.error('❌ Login error:', error);

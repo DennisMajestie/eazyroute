@@ -1,0 +1,77 @@
+<div class="protocol-card">
+    <div class="card-header">
+        <div class="header-left">
+            <span class="icon">📍</span>
+            <div class="title-section">
+                <h4>Local Tip: {{ protocol.destination }}</h4>
+                <span class="verified-badge" *ngIf="protocol.verified">✓ Verified</span>
+            </div>
+        </div>
+        <div class="upvotes">
+            <button class="upvote-btn" (click)="upvote()" [disabled]="hasVoted">
+                <span class="icon">👍</span>
+                <span class="count">{{ protocol.upvotes || 0 }}</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <!-- Where to Stand -->
+        <div class="protocol-item">
+            <span class="item-icon">📌</span>
+            <div class="item-content">
+                <strong>Where to stand:</strong>
+                <p>{{ protocol.location }}</p>
+            </div>
+        </div>
+
+        <!-- What to Shout -->
+        <div class="protocol-item">
+            <span class="item-icon">📢</span>
+            <div class="item-content">
+                <strong>What to shout:</strong>
+                <p class="shout">"{{ protocol.shout }}"</p>
+            </div>
+        </div>
+
+        <!-- Hand Signal -->
+        <div class="protocol-item" *ngIf="protocol.signal">
+            <span class="item-icon">✋</span>
+            <div class="item-content">
+                <strong>Signal:</strong>
+                <p>{{ protocol.signal }}</p>
+            </div>
+        </div>
+
+        <!-- Insider Tip -->
+        <div class="protocol-item insider-tip" *ngIf="protocol.insiderTip">
+            <span class="item-icon">💡</span>
+            <div class="item-content">
+                <strong>Insider Tip:</strong>
+                <p>{{ protocol.insiderTip }}</p>
+            </div>
+        </div>
+
+        <!-- Typical Prices -->
+        <div class="price-info" *ngIf="protocol.typicalPrice">
+            <span class="price-tag" *ngIf="protocol.typicalPrice.along">
+                Along: ₦{{ protocol.typicalPrice.along }}
+            </span>
+            <span class="price-tag" *ngIf="protocol.typicalPrice.drop">
+                Drop: ₦{{ protocol.typicalPrice.drop }}
+            </span>
+        </div>
+
+        <!-- Photos -->
+        <div class="photos" *ngIf="protocol.photos && protocol.photos.length > 0">
+            <img *ngFor="let photo of protocol.photos" [src]="photo" alt="Location photo" class="protocol-photo">
+        </div>
+    </div>
+
+    <div class="card-footer">
+        <button class="btn-report" (click)="report()">
+            <span class="icon">🚩</span>
+            <span>Report</span>
+        </button>
+    </div>
+</div>

@@ -96,33 +96,36 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
    */
 
   private loadUserProfile(): void {
-    this.authService.currentUser$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(user => {
-        if (user) {
-          this.currentUser = user;
-          this.userName = `${user.firstName} ${user.lastName}`.trim();
-          this.userEmail = user.email || '';
-          this.userPhone = user.phoneNumber || '';
-          this.userAvatar = user.avatar || null;
-          this.userInitials = this.getInitials(user);
-
-          // Populate edit form
-          this.editForm = {
-            firstName: user.firstName || '',
-            lastName: user.lastName || '',
-            email: user.email || '',
-            phoneNumber: user.phoneNumber || ''
-          };
-        }
-      });
+    // Load initial user from signal
+    const user = this.authService.currentUser();
+    if (user) {
+      this.updateUserFromSignal(user);
+    }
 
     // Refresh from server
     if (this.authService.isUserAuthenticated()) {
       this.authService.getCurrentUser().subscribe({
+        next: (user) => this.updateUserFromSignal(user),
         error: (error) => console.error('Error loading profile:', error)
       });
     }
+  }
+
+  private updateUserFromSignal(user: User): void {
+    this.currentUser = user;
+    this.userName = `${user.firstName} ${user.lastName}`.trim();
+    this.userEmail = user.email || '';
+    this.userPhone = user.phoneNumber || '';
+    this.userAvatar = user.avatar || null;
+    this.userInitials = this.getInitials(user);
+
+    // Populate edit form
+    this.editForm = {
+      firstName: user.firstName || '',
+      lastName: user.lastName || '',
+      email: user.email || '',
+      phoneNumber: user.phoneNumber || ''
+    };
   }
 
   private getInitials(user: User): string {

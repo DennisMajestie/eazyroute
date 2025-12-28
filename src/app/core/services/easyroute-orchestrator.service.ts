@@ -35,11 +35,18 @@ export class EasyrouteOrchestratorService {
   });
   public state$ = this.stateSubject.asObservable();
 
+  // After-trip survey trigger
+  private showSurveySubject = new BehaviorSubject<{ tripId: string; routeSegmentId: string } | null>(null);
+  public showSurvey$ = this.showSurveySubject.asObservable();
+
   // Current trip state
   private currentTripState: TripState | null = null;
 
   // Location tracking subscription
   private locationTrackingSubscription: Subscription | null = null;
+
+  // Resumption tracking (to avoid immediate deviation alerts)
+  private resumedAt: number = 0;
 
   constructor(
     private routeGenerationEngine: RouteGenerationEngine,
@@ -60,16 +67,16 @@ export class EasyrouteOrchestratorService {
     console.log('[Orchestrator] Initializing...');
 
     // Check for active trip from backend
-    try {
-      const response = await firstValueFrom(this.tripHttpService.getActiveTrip());
+    // try {
+    //   const response = await firstValueFrom(this.tripHttpService.getActiveTrip());
 
-      if (response.success && response.data) {
-        console.log('[Orchestrator] Found active trip:', response.data);
-        await this.resumeTrip(response.data);
-      }
-    } catch (error) {
-      console.log('[Orchestrator] No active trip found');
-    }
+    //   if (response.success && response.data) {
+    //     console.log('[Orchestrator] Found active trip:', response.data);
+    //     await this.resumeTrip(response.data);
+    //   }
+    // } catch (error) {
+    //   console.log('[Orchestrator] No active trip found');
+    // }
 
     this.updateState({ isInitialized: true });
     console.log('[Orchestrator] Initialized successfully');
@@ -184,6 +191,7 @@ export class EasyrouteOrchestratorService {
 
       this.currentTripState.status = 'in_progress';
       this.currentTripState.startTime = new Date();
+      this.resumedAt = Date.now();
 
       // ✅ Now safe to pass - TypeScript knows it's not null
       await this.tripExecutionEngine.initializeTrip(this.currentTripState);
@@ -276,8 +284,17 @@ export class EasyrouteOrchestratorService {
       this.currentTripState.status = 'completed';
       this.currentTripState.endTime = new Date();
 
+      // Save trip data for survey BEFORE cleanup
+      const tripId = this.currentTripState.tripId;
+      const routeSegmentId = this.currentTripState.selectedRoute?.segments?.[0]?.id || tripId;
+
       this.stopLocationTracking();
       this.cleanupTrip();
+
+      // Trigger after-trip survey
+      setTimeout(() => {
+        this.showSurveySubject.next({ tripId, routeSegmentId });
+      }, 1000); // Show survey 1 second after completion
 
       this.updateState({
         hasActiveTrip: false,
@@ -386,6 +403,12 @@ export class EasyrouteOrchestratorService {
     // ✅ NULL SAFETY CHECK
     if (!this.currentTripState) return;
 
+    // Skip deviation check for the first 15 seconds after resumption/start
+    // to allow GPS to stabilize and avoid false alerts
+    if (Date.now() - this.resumedAt < 15000) {
+      return;
+    }
+
     try {
       // Use ReroutingEngine to check deviation
       const analysis = await this.reroutingEngine.checkForDeviation(
@@ -393,7 +416,7 @@ export class EasyrouteOrchestratorService {
       );
 
       if (analysis.shouldReroute) {
-        console.log('[Orchestrator] Deviation detected, rerouting needed');
+        console.log(`[Orchestrator] Segment deviation detected: ${analysis.reason}`);
         // ReroutingEngine will handle the reroute process automatically
       }
     } catch (error) {
@@ -485,6 +508,8 @@ export class EasyrouteOrchestratorService {
       rerouteCount: tripData.rerouteCount || 0
       // ✅ locationHistory removed - not in interface
     };
+
+    this.resumedAt = Date.now();
 
     this.updateState({
       hasActiveTrip: true,

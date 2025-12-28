@@ -186,13 +186,19 @@
 
 // ===== QUICK ACTIONS =====
 .quick-actions {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  display: flex;
   gap: 0.75rem;
   margin-bottom: 2rem;
+  overflow-x: auto;
+  padding: 0.5rem 0.25rem 1.25rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar { display: none; }
 }
 
 .action-card {
+  flex: 0 0 140px;
+  scroll-snap-align: start;
   background: white;
   border: none;
   border-radius: 1rem;
@@ -231,6 +237,26 @@
 
   .action-icon {
     background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.action-quaternary {
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: white;
+
+  .action-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+}
+
+.action-quinary {
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  color: white;
+
+  .action-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
   }
 }
 
@@ -358,7 +384,7 @@
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
     border-color: #3b82f6;
   }
 }
@@ -645,11 +671,13 @@
   border-radius: 1rem;
   padding: 1.25rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    border-color: #3b82f6;
   }
 }
 
@@ -669,12 +697,10 @@
 .driver-avatar {
   width: 3rem;
   height: 3rem;
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  object-fit: cover;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
+  border: 2px solid #eff6ff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .driver-name {
@@ -726,10 +752,14 @@
 
 .route-line {
   width: 2px;
-  height: 1rem;
-  background: #e5e7eb;
+  height: 1.5rem;
+  background-image: linear-gradient(to bottom, #d1d5db 50%, transparent 50%);
+  background-size: 2px 8px;
+  background-repeat: repeat-y;
+  background-color: transparent;
   margin-left: 0.313rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  margin-top: 0.25rem;
 }
 
 .location-text {
@@ -811,13 +841,17 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   display: flex;
   justify-content: space-around;
-  padding: 0.75rem 1rem;
-  border-top: 1px solid #e5e7eb;
-  box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
   z-index: 1000;
+  padding-bottom: env(safe-area-inset-bottom, 1rem);
 }
 
 .nav-item {
@@ -829,27 +863,56 @@
   border: none;
   color: #9ca3af;
   cursor: pointer;
-  padding: 0.5rem 1rem;
-  border-radius: 0.75rem;
-  transition: all 0.3s ease;
-  font-size: 0.75rem;
-  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0.5rem;
+  position: relative;
+  min-width: 4rem;
 
   svg {
-    transition: all 0.3s ease;
+    width: 24px;
+    height: 24px;
+    stroke-width: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  &:hover {
-    background: #f9fafb;
-    color: #3b82f6;
+  span {
+    font-size: 0.7rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
   }
 
   &.active {
     color: #3b82f6;
 
     svg {
-      transform: scale(1.1);
+      transform: translateY(-2px);
+      stroke: #3b82f6;
+      filter: drop-shadow(0 4px 6px rgba(59, 130, 246, 0.3));
     }
+
+    span {
+      font-weight: 600;
+      color: #3b82f6;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2rem;
+      height: 3px;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      border-radius: 0 0 4px 4px;
+      box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+    }
+  }
+
+  &:hover:not(.active) {
+    color: #4b5563;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 0.75rem;
   }
 }
 

@@ -3,8 +3,9 @@
 export interface Environment {
     production: boolean;
     apiUrl: string;
-    appName: 'EazyRoute';
+    appName: 'Along_9ja' | 'EazyRoute' | string;
     useMockSockets?: boolean; // Optional, defaults to false if undefined
+    socketUrl?: string;        // Optional WebSocket URL (defaults to apiUrl base)
 
     googleMapsApiKey: string;
 

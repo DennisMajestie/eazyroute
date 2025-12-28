@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from '../../core/guards/admin.guard';
 
 // src/app/features/bus-stops/bus-stops.routes.ts
 export const BUS_STOPS_ROUTES: Routes = [
@@ -8,7 +9,12 @@ export const BUS_STOPS_ROUTES: Routes = [
     },
     {
         path: 'add',
-        loadComponent: () => import('../bus-stops/add-stop/add-stop.component').then(m => m.AddStopComponent)
+        loadComponent: () => import('../bus-stops/add-place/add-place.component').then(m => m.AddPlaceComponent)
+    },
+    {
+        path: 'verify-portal',
+        loadComponent: () => import('../bus-stops/verification-portal/verification-portal.component').then(m => m.VerificationPortalComponent),
+        canActivate: [adminGuard]
     },
     {
         path: ':id',

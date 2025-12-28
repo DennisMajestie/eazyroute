@@ -1,0 +1,85 @@
+<div class="modal-overlay" *ngIf="show" (click)="cancel()"></div>
+
+<div class="protocol-modal" *ngIf="show">
+    <div class="modal-header">
+        <h3>📍 Share Local Knowledge</h3>
+        <p>{{ junctionName }} → {{ destinationName }}</p>
+        <button class="close-btn" (click)="cancel()">×</button>
+    </div>
+
+    <div class="modal-body">
+        <!-- Where to Stand -->
+        <div class="form-group">
+            <label for="location">Where do you stand? *</label>
+            <input id="location" type="text" [(ngModel)]="protocol.location"
+                placeholder="e.g., Expressway side, past the bridge">
+            <small>Be specific so others can find the exact spot</small>
+        </div>
+
+        <!-- What to Shout -->
+        <div class="form-group">
+            <label for="shout">What do you shout? *</label>
+            <input id="shout" type="text" [(ngModel)]="protocol.shout" placeholder="e.g., Gwarinpa! 1st Gate!">
+            <small>What drivers need to hear to stop</small>
+        </div>
+
+        <!-- Hand Signal -->
+        <div class="form-group">
+            <label for="signal">Any hand signals?</label>
+            <input id="signal" type="text" [(ngModel)]="protocol.signal"
+                placeholder="e.g., Wave one finger for 'along'">
+        </div>
+
+        <!-- Insider Tip -->
+        <div class="form-group">
+            <label for="tip">Insider tip?</label>
+            <textarea id="tip" [(ngModel)]="protocol.insiderTip" rows="3"
+                placeholder="e.g., Ask driver 'Direct or Life Camp?' - Direct is faster"></textarea>
+        </div>
+
+        <!-- Avoid Time -->
+        <div class="form-group">
+            <label for="avoidTime">Best time to avoid?</label>
+            <input id="avoidTime" type="text" [(ngModel)]="protocol.avoidTime"
+                placeholder="e.g., 7-9 AM (too much traffic)">
+        </div>
+
+        <!-- Typical Prices -->
+        <div class="form-group">
+            <label>Typical prices (optional)</label>
+            <div class="price-inputs">
+                <div class="price-field">
+                    <label for="alongPrice">Along</label>
+                    <input id="alongPrice" type="number" [(ngModel)]="protocol.typicalPrice!.along" placeholder="₦">
+                </div>
+                <div class="price-field">
+                    <label for="dropPrice">Drop</label>
+                    <input id="dropPrice" type="number" [(ngModel)]="protocol.typicalPrice!.drop" placeholder="₦">
+                </div>
+            </div>
+        </div>
+
+        <!-- Photo Upload -->
+        <div class="form-group">
+            <label for="photos">📸 Upload photos (optional, max 3)</label>
+            <input id="photos" type="file" (change)="onPhotoSelect($event)" accept="image/*" multiple>
+
+            <div class="photo-preview" *ngIf="selectedPhotos.length > 0">
+                <div *ngFor="let photo of selectedPhotos; let i = index" class="photo-item">
+                    <img [src]="getPhotoUrl(photo)" alt="Preview">
+                    <button class="remove-photo" (click)="removePhoto(i)">×</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button class="btn-cancel" (click)="cancel()" [disabled]="isSubmitting">
+            Cancel
+        </button>
+        <button class="btn-submit" (click)="submit()" [disabled]="!isValid() || isSubmitting">
+            <span *ngIf="!isSubmitting">Submit & Earn 100pts</span>
+            <span *ngIf="isSubmitting">Submitting...</span>
+        </button>
+    </div>
+</div>

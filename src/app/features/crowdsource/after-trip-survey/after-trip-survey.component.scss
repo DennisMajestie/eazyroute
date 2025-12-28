@@ -1,0 +1,267 @@
+.survey-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  backdrop-filter: blur(2px);
+}
+
+.survey-card {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-radius: 24px 24px 0 0;
+  padding: 24px;
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.1);
+  z-index: 9999;
+  max-height: 80vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease;
+
+  @media (min-width: 768px) {
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 500px;
+    bottom: 20px;
+    border-radius: 16px;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.survey-header {
+  text-align: center;
+  margin-bottom: 24px;
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    color: #1f2937;
+    font-weight: 700;
+  }
+
+  p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 14px;
+  }
+}
+
+.survey-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #374151;
+    font-size: 14px;
+  }
+
+  .price-input {
+    display: flex;
+    align-items: center;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    background: #f9fafb;
+
+    &:focus-within {
+      border-color: var(--primary);
+      background: white;
+    }
+
+    .currency {
+      font-weight: 600;
+      color: #6b7280;
+      margin-right: 8px;
+    }
+
+    input {
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      font-weight: 600;
+      flex: 1;
+      outline: none;
+      color: #1f2937;
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+    }
+  }
+
+  textarea {
+    width: 100%;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 14px;
+    resize: vertical;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+  }
+
+  .bonus-text {
+    display: block;
+    color: #10b981;
+    font-size: 12px;
+    margin-top: 4px;
+  }
+}
+
+.radio-group {
+  display: flex;
+  gap: 8px;
+
+  .radio-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    input {
+      display: none;
+    }
+
+    span {
+      font-size: 14px;
+      font-weight: 500;
+      color: #6b7280;
+    }
+
+    &.selected {
+      border-color: var(--primary);
+      background: var(--primary);
+
+      span {
+        color: white;
+      }
+    }
+
+    &:hover:not(.selected) {
+      border-color: #d1d5db;
+      background: #f9fafb;
+    }
+  }
+}
+
+.stars {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+
+  .star {
+    font-size: 32px;
+    cursor: pointer;
+    color: #d1d5db;
+    transition: color 0.2s;
+
+    &.filled {
+      color: #fbbf24;
+    }
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.survey-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 24px;
+
+  button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+
+  .btn-skip {
+    background: #f3f4f6;
+    color: #6b7280;
+
+    &:hover:not(:disabled) {
+      background: #e5e7eb;
+    }
+  }
+
+  .btn-submit {
+    background: var(--primary);
+    color: white;
+
+    &:hover:not(:disabled) {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+  }
+}
+
+.points-earned {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  background: #d1fae5;
+  border-radius: 8px;
+  color: #065f46;
+  font-weight: 600;
+  margin-top: 16px;
+  animation: slideIn 0.3s ease;
+
+  .icon {
+    font-size: 20px;
+    color: #10b981;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

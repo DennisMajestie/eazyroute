@@ -1,16 +1,19 @@
 /**
- * ═══════════════════════════════════════════════════════════════════
- * UPDATED ROUTE HTTP SERVICE (Using Your Environment)
- * ═══════════════════════════════════════════════════════════════════
- * 
- * File: src/app/core/services/route-http.service.ts
+ * Route HTTP Service
+ * Handles all route-related API calls
  */
 
-import { HttpClient, HttpParams } from "@angular/common/http";
-import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment";
-import { ApiResponse } from "./bus-stop-http.service";
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+
+export interface ApiResponse<T> {
+  success: boolean;
+  message?: string;
+  data?: T;
+  error?: string;
+}
 
 export interface RouteResponse {
   _id: string;
@@ -28,9 +31,9 @@ export interface RouteResponse {
     name: string;
     order: number;
   }>;
-  estimatedDuration: number; // minutes
-  estimatedFare: number; // naira
-  distance: number; // meters
+  estimatedDuration: number;
+  estimatedFare: number;
+  distance: number;
   activeBuses: number;
   trending?: boolean;
   popularity?: number;
@@ -42,7 +45,6 @@ export interface RouteResponse {
   providedIn: 'root'
 })
 export class RouteHttpService {
-  // ✅ Using your environment.apiUrl
   private readonly API_URL = `${environment.apiUrl}/routes`;
 
   constructor(private http: HttpClient) { }

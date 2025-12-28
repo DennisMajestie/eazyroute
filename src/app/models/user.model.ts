@@ -1,38 +1,7 @@
-// // src/app/models/user.model.ts
-// export interface User {
-//     id: number;
-//     fullName: string;
-//     email?: string;
-//     phone: string;
-//     userType: 'rider' | 'driver' | 'admin';
-//     verified: boolean;
-//     rating: number;
-//     profileImage?: string;
-//     createdAt: Date;
-// }
+/**
+ * User and Authentication Models
+ */
 
-// export interface LoginRequest {
-//     phone: string;
-//     password: string;
-// }
-
-// export interface RegisterRequest {
-//     fullName: string;
-//     phone: string;
-//     email?: string;
-//     password: string;
-//     userType: 'rider' | 'driver';
-// }
-
-// export interface AuthResponse {
-//     token?: string;
-//     user?: User;
-//     requiresOtp?: boolean;
-//     message?: string;
-// }
-// src/app/models/user.model.ts
-
-// src/app/models/user.model.ts
 export interface User {
     avatar: null;
     _id?: string;
@@ -45,13 +14,13 @@ export interface User {
     role?: string;
     isAdmin?: boolean;
     isVerified?: boolean;
-    onboardingComplete?: boolean; // ⬅️ Add this
+    onboardingComplete?: boolean;
+    userType?: string;
     profilePicture?: string;
     createdAt?: string;
     updatedAt?: string;
 }
 
-// ... rest of your interfaces (LoginRequest, RegisterRequest, etc.)
 export interface AuthResponse {
     success: boolean;
     message: string;
@@ -59,6 +28,8 @@ export interface AuthResponse {
     user?: User;
     data?: {
         token?: string;
+        accessToken?: string;
+        refreshToken?: string;
         user?: User;
         requiresOtp?: boolean;
         email?: string;

@@ -1,0 +1,74 @@
+<div class="survey-overlay" *ngIf="show" (click)="skip()"></div>
+
+<div class="survey-card" *ngIf="show" [@slideIn]>
+    <div class="survey-header">
+        <h3>🎉 Trip Complete!</h3>
+        <p>Help others by sharing your experience</p>
+    </div>
+
+    <div class="survey-body">
+        <!-- Price Input -->
+        <div class="form-group">
+            <label for="price">💰 What did you pay?</label>
+            <div class="price-input">
+                <span class="currency">₦</span>
+                <input id="price" type="number" [(ngModel)]="feedback.pricePaid" placeholder="Enter amount"
+                    (input)="calculatePoints()">
+            </div>
+        </div>
+
+        <!-- Traffic Level -->
+        <div class="form-group">
+            <label>🚦 How was traffic?</label>
+            <div class="radio-group">
+                <label class="radio-option" [class.selected]="feedback.traffic === 'light'">
+                    <input type="radio" [(ngModel)]="feedback.traffic" value="light" name="traffic">
+                    <span>Light</span>
+                </label>
+                <label class="radio-option" [class.selected]="feedback.traffic === 'moderate'">
+                    <input type="radio" [(ngModel)]="feedback.traffic" value="moderate" name="traffic">
+                    <span>Moderate</span>
+                </label>
+                <label class="radio-option" [class.selected]="feedback.traffic === 'heavy'">
+                    <input type="radio" [(ngModel)]="feedback.traffic" value="heavy" name="traffic">
+                    <span>Heavy</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Safety Rating -->
+        <div class="form-group">
+            <label>⭐ How safe did you feel?</label>
+            <div class="stars">
+                <span *ngFor="let star of [1,2,3,4,5]" class="star" [class.filled]="star <= feedback.safetyRating"
+                    (click)="setSafetyRating(star)">
+                    {{ star <= feedback.safetyRating ? '★' : '☆' }} </span>
+            </div>
+        </div>
+
+        <!-- Optional Tip -->
+        <div class="form-group">
+            <label for="tip">📝 Any tips for this route? (Optional)</label>
+            <textarea id="tip" [(ngModel)]="feedback.tip" rows="2" placeholder="Share insider knowledge..."
+                (input)="calculatePoints()"></textarea>
+            <small *ngIf="feedback.tip.length > 20" class="bonus-text">
+                +5 bonus points for detailed tip!
+            </small>
+        </div>
+    </div>
+
+    <div class="survey-actions">
+        <button class="btn-skip" (click)="skip()" [disabled]="isSubmitting">
+            Skip
+        </button>
+        <button class="btn-submit" (click)="submit()" [disabled]="!isValid() || isSubmitting">
+            <span *ngIf="!isSubmitting">Submit & Earn {{ pointsToEarn }}pts</span>
+            <span *ngIf="isSubmitting">Submitting...</span>
+        </button>
+    </div>
+
+    <div class="points-earned" *ngIf="showSuccess">
+        <span class="icon">✓</span>
+        <span>+{{ pointsEarned }} points earned!</span>
+    </div>
+</div>

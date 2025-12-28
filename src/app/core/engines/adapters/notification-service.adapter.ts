@@ -5,17 +5,21 @@
 
 import { Injectable } from '@angular/core';
 import { INotificationService, TripMilestone, TripSummary } from '../types/easyroute.types';
+import { ToastNotificationService } from '../../services/toast-notification.service';
 
 @Injectable({
     providedIn: 'root'
 })
 export class NotificationServiceAdapter implements INotificationService {
-    constructor() { }
+    constructor(private toastService: ToastNotificationService) { }
 
     async sendMilestoneNotification(userId: string, milestone: TripMilestone): Promise<void> {
-        console.log('[Notification] Milestone reached:', milestone);
+        this.toastService.success(
+            'Milestone Reached',
+            `You have arrived at ${milestone.stopName}`
+        );
 
-        // Trigger browser notification
+        // Trigger browser notification...
         if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('Milestone Reached', {
                 body: `Approaching ${milestone.stopName}`,
@@ -30,7 +34,7 @@ export class NotificationServiceAdapter implements INotificationService {
     }
 
     async sendRerouteNotification(userId: string, reason: string): Promise<void> {
-        console.log('[Notification] Reroute detected:', reason);
+        this.toastService.warning('Route Updated', reason);
 
         if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('Route Updated', {
@@ -41,7 +45,10 @@ export class NotificationServiceAdapter implements INotificationService {
     }
 
     async sendTripCompletedNotification(userId: string, summary: TripSummary): Promise<void> {
-        console.log('[Notification] Trip completed:', summary);
+        this.toastService.success(
+            'Trip Completed!',
+            `Duration: ${summary.actualDuration} min | Cost: ₦${summary.actualCost}`
+        );
 
         if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('Trip Completed!', {
@@ -58,9 +65,7 @@ export class NotificationServiceAdapter implements INotificationService {
     }
 
     async showInAppAlert(title: string, message: string): Promise<void> {
-        // Integrate with your Angular material dialog or custom alert component
-        console.log(`[Alert] ${title}: ${message}`);
-        alert(`${title}\n\n${message}`);
+        this.toastService.info(title, message);
     }
 
     /**

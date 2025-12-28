@@ -1,0 +1,60 @@
+<div class="leaderboard-container">
+    <!-- Header -->
+    <div class="leaderboard-header">
+        <h2>🏆 Top Contributors</h2>
+        <div class="period-selector">
+            <button [class.active]="period === 'week'" (click)="changePeriod('week')">
+                This Week
+            </button>
+            <button [class.active]="period === 'month'" (click)="changePeriod('month')">
+                This Month
+            </button>
+            <button [class.active]="period === 'all'" (click)="changePeriod('all')">
+                All Time
+            </button>
+        </div>
+    </div>
+
+    <!-- User Rank -->
+    <div class="user-rank" *ngIf="userRank > 0 && !isLoading">
+        <p>Your Rank: <strong>#{{ userRank }}</strong></p>
+    </div>
+
+    <!-- Leaderboard List -->
+    <div class="leaderboard-list" *ngIf="!isLoading">
+        <div *ngFor="let user of leaderboard; let i = index" class="leaderboard-item"
+            [class.current-user]="isCurrentUser(user.userId)" [class.top-three]="i < 3">
+
+            <div class="rank">
+                <span class="medal" *ngIf="i < 3">{{ getMedal(i) }}</span>
+                <span class="rank-number" *ngIf="i >= 3">#{{ i + 1 }}</span>
+            </div>
+
+            <div class="user-info">
+                <span class="username">
+                    {{ user.username }}
+                    <span class="you-badge" *ngIf="isCurrentUser(user.userId)">You</span>
+                </span>
+                <span class="badge">{{ user.badge }}</span>
+            </div>
+
+            <div class="points">
+                <span class="points-value">{{ user.points }}</span>
+                <span class="points-label">pts</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-state" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Loading leaderboard...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && leaderboard.length === 0">
+        <span class="icon">🏆</span>
+        <h3>No Rankings Yet</h3>
+        <p>Be the first to contribute and claim the top spot!</p>
+    </div>
+</div>

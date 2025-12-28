@@ -1,0 +1,96 @@
+<div class="dashboard-container" *ngIf="!isLoading && userStats">
+    <!-- User Stats Header -->
+    <div class="stats-header">
+        <div class="level-badge" [ngClass]="getLevelClass(userStats.level)">
+            <span class="badge-icon">{{ getLevelIcon(userStats.level) }}</span>
+            <span class="badge-label">{{ userStats.levelName }}</span>
+        </div>
+
+        <div class="points-display">
+            <h2>{{ userStats.totalPoints }}</h2>
+            <p>Total Points</p>
+        </div>
+
+        <div class="rank-display">
+            <h3>#{{ userStats.rank }}</h3>
+            <p>Your Rank</p>
+        </div>
+    </div>
+
+    <!-- Progress to Next Level -->
+    <div class="progress-section">
+        <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="progressToNextLevel"></div>
+        </div>
+        <p class="progress-text">
+            <span *ngIf="userStats.nextBadge.pointsNeeded > 0">
+                {{ userStats.nextBadge.pointsNeeded }} pts to {{ userStats.nextBadge.name }}
+            </span>
+            <span *ngIf="userStats.nextBadge.pointsNeeded === 0">
+                🎉 Max Level Reached!
+            </span>
+        </p>
+    </div>
+
+    <!-- Badges -->
+    <div class="badges-section" *ngIf="userStats.badges && userStats.badges.length > 0">
+        <h4>🏆 Badges Earned</h4>
+        <div class="badges-grid">
+            <div *ngFor="let badge of userStats.badges" class="badge-item" [title]="badge.description">
+                <span class="badge-icon">{{ badge.icon }}</span>
+                <span class="badge-name">{{ badge.name }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contribution Stats -->
+    <div class="contribution-stats">
+        <h4>📊 Your Contributions</h4>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">💰</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ userStats.contributions.pricing }}</span>
+                    <span class="stat-label">Pricing Reports</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🛡️</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ userStats.contributions.safety }}</span>
+                    <span class="stat-label">Safety Ratings</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📍</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ userStats.contributions.protocols }}</span>
+                    <span class="stat-label">Local Tips</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📸</div>
+                <div class="stat-info">
+                    <span class="stat-value">{{ userStats.contributions.photos }}</span>
+                    <span class="stat-label">Photos</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading State -->
+<div class="loading-state" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Loading your stats...</p>
+</div>
+
+<!-- Empty State -->
+<div class="empty-state" *ngIf="!isLoading && !userStats">
+    <span class="icon">📊</span>
+    <h3>No Stats Yet</h3>
+    <p>Start contributing to earn points and badges!</p>
+</div>

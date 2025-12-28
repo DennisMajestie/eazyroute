@@ -1,47 +1,29 @@
 /**
  * ═══════════════════════════════════════════════════════════════════
- * EASYROUTE ORCHESTRATOR - MAIN COORDINATION SERVICE
+ * EASYROUTE ORCHESTRATOR - REFACTORED VERSION
  * ═══════════════════════════════════════════════════════════════════
  * 
- * File: src/app/core/engines/easyroute.orchestrator.ts
- * 
- * This is the BRAIN of EasyRoute. It coordinates all engines and provides
- * a single, clean API for your Angular components to interact with.
- * 
- * ARCHITECTURE:
- * - Single entry point for all EasyRoute features
- * - Manages engine lifecycle and coordination
- * - Handles cross-engine communication
- * - Provides observable streams for UI updates
- * - Manages state consistency across engines
- * 
- * USAGE IN COMPONENTS:
- * ```typescript
- * constructor(private easyroute: EasyRouteOrchestrator) {}
- * 
- * // Plan a trip
- * this.easyroute.planTrip(origin, destination).subscribe(routes => {
- *   // Show route options to user
- * });
- * 
- * // Start tracking
- * this.easyroute.startTrip(userId, selectedRoute);
- * 
- * // Listen to updates
- * this.easyroute.tripUpdates$.subscribe(update => {
- *   // Update UI
- * });
- * ```
+ * Main coordination service using extracted focused services.
+ * This is the BRAIN of EasyRoute - single API for Angular components.
  */
 
-import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Observable, Subject, combineLatest, merge } from 'rxjs';
+import { Injectable, OnDestroy, signal, computed, effect } from '@angular/core';
+import { BehaviorSubject, Observable, Subject, merge } from 'rxjs';
 import { map, filter, takeUntil, debounceTime } from 'rxjs/operators';
 
-// Engines
+// Core Engines (existing)
 import { RouteGenerationEngine } from './route-generation.engine';
 import { TripExecutionEngine } from './trip-execution.engine';
 import { ReroutingEngine } from './rerouting.engine';
+
+// Extracted Services (new)
+import { RouteComparatorService, RouteComparisonResult } from './routing/route-comparator.service';
+import { RouteBuilderService } from './routing/route-builder.service';
+import { SegmentFactoryService } from './routing/segment-factory.service';
+import { TripLifecycleService, TripStartRequest } from './orchestrator/trip-lifecycle.service';
+import { DeviationCheckerService } from './tracking/deviation-checker.service';
+import { MilestoneTrackerService } from './tracking/milestone-tracker.service';
+import { RerouteHandlerService } from './tracking/reroute-handler.service';
 
 // Types
 import {
@@ -49,17 +31,14 @@ import {
   GeneratedRoute,
   TripState,
   TripEvent,
-  TripStatus,
   TripSummary,
   EasyRouteConfig,
   DEFAULT_CONFIG
 } from './types/easyroute.types';
 
-/**
- * ═══════════════════════════════════════════════════════════════
- * ORCHESTRATOR STATE TYPES
- * ═══════════════════════════════════════════════════════════════
- */
+// ═══════════════════════════════════════════════════════════════
+// STATE TYPES (exported for external use)
+// ═══════════════════════════════════════════════════════════════
 
 export interface OrchestratorState {
   isInitialized: boolean;
@@ -75,21 +54,8 @@ export interface TripUpdateEvent {
   data?: any;
 }
 
-export interface RouteComparisonResult {
-  routes: GeneratedRoute[];
-  recommended: GeneratedRoute;
-  comparisonFactors: {
-    fastest: GeneratedRoute;
-    cheapest: GeneratedRoute;
-    mostBalanced: GeneratedRoute;
-  };
-}
-
-/**
- * ═══════════════════════════════════════════════════════════════
- * MAIN ORCHESTRATOR CLASS
- * ═══════════════════════════════════════════════════════════════
- */
+// Re-export for convenience
+export type { RouteComparisonResult };
 
 @Injectable({
   providedIn: 'root'
@@ -97,38 +63,38 @@ export interface RouteComparisonResult {
 export class EasyRouteOrchestrator implements OnDestroy {
 
   // ═══════════════════════════════════════════════════════════════
-  // OBSERVABLES - Subscribe to these in your components!
+  // PUBLIC OBSERVABLES
   // ═══════════════════════════════════════════════════════════════
 
-  /**
-   * Main stream of trip updates - subscribe to this for real-time tracking
-   */
   public tripUpdates$: Observable<TripUpdateEvent>;
-
-  /**
-   * Current trip state - always has the latest trip info
-   */
   public currentTrip$: Observable<TripState | null>;
-
-  /**
-   * Orchestrator state - initialization, errors, etc.
-   */
   public state$: Observable<OrchestratorState>;
-
-  /**
-   * Trip progress percentage (0-100)
-   */
   public tripProgress$: Observable<number>;
-
-  /**
-   * Remaining time to destination (in minutes)
-   */
   public remainingTime$: Observable<number | null>;
-
-  /**
-   * Remaining distance to destination (in meters)
-   */
   public remainingDistance$: Observable<number | null>;
+
+  // ═══════════════════════════════════════════════════════════════
+  // SIGNALS (Modern Angular reactive state)
+  // ═══════════════════════════════════════════════════════════════
+
+  /** Read-only access to trip lifecycle state */
+  readonly activeTrip = computed(() => this.tripLifecycle.activeTrip());
+  readonly tripStatus = computed(() => this.tripLifecycle.status());
+  readonly hasActiveTrip = computed(() => this.tripLifecycle.hasActiveTrip());
+  readonly isPaused = computed(() => this.tripLifecycle.isPaused());
+
+  /** Read-only access to milestone tracking */
+  readonly milestones = computed(() => this.milestoneTracker.milestones());
+  readonly currentMilestone = computed(() => this.milestoneTracker.currentMilestone());
+  readonly tripProgressPercent = computed(() => this.milestoneTracker.progress());
+
+  /** Read-only access to deviation state */
+  readonly isDeviated = computed(() => this.deviationChecker.isDeviated());
+  readonly currentDeviation = computed(() => this.deviationChecker.currentDeviation());
+
+  /** Read-only access to reroute state */
+  readonly hasPendingReroute = computed(() => this.rerouteHandler.hasPendingDecision());
+  readonly pendingReroute = computed(() => this.rerouteHandler.getPendingDecision());
 
   // ═══════════════════════════════════════════════════════════════
   // PRIVATE STATE
@@ -144,24 +110,29 @@ export class EasyRouteOrchestrator implements OnDestroy {
   private tripUpdatesSubject = new Subject<TripUpdateEvent>();
   private destroy$ = new Subject<void>();
   private config: EasyRouteConfig = DEFAULT_CONFIG;
+  private deviationCheckInterval: any;
 
   constructor(
+    // Core Engines
     private routeGeneration: RouteGenerationEngine,
     private tripExecution: TripExecutionEngine,
-    private rerouting: ReroutingEngine
+    private rerouting: ReroutingEngine,
+    // Extracted Services
+    private routeComparator: RouteComparatorService,
+    private routeBuilder: RouteBuilderService,
+    private segmentFactory: SegmentFactoryService,
+    private tripLifecycle: TripLifecycleService,
+    private deviationChecker: DeviationCheckerService,
+    private milestoneTracker: MilestoneTrackerService,
+    private rerouteHandler: RerouteHandlerService
   ) {
-    // Initialize observables
     this.state$ = this.stateSubject.asObservable();
     this.tripUpdates$ = this.tripUpdatesSubject.asObservable();
     this.currentTrip$ = this.tripExecution.activeTrip$;
 
     // Derived observables
     this.tripProgress$ = this.currentTrip$.pipe(
-      map(trip => {
-        if (!trip) return 0;
-        const progress = this.tripExecution.getTripProgress();
-        return progress ? progress.percentage : 0;
-      })
+      map(trip => trip ? this.milestoneTracker.progress() : 0)
     );
 
     this.remainingTime$ = this.currentTrip$.pipe(
@@ -172,28 +143,24 @@ export class EasyRouteOrchestrator implements OnDestroy {
       map(() => this.tripExecution.getRemainingDistance())
     );
 
+    // Setup event subscriptions using the new services
+    this.setupServiceSubscriptions();
+
     // Initialize
     this.initialize();
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * INITIALIZATION
-   * ═══════════════════════════════════════════════════════════════
-   */
+  // ═══════════════════════════════════════════════════════════════
+  // INITIALIZATION
+  // ═══════════════════════════════════════════════════════════════
+
   private async initialize(): Promise<void> {
-    console.log('[EasyRoute] Initializing orchestrator...');
+    console.log('[EasyRoute] Initializing orchestrator (refactored)...');
 
     try {
-      // Wire up engine events
       this.connectEngineEvents();
-
-      // Check for active trips (resume functionality)
       await this.checkForActiveTrips();
-
-      // Mark as initialized
       this.updateState({ isInitialized: true });
-
       console.log('[EasyRoute] Orchestrator initialized successfully');
     } catch (error) {
       console.error('[EasyRoute] Initialization failed:', error);
@@ -204,59 +171,86 @@ export class EasyRouteOrchestrator implements OnDestroy {
     }
   }
 
-  /**
-   * Connect to all engine event streams and unify them
-   */
+  private setupServiceSubscriptions(): void {
+    // Milestone events → Trip updates
+    this.milestoneTracker.milestoneEvent$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        this.emitTripUpdate({
+          type: 'MILESTONE',
+          timestamp: event.timestamp,
+          tripState: this.tripLifecycle.activeTrip() || undefined,
+          data: event
+        });
+      });
+
+    // Deviation events → Trip updates
+    this.deviationChecker.deviation$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        this.emitTripUpdate({
+          type: 'DEVIATION',
+          timestamp: new Date(),
+          tripState: this.tripLifecycle.activeTrip() || undefined,
+          data: event
+        });
+      });
+
+    // Reroute events → Trip updates
+    this.rerouteHandler.rerouteEvent$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        this.emitTripUpdate({
+          type: 'REROUTE',
+          timestamp: event.timestamp,
+          tripState: this.tripLifecycle.activeTrip() || undefined,
+          data: event
+        });
+      });
+
+    // Trip lifecycle events → Trip updates
+    this.tripLifecycle.lifecycleEvent$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(event => {
+        this.updateState({
+          hasActiveTrip: this.tripLifecycle.hasActiveTrip(),
+          currentTripId: this.tripLifecycle.activeTrip()?.tripId || null
+        });
+        this.emitTripUpdate({
+          type: 'STATUS_CHANGE',
+          timestamp: event.timestamp,
+          tripState: this.tripLifecycle.activeTrip() || undefined,
+          data: event
+        });
+      });
+  }
+
   private connectEngineEvents(): void {
     // Trip execution events
     this.tripExecution.tripEvents$
-      .pipe(
-        filter(event => event !== null),
-        takeUntil(this.destroy$)
-      )
+      .pipe(filter(e => e !== null), takeUntil(this.destroy$))
       .subscribe(event => {
-        if (event) {
-          this.handleTripEvent(event);
-        }
+        if (event) this.handleTripEvent(event);
       });
 
     // Rerouting events
     this.rerouting.rerouteEvents$
-      .pipe(
-        filter(event => event !== null),
-        takeUntil(this.destroy$)
-      )
+      .pipe(filter(e => e !== null), takeUntil(this.destroy$))
       .subscribe(event => {
-        if (event) {
-          this.handleRerouteEvent(event);
-        }
+        if (event) this.handleRerouteEvent(event);
       });
 
     // Active trip changes
     this.tripExecution.activeTrip$
-      .pipe(
-        debounceTime(100), // Debounce rapid updates
-        takeUntil(this.destroy$)
-      )
+      .pipe(debounceTime(100), takeUntil(this.destroy$))
       .subscribe(trip => {
         this.updateState({
           hasActiveTrip: trip !== null,
           currentTripId: trip?.tripId || null
         });
-
-        if (trip) {
-          this.emitTripUpdate({
-            type: 'STATUS_CHANGE',
-            timestamp: new Date(),
-            tripState: trip
-          });
-        }
       });
   }
 
-  /**
-   * Check if there are any active trips to resume
-   */
   private async checkForActiveTrips(): Promise<void> {
     const activeTrip = this.tripExecution.getActiveTrip();
     if (activeTrip && activeTrip.status === 'in_progress') {
@@ -268,379 +262,235 @@ export class EasyRouteOrchestrator implements OnDestroy {
     }
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * ROUTE PLANNING API
-   * ═══════════════════════════════════════════════════════════════
-   */
+  // ═══════════════════════════════════════════════════════════════
+  // PUBLIC API: TRIP PLANNING (uses RouteComparator)
+  // ═══════════════════════════════════════════════════════════════
 
-  /**
-   * Plan a trip - generates multiple route options
-   * 
-   * @param origin Starting location
-   * @param destination Ending location
-   * @param maxAlternatives Number of route options to generate (default: 3)
-   * @returns Array of route options
-   */
   async planTrip(
     origin: Location,
     destination: Location,
     maxAlternatives: number = 3
   ): Promise<RouteComparisonResult> {
-    console.log('[EasyRoute] Planning trip...', { origin, destination });
+    console.log('[EasyRoute] Planning trip...');
 
     try {
-      // Generate routes using the route generation engine
       const routes = await this.routeGeneration.generateRoutes(
         origin,
         destination,
         maxAlternatives
       );
 
-      if (routes.length === 0) {
-        throw new Error('No routes found between origin and destination');
-      }
+      // Use the extracted RouteComparator service
+      const comparisonResult = this.routeComparator.compare(routes);
 
-      // Analyze and compare routes
-      const comparison = this.compareRoutes(routes);
-
-      console.log('[EasyRoute] Trip planned successfully', {
-        routeCount: routes.length,
-        recommended: comparison.recommended.id
-      });
-
-      return comparison;
-
+      console.log('[EasyRoute] Generated', routes.length, 'route options');
+      return comparisonResult;
     } catch (error) {
       console.error('[EasyRoute] Trip planning failed:', error);
-      this.updateState({ lastError: 'Failed to plan trip' });
       throw error;
     }
   }
 
-  /**
-   * Compare multiple routes and identify the best option
-   */
-  private compareRoutes(routes: GeneratedRoute[]): RouteComparisonResult {
-    // Find fastest route
-    const fastest = routes.reduce((min, route) =>
-      route.totalTime < min.totalTime ? route : min
-    );
+  // ═══════════════════════════════════════════════════════════════
+  // PUBLIC API: TRIP LIFECYCLE (uses TripLifecycle + MilestoneTracker)
+  // ═══════════════════════════════════════════════════════════════
 
-    // Find cheapest route
-    const cheapest = routes.reduce((min, route) =>
-      route.totalCost < min.totalCost ? route : min
-    );
-
-    // Find most balanced (weighted score)
-    const mostBalanced = routes.reduce((best, route) => {
-      const currentScore = this.calculateBalanceScore(route);
-      const bestScore = this.calculateBalanceScore(best);
-      return currentScore > bestScore ? route : best;
-    });
-
-    // Recommend the balanced route by default
-    const recommended = mostBalanced;
-
-    return {
-      routes,
-      recommended,
-      comparisonFactors: {
-        fastest,
-        cheapest,
-        mostBalanced
-      }
-    };
-  }
-
-  /**
-   * Calculate a balanced score for route ranking
-   * Higher score = better overall value
-   */
-  private calculateBalanceScore(route: GeneratedRoute): number {
-    // Normalize values (0-100 scale)
-    const timeScore = 100 - Math.min(route.totalTime / 2, 100); // Favor shorter times
-    const costScore = 100 - Math.min(route.totalCost / 20, 100); // Favor lower costs
-
-    // Weighted average (60% time, 40% cost)
-    return (timeScore * 0.6) + (costScore * 0.4);
-  }
-
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * TRIP EXECUTION API
-   * ═══════════════════════════════════════════════════════════════
-   */
-
-  /**
-   * Start a trip with the selected route
-   * 
-   * @param userId User starting the trip
-   * @param selectedRoute The route to follow
-   * @param currentLocation Optional current location (will detect if not provided)
-   * @returns The started trip state
-   */
   async startTrip(
     userId: string,
     selectedRoute: GeneratedRoute,
     currentLocation?: Location
   ): Promise<TripState> {
-    console.log('[EasyRoute] Starting trip...', { userId, routeId: selectedRoute.id });
+    console.log('[EasyRoute] Starting trip...');
 
-    try {
-      // Start trip via execution engine
-      const tripState = await this.tripExecution.startTrip(
-        userId,
-        selectedRoute,
-        currentLocation
-      );
+    const startLocation = currentLocation || selectedRoute.segments[0].fromStop;
+    const destinationLocation = selectedRoute.segments[selectedRoute.segments.length - 1].toStop;
 
-      // Enable automatic deviation checking
-      this.startDeviationMonitoring(tripState);
+    // Use TripLifecycle to create trip state
+    const tripState = this.tripLifecycle.startTrip({
+      userId,
+      selectedRoute,
+      startLocation: {
+        latitude: startLocation.latitude,
+        longitude: startLocation.longitude
+      },
+      destinationLocation: {
+        latitude: destinationLocation.latitude,
+        longitude: destinationLocation.longitude
+      }
+    });
 
-      console.log('[EasyRoute] Trip started successfully', tripState.tripId);
+    // Initialize milestone tracking
+    this.milestoneTracker.initializeFromTrip(tripState);
 
-      return tripState;
+    // Reset reroute handler
+    this.rerouteHandler.resetForNewTrip();
 
-    } catch (error) {
-      console.error('[EasyRoute] Failed to start trip:', error);
-      this.updateState({ lastError: 'Failed to start trip' });
-      throw error;
-    }
+    // Start deviation monitoring
+    this.startDeviationMonitoring(tripState);
+
+    // Also start on legacy engine for compatibility
+    await this.tripExecution.startTrip(userId, selectedRoute, currentLocation);
+
+    console.log('[EasyRoute] Trip started:', tripState.tripId);
+    return tripState;
   }
 
-  /**
-   * Pause the active trip
-   */
   pauseTrip(): void {
-    console.log('[EasyRoute] Pausing trip...');
+    this.tripLifecycle.pauseTrip();
     this.tripExecution.pauseTrip();
     this.stopDeviationMonitoring();
   }
 
-  /**
-   * Resume a paused trip
-   */
   resumeTrip(): void {
-    console.log('[EasyRoute] Resuming trip...');
-    const trip = this.tripExecution.getActiveTrip();
+    this.tripLifecycle.resumeTrip();
     this.tripExecution.resumeTrip();
-    if (trip) {
-      this.startDeviationMonitoring(trip);
-    }
+    const trip = this.tripLifecycle.activeTrip();
+    if (trip) this.startDeviationMonitoring(trip);
   }
 
-  /**
-   * Complete the active trip
-   */
   async completeTrip(): Promise<void> {
-    console.log('[EasyRoute] Completing trip...');
-    const trip = this.tripExecution.getActiveTrip();
-    if (trip) {
-      await this.tripExecution.stopTrip(trip.tripId, 'completed');
-      this.stopDeviationMonitoring();
+    const completedTrip = this.tripLifecycle.completeTrip();
+    this.stopDeviationMonitoring();
+    this.milestoneTracker.reset();
+    await this.tripExecution.stopTrip(completedTrip?.tripId || '', 'completed');
 
-      // Generate trip summary
-      const summary = this.generateTripSummary(trip);
-      console.log('[EasyRoute] Trip completed', summary);
+    if (completedTrip) {
+      console.log('[EasyRoute] Trip completed:', completedTrip.tripId);
     }
   }
 
-  /**
-   * Cancel the active trip
-   */
   async cancelTrip(): Promise<void> {
-    console.log('[EasyRoute] Cancelling trip...');
+    this.tripLifecycle.cancelTrip();
+    this.stopDeviationMonitoring();
+    this.milestoneTracker.reset();
+    this.rerouteHandler.clearPendingDecision();
+    const trip = this.tripLifecycle.activeTrip();
+    await this.tripExecution.stopTrip(trip?.tripId || '', 'cancelled');
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // PUBLIC API: REROUTING (uses RerouteHandler)
+  // ═══════════════════════════════════════════════════════════════
+
+  async acceptReroute(): Promise<void> {
+    const decision = this.rerouteHandler.acceptPendingReroute();
+    if (decision) {
+      this.tripLifecycle.applyNewRoute(decision.proposedRoute);
+      this.milestoneTracker.initializeFromTrip(this.tripLifecycle.activeTrip()!);
+      const trip = this.tripExecution.getActiveTrip();
+      if (trip) {
+        await this.rerouting.acceptReroute(trip);
+      }
+    }
+  }
+
+  async declineReroute(): Promise<void> {
+    this.rerouteHandler.declinePendingReroute();
     const trip = this.tripExecution.getActiveTrip();
     if (trip) {
-      await this.tripExecution.stopTrip(trip.tripId, 'cancelled');
-      this.stopDeviationMonitoring();
+      await this.rerouting.declineReroute(trip);
     }
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * DEVIATION MONITORING
-   * ═══════════════════════════════════════════════════════════════
-   */
-
-  private deviationCheckInterval: any;
-
-  /**
-   * Start monitoring for route deviations
-   */
-  private startDeviationMonitoring(tripState: TripState): void {
-    console.log('[EasyRoute] Starting deviation monitoring...');
-
-    // Check for deviations every 10 seconds
-    this.deviationCheckInterval = setInterval(async () => {
-      const currentTrip = this.tripExecution.getActiveTrip();
-
-      if (!currentTrip || currentTrip.status !== 'in_progress') {
-        this.stopDeviationMonitoring();
-        return;
-      }
-
-      try {
-        const analysis = await this.rerouting.checkForDeviation(currentTrip);
-
-        if (analysis.isDeviated) {
-          console.log('[EasyRoute] Deviation detected:', analysis);
-
-          this.emitTripUpdate({
-            type: 'DEVIATION',
-            timestamp: new Date(),
-            tripState: currentTrip,
-            data: analysis
-          });
-        }
-      } catch (error) {
-        console.error('[EasyRoute] Deviation check failed:', error);
-      }
-    }, 10000); // Check every 10 seconds
-  }
-
-  /**
-   * Stop deviation monitoring
-   */
-  private stopDeviationMonitoring(): void {
-    if (this.deviationCheckInterval) {
-      clearInterval(this.deviationCheckInterval);
-      this.deviationCheckInterval = null;
-      console.log('[EasyRoute] Stopped deviation monitoring');
-    }
-  }
-
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * REROUTING API
-   * ═══════════════════════════════════════════════════════════════
-   */
-
-  /**
-   * Accept a pending reroute
-   */
-  async acceptReroute(): Promise<void> {
-    const trip = this.tripExecution.getActiveTrip();
-    if (!trip) return;
-
-    console.log('[EasyRoute] Accepting reroute...');
-    await this.rerouting.acceptReroute(trip);
-  }
-
-  /**
-   * Decline a pending reroute
-   */
-  async declineReroute(): Promise<void> {
-    const trip = this.tripExecution.getActiveTrip();
-    if (!trip) return;
-
-    console.log('[EasyRoute] Declining reroute...');
-    await this.rerouting.declineReroute(trip);
-  }
-
-  /**
-   * Get pending reroute decision (if any)
-   */
   getPendingReroute() {
-    return this.rerouting.getPendingReroute();
+    return this.rerouteHandler.getPendingDecision();
   }
 
-  /**
-   * Observable for pending reroutes
-   */
-  get pendingReroute$() {
-    return this.rerouting.pendingReroute$;
+  pendingReroute$() {
+    return this.rerouteHandler.rerouteEvent$;
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * TRIP INFORMATION API
-   * ═══════════════════════════════════════════════════════════════
-   */
+  // ═══════════════════════════════════════════════════════════════
+  // PUBLIC API: GETTERS
+  // ═══════════════════════════════════════════════════════════════
 
-  /**
-   * Get the current active trip
-   */
   getCurrentTrip(): TripState | null {
-    return this.tripExecution.getActiveTrip();
+    return this.tripLifecycle.activeTrip() || this.tripExecution.getActiveTrip();
   }
 
-  /**
-   * Get trip progress metrics
-   */
   getTripProgress() {
-    return this.tripExecution.getTripProgress();
+    return {
+      percentage: this.milestoneTracker.progress(),
+      currentMilestone: this.milestoneTracker.currentMilestone(),
+      totalMilestones: this.milestoneTracker.milestones().length
+    };
   }
 
-  /**
-   * Get remaining distance to destination
-   */
   getRemainingDistance(): number | null {
     return this.tripExecution.getRemainingDistance();
   }
 
-  /**
-   * Get remaining time to destination
-   */
   getRemainingTime(): number | null {
     return this.tripExecution.getRemainingTime();
   }
 
-  /**
-   * Generate trip summary
-   */
-  private generateTripSummary(trip: TripState): TripSummary {
-    const progress = this.tripExecution.getTripProgress();
-    const actualDuration = trip.endTime && trip.startTime
-      ? (trip.endTime.getTime() - trip.startTime.getTime()) / 60000
-      : 0;
-
+  generateTripSummary(trip: TripState): TripSummary {
     return {
       tripId: trip.tripId,
       userId: trip.userId,
       route: trip.selectedRoute,
       plannedDuration: trip.selectedRoute.totalTime,
-      actualDuration,
+      actualDuration: trip.startTime
+        ? Math.round((new Date().getTime() - trip.startTime.getTime()) / 60000)
+        : 0,
       plannedCost: trip.selectedRoute.totalCost,
-      actualCost: trip.selectedRoute.totalCost, // TODO: Track actual spending
-      milestonesReached: progress?.completedMilestones || 0,
-      totalMilestones: progress?.totalMilestones || 0,
-      completionPercentage: progress?.percentage || 0,
+      actualCost: trip.selectedRoute.totalCost,
+      milestonesReached: this.milestoneTracker.milestones().filter(m => m.reached).length,
+      totalMilestones: this.milestoneTracker.milestones().length,
+      completionPercentage: this.milestoneTracker.progress(),
       startedAt: trip.startTime || new Date(),
       completedAt: trip.endTime || new Date(),
-      deviations: trip.rerouteCount,
+      deviations: trip.deviationDetected ? 1 : 0,
       reroutes: trip.rerouteCount
     };
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * EVENT HANDLING
-   * ═══════════════════════════════════════════════════════════════
-   */
+  // ═══════════════════════════════════════════════════════════════
+  // DEVIATION MONITORING (uses DeviationChecker)
+  // ═══════════════════════════════════════════════════════════════
+
+  private startDeviationMonitoring(tripState: TripState): void {
+    console.log('[EasyRoute] Starting deviation monitoring...');
+
+    this.deviationChecker.startMonitoring(
+      () => this.tripExecution.getActiveTrip(),
+      async (trip) => {
+        const result = await this.rerouting.checkForDeviation(trip);
+        // Map ReroutingEngine's DeviationAnalysis to DeviationChecker's format
+        return {
+          isDeviated: result.isDeviated,
+          distanceFromRoute: result.deviationDistance,
+          deviationType: this.mapSeverityToType(result.severity),
+          suggestReroute: result.shouldReroute,
+          timestamp: new Date()
+        };
+      }
+    );
+  }
+
+  private stopDeviationMonitoring(): void {
+    this.deviationChecker.stopMonitoring();
+  }
+
+  private mapSeverityToType(severity: 'minor' | 'moderate' | 'severe'): 'minor' | 'moderate' | 'severe' | 'none' {
+    return severity;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // EVENT HANDLERS
+  // ═══════════════════════════════════════════════════════════════
 
   private handleTripEvent(event: TripEvent): void {
-    console.log('[EasyRoute] Trip event:', event.type);
-
     const trip = this.tripExecution.getActiveTrip();
 
     switch (event.type) {
       case 'MILESTONE_REACHED':
-        this.emitTripUpdate({
-          type: 'MILESTONE',
-          timestamp: event.timestamp,
-          tripState: trip || undefined,
-          data: event.data
-        });
-        break;
-
       case 'MILESTONE_APPROACHING':
         this.emitTripUpdate({
           type: 'MILESTONE',
           timestamp: event.timestamp,
           tripState: trip || undefined,
-          data: { ...event.data, approaching: true }
+          data: event.data
         });
         break;
 
@@ -660,63 +510,43 @@ export class EasyRouteOrchestrator implements OnDestroy {
   }
 
   private handleRerouteEvent(event: any): void {
-    console.log('[EasyRoute] Reroute event:', event.type);
-
-    const trip = this.tripExecution.getActiveTrip();
-
-    this.emitTripUpdate({
-      type: 'REROUTE',
-      timestamp: event.timestamp,
-      tripState: trip || undefined,
-      data: event
-    });
+    if (event.type === 'REROUTE_APPLIED') {
+      const trip = this.tripExecution.getActiveTrip();
+      this.emitTripUpdate({
+        type: 'REROUTE',
+        timestamp: event.timestamp,
+        tripState: trip || undefined,
+        data: event
+      });
+    }
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * UTILITY METHODS
-   * ═══════════════════════════════════════════════════════════════
-   */
+  // ═══════════════════════════════════════════════════════════════
+  // UTILITIES
+  // ═══════════════════════════════════════════════════════════════
 
   private updateState(updates: Partial<OrchestratorState>): void {
-    const current = this.stateSubject.value;
-    this.stateSubject.next({ ...current, ...updates });
+    this.stateSubject.next({ ...this.stateSubject.value, ...updates });
   }
 
   private emitTripUpdate(update: TripUpdateEvent): void {
     this.tripUpdatesSubject.next(update);
   }
 
-  /**
-   * Configure the orchestrator
-   */
   configure(config: Partial<EasyRouteConfig>): void {
     this.config = { ...this.config, ...config };
-    console.log('[EasyRoute] Configuration updated', this.config);
+    this.routeGeneration.setConfig(this.config);
   }
 
-  /**
-   * Get current configuration
-   */
   getConfig(): EasyRouteConfig {
     return { ...this.config };
   }
 
-  /**
-   * Check if orchestrator is ready
-   */
   isReady(): boolean {
     return this.stateSubject.value.isInitialized;
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * CLEANUP
-   * ═══════════════════════════════════════════════════════════════
-   */
-
   ngOnDestroy(): void {
-    console.log('[EasyRoute] Destroying orchestrator...');
     this.stopDeviationMonitoring();
     this.destroy$.next();
     this.destroy$.complete();

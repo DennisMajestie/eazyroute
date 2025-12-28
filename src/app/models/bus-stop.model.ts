@@ -1,9 +1,7 @@
 // src/app/models/bus-stop.model.ts
 
-import { TransportPointType } from './transport-point.constants';
-
-export type VerificationStatus = 'pending' | 'community' | 'verified' | 'flagged';
-export type TransportMode = 'bus' | 'okada' | 'keke' | 'taxi' | 'walking';
+import { TransportPointType, TransportMode, VerificationStatus } from './transport-point.constants';
+export type { TransportPointType, TransportMode, VerificationStatus };
 
 export interface LocationPoint {
     type: 'Point';
@@ -15,6 +13,9 @@ export interface BusStop {
     name: string;
     type: TransportPointType;
     localNames: string[];
+    description?: string;
+    verificationCount?: number;
+    submittedBy?: string;
 
     // Location data (multiple formats for compatibility)
     location?: LocationPoint; // New GeoJSON format
@@ -32,6 +33,13 @@ export interface BusStop {
 
     // Transport information
     transportModes: TransportMode[];
+    roles?: ('boarding' | 'alighting' | 'transfer')[];
+    tier?: 'primary' | 'sub-landmark' | 'node';
+    hierarchy?: {
+        district?: string;
+        ward?: string;
+        estate?: string;
+    };
 
     // Media
     photos: string[];
@@ -39,6 +47,10 @@ export interface BusStop {
     // Usage tracking
     usageCount: number;
     isActive: boolean;
+
+    // V2 Routing Fields
+    backboneSide?: 'L' | 'R' | 'C'; // Side of expressway: Left, Right, Center
+    bridgeEnabled?: boolean;       // True if this point is a pedestrian bridge
 
     // Legacy fields (keep for backward compatibility)
     verified: boolean;
@@ -73,4 +85,25 @@ export interface SearchBusStopParams {
     verificationStatus?: VerificationStatus;
     page?: number;
     limit?: number;
+    sort?: string;
+}
+
+/**
+ * Fuzzy search result with relevance scoring
+ */
+export interface FuzzySearchResult {
+    _id: string;
+    name: string;
+    localNames?: string[];
+    matchScore: number;         // 0-100 relevance score
+    matchedField: string;       // which field matched: 'name' | 'localNames'
+    location: {
+        type: 'Point';
+        coordinates: [number, number];  // [lng, lat]
+    };
+    address?: string;
+    city?: string;
+    distance?: number;          // distance from user in meters (optional)
+    verificationStatus?: VerificationStatus;
+    transportModes?: TransportMode[];
 }

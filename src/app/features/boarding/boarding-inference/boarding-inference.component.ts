@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-import { MicroPositionCardComponent } from '../../../shared/components/micro-position-card/micro-position-card.component';
+
 import { HierarchyBreadcrumbComponent } from '../../../shared/components/hierarchy-breadcrumb/hierarchy-breadcrumb.component';
 import { LocalityService } from '../../../core/services/locality.service';
 import { MicroNode } from '../../../models/locality.model';
@@ -27,7 +27,7 @@ interface BoardingPoint {
 @Component({
     selector: 'app-boarding-inference',
     standalone: true,
-    imports: [CommonModule, MicroPositionCardComponent, HierarchyBreadcrumbComponent],
+    imports: [CommonModule, HierarchyBreadcrumbComponent],
     templateUrl: './boarding-inference.component.html',
     styleUrls: ['./boarding-inference.component.scss']
 })

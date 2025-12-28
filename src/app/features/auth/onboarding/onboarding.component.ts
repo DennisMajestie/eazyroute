@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ApiService, OnboardingRequest } from '../../../services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 interface City {
   name: string;
@@ -72,12 +73,19 @@ export class OnboardingComponent {
       description: 'Events & advertising',
       icon: 'building',
       gradient: 'gradient-orange'
+    },
+    {
+      type: 'admin',
+      label: 'Community Admin',
+      description: 'Verify landmarks & manage data',
+      icon: 'shield',
+      gradient: 'gradient-green'
     }
   ];
 
   constructor(
     private router: Router,
-    private apiService: ApiService
+    private authService: AuthService
   ) { }
 
   getProgress(): number {
@@ -88,7 +96,8 @@ export class OnboardingComponent {
     const icons: { [key: string]: string } = {
       bus: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg>',
       briefcase: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
-      building: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>'
+      building: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>',
+      shield: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
     };
     return icons[iconName] || '';
   }
@@ -128,14 +137,14 @@ export class OnboardingComponent {
 
       this.isSubmitting = true;
 
-      const onboardingRequest: OnboardingRequest = {
+      const onboardingRequest = {
         city: this.formData.city,
         userType: this.formData.userType
       };
 
       console.log('Sending onboarding data:', onboardingRequest);
 
-      this.apiService.completeOnboarding(onboardingRequest).subscribe({
+      this.authService.completeOnboarding(onboardingRequest).subscribe({
         next: (response) => {
           console.log('Onboarding response:', response);
           this.isSubmitting = false;
@@ -143,9 +152,6 @@ export class OnboardingComponent {
           if (response.success) {
             // Move to success step
             this.currentStep = 2;
-
-            // Store completion flag
-            localStorage.setItem('onboardingCompleted', 'true');
           } else {
             this.errors['submit'] = response.message || 'Failed to save onboarding data';
           }

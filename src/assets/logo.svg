@@ -1,0 +1,11 @@
+<svg width="200" height="60" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Brand Text -->
+  <text x="60" y="42" font-family="Arial, sans-serif" font-weight="bold" font-size="32" fill="#008751">Along</text>
+  <text x="155" y="42" font-family="Arial, sans-serif" font-weight="bold" font-size="32" fill="#FFB81C">_9ja</text>
+  
+  <!-- Waving Hand Icon -->
+  <g transform="translate(10, 5) scale(0.12)">
+    <path fill="#FFB81C" d="M150 0C67.157 0 0 67.157 0 150c0 82.843 67.157 150 150 150s150-67.157 150-150C300 67.157 232.843 0 150 0zm0 270C83.726 270 30 216.274 30 150S83.726 30 150 30s120 53.726 120 120-53.726 120-120 120z"/>
+    <path fill="#008751" d="M205.5 136.5h-15v-45c0-8.284-6.716-15-15-15s-15 6.716-15 15v45h-15v-60c0-8.284-6.716-15-15-15s-15 6.716-15 15v60h-15v-45c0-8.284-6.716-15-15-15s-15 6.716-15 15v45h-15v-15c0-8.284-6.716-15-15-15s-15 6.716-15 15v51.15c0 43.141 30.609 79.5 73.5 87.3V255h30v-57.15c42.891-7.8 73.5-44.159 73.5-87.3v-19.05c0-8.284-6.716-15-15-15s-15 6.716-15 15v45z"/>
+  </g>
+</svg>

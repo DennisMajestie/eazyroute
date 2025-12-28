@@ -2,17 +2,22 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, Subscription, forkJoin, of } from 'rxjs';
+import { Subject, Subscription, forkJoin, of, firstValueFrom } from 'rxjs';
 import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
 import { MapComponent } from '../../../shared/components/map/map.component';
 import { BusStopService, UnverifiedBusStop } from '../../../core/services/bus-stop.service';
-import { BusStopHttpService } from '../../../core/services/bus-stop-http.service';
+
+import { EnhancedBusStop, BusStopTier } from '../../../models/enhanced-bus-stop.model';
 import { GeocodingService } from '../../../core/services/geocoding.service';
+import { GeolocationService } from '../../../core/services/geolocation.service';
 import { TripService } from '../../../core/services/trip.service';
-import { RouteHttpService } from '../../../core/services/route-http.service';
+import { AlongService } from '../../../core/services/along.service';
+
 import { EasyrouteOrchestratorService } from '../../../core/services/easyroute-orchestrator.service';
+import { CommuterProtocolService, HubProtocol, BoardingProtocol } from '../../../core/services/commuter-protocol.service';
+import { SafetyService, SafetyLevel } from '../../../core/services/safety.service';
+import { VerificationStatus, TransportMode, BusStop } from '../../../models/bus-stop.model';
 import { GeneratedRoute, RouteSegment } from '../../../core/engines/types/easyroute.types';
-import { VerificationStatus, TransportMode } from '../../../models/bus-stop.model';
 
 interface SearchResult {
     name: string;
@@ -29,6 +34,8 @@ interface SearchResult {
     verificationStatus?: VerificationStatus;
     upvotes?: number;
     transportModes?: TransportMode[];
+    id?: string | number;
+    tier?: 'primary' | 'sub-landmark' | 'node';
 }
 
 @Component({
@@ -41,15 +48,192 @@ interface SearchResult {
 export class TripPlannerComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
     private busStopService = inject(BusStopService);
-    private busStopHttpService = inject(BusStopHttpService);
     private geocodingService = inject(GeocodingService);
     private tripService = inject(TripService);
-    private routeService = inject(RouteHttpService);
-    private orchestrator = inject(EasyrouteOrchestratorService);
+
+    public orchestrator = inject(EasyrouteOrchestratorService);
+    private alongService = inject(AlongService); // Inject AlongService
+    private geolocationService = inject(GeolocationService);
+    private protocolService = inject(CommuterProtocolService);
+    private safetyService = inject(SafetyService);
 
     // Map Settings (Abuja)
     center = { lat: 9.0765, lng: 7.3986 };
     zoom = 12;
+    // ... imports ...
+    // --- Route Finding ---
+    async findRoutes() {
+        // Resolve locations if they are missing but text exists
+        if (!this.fromLocation && this.fromQuery.length > 2) {
+            const resolved = await this.resolveLocation(this.fromQuery);
+            if (resolved) {
+                this.fromLocation = resolved;
+                this.addMarker(resolved.lat, resolved.lng, 'Origin');
+            }
+        }
+
+        if (!this.toLocation && this.toQuery.length > 2) {
+            const resolved = await this.resolveLocation(this.toQuery);
+            if (resolved) {
+                this.toLocation = resolved;
+                this.addMarker(resolved.lat, resolved.lng, 'Destination');
+                this.center = { ...resolved };
+            }
+        }
+
+        if (!this.fromLocation) {
+            alert('Please enter a starting point');
+            return;
+        }
+        if (!this.toLocation) {
+            alert('Please enter a destination');
+            return;
+        }
+
+        this.isLoadingRoutes = true;
+        this.generatedRoutes = [];
+        this.selectedRoute = null;
+
+        try {
+            console.log('[TripPlanner] Generating routes via AlongService...', {
+                from: this.fromLocation,
+                to: this.toLocation
+            });
+
+            // Use AlongService (Hybrid Search)
+            // Pass name if available, otherwise just coords
+            const fromPayload = {
+                lat: this.fromLocation.lat,
+                lng: this.fromLocation.lng,
+                name: this.fromQuery || 'Origin'
+            };
+            const toPayload = {
+                lat: this.toLocation.lat,
+                lng: this.toLocation.lng,
+                name: this.toQuery || 'Destination'
+            };
+
+            // Call Backend
+            const response = await firstValueFrom(this.alongService.generateRoute(fromPayload, toPayload));
+
+            if (response.success && response.data) {
+                // Map AlongRoute to GeneratedRoute
+                const generatedRoute = this.mapAlongRouteToGeneratedRoute(response.data);
+                this.generatedRoutes = [generatedRoute];
+                console.log('[TripPlanner] Generated route:', generatedRoute);
+            } else {
+                console.warn('[TripPlanner] No routes found from backend');
+                this.generatedRoutes = [];
+            }
+
+            if (this.generatedRoutes.length === 0) {
+                // Fallback to Orchestrator (Client-Side) if backend fails?
+                // Or just alert
+                // Let's try fallback just in case, or stick to alert.
+                // User complaint was "No routes", implying client side failed.
+                // So backend is the fix.
+                alert('No routes found. Try different locations.');
+            }
+        } catch (error) {
+            console.error('[TripPlanner] Route generation failed:', error);
+            alert('Failed to generate routes. Please try again.');
+        } finally {
+            this.isLoadingRoutes = false;
+        }
+    }
+
+    private mapAlongRouteToGeneratedRoute(alongRoute: any): GeneratedRoute {
+        // Use optimized legs if available, otherwise map segments
+        const useLegs = alongRoute.legs && alongRoute.legs.length > 0;
+        const sourceSegments = useLegs ? alongRoute.legs : alongRoute.segments;
+
+        // Map segments (AlongSegment -> RouteSegment)
+        const segments: RouteSegment[] = sourceSegments.map((seg: any, index: number) => {
+            return {
+                id: `seg-${index}-${Date.now()}`,
+                fromStop: {
+                    id: 'temp-from',
+                    name: seg.fromStop || 'Start',
+                    latitude: 0,
+                    longitude: 0,
+                    type: 'landmark'
+                } as any,
+                toStop: {
+                    id: 'temp-to',
+                    name: seg.toStop || 'End',
+                    latitude: 0,
+                    longitude: 0,
+                    type: 'landmark'
+                } as any,
+                distance: seg.distance,
+                estimatedTime: seg.estimatedTime,
+                mode: {
+                    type: seg.type || seg.vehicleType || 'walk',
+                    name: (seg.type || 'walk').toUpperCase(),
+                    availabilityFactor: 1,
+                    avgSpeedKmh: 0
+                } as any,
+                cost: seg.cost || 0,
+                instructions: seg.instruction
+            };
+        });
+
+        const route: GeneratedRoute = {
+            id: `route-${Date.now()}`,
+            segments: segments,
+            totalDistance: alongRoute.totalDistance,
+            totalTime: alongRoute.totalTime,
+            totalCost: alongRoute.totalCost,
+            rankingScore: { shortest: 0, cheapest: 0, balanced: 100 },
+            generatedAt: new Date(),
+            strategy: 'balanced',
+            suggestion: alongRoute.suggestion
+        };
+
+        // Preserve legs if they exist
+        if (useLegs) {
+            route.legs = segments;
+        }
+
+        // Preserve metadata if it exists
+        if (alongRoute.metadata) {
+            route.metadata = alongRoute.metadata;
+
+            // Log optimization info
+            if (alongRoute.metadata.optimizationApplied) {
+                console.log('✅ Route optimized by backend - merged consecutive hops');
+            }
+            if (alongRoute.metadata.corridorBonus && alongRoute.metadata.corridorBonus < 0) {
+                console.log('🛣️ Verified corridor route');
+            }
+        }
+
+        return route;
+    }
+
+    private async resolveLocation(query: string): Promise<{ lat: number, lng: number } | null> {
+        try {
+            // Try Geocoding Service First
+            const results = await firstValueFrom(this.geocodingService.search(query));
+            if (results && results.length > 0) {
+                return { lat: results[0].latitude, lng: results[0].longitude };
+            }
+
+            // Try Bus Stop Search Fallback
+            const busStops = await firstValueFrom(this.busStopService.searchBusStops(query));
+            if (busStops.success && busStops.data && busStops.data.length > 0) {
+                const stop = busStops.data[0];
+                return {
+                    lat: stop.location?.coordinates?.[1] || 0,
+                    lng: stop.location?.coordinates?.[0] || 0
+                };
+            }
+            return null;
+        } catch (e) {
+            console.error('Failed to resolve location for:', query, e);
+            return null;
+        }
+    }
     testMarkers: any[] = [
         { lat: 9.0765, lng: 7.3986, title: 'Central Area' },
         { lat: 9.05, lng: 7.45, title: 'Wuse 2' }
@@ -65,6 +249,10 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     activeSearchField: 'from' | 'to' | null = null;
     private searchSubject = new Subject<{ query: string, field: 'from' | 'to' }>();
     private searchSubscription: Subscription | undefined;
+
+    // Nearby Stops (New)
+    nearbyStops: any[] = [];
+    isLoadingNearby = false;
 
     // Location detection
     isDetectingLocation = false;
@@ -96,7 +284,68 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     alertMessage = '';
     private updateInterval: any;
 
+    // Orchestrator State for UI
+    orchestratorState$ = this.orchestrator.state$;
+    pendingReroute$ = this.orchestrator.getPendingReroute();
+
+    // Safety Features
+    isNightMode = false;
+    safetyTips: string[] = [
+        "🛑 Don't board if the back seat is full of men and the front seat is empty.",
+        "🛑 Don't board if the car has tinted glass or the inner door handles are missing.",
+        "🛡️ Always sit by the door/window, never in the middle."
+    ];
+
+    // Shouting Protocols
+    // Shouting Protocols
+    activeProtocol$ = this.protocolService.getActiveProtocol();
+
+    // Safety & Panic Button
+    showSafetyModal = false;
+    showFakeCallOverlay = false;
+    activeSafetyLevel: SafetyLevel | null = null;
+    isLiveLocationSharing = false;
+
+    toggleSafetyModal() {
+        this.showSafetyModal = !this.showSafetyModal;
+    }
+
+    triggerSafetyLevel(level: SafetyLevel) {
+        this.activeSafetyLevel = level;
+        this.showSafetyModal = false;
+
+        switch (level) {
+            case 'yellow': // Fake Call
+                this.showFakeCallOverlay = true;
+                this.safetyService.triggerFakeCall();
+                break;
+            case 'orange': // Live Location
+                this.isLiveLocationSharing = true;
+                this.safetyService.startLiveLocationSharing();
+                alert('Live Location Sharing Active. Contacts notified.');
+                break;
+            case 'red': // SOS
+                if (confirm('Are you sure you want to send an SOS alert? This will notify nearby users and contacts.')) {
+                    this.safetyService.sendSOS('SOS_SILENT');
+                    alert('SOS Alert Sent. Help is on the way.');
+                }
+                break;
+        }
+    }
+
+    endFakeCall() {
+        this.showFakeCallOverlay = false;
+        this.safetyService.stopFakeCall();
+    }
+
+    stopLiveLocation() {
+        this.isLiveLocationSharing = false;
+        this.safetyService.stopLiveLocationSharing();
+    }
+
     ngOnInit() {
+        this.checkNightMode();
+        // ... (rest of ngOnInit)
         // Auto-detect user location on load (commented out to make it opt-in)
         // Uncomment the line below if you want automatic location detection
         // this.detectCurrentLocation();
@@ -129,6 +378,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             if (navState.toName) this.toQuery = navState.toName;
             if (navState.fromLocation) this.fromLocation = navState.fromLocation;
             if (navState.fromName) this.fromQuery = navState.fromName;
+
+            // Auto-trigger route generation if both locations are present
+            if (this.toLocation) {
+                setTimeout(() => this.findRoutes(), 100);
+            }
         }
 
         // Setup Search
@@ -151,8 +405,48 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.tripService.onMilestoneReached().subscribe({
             next: (data: any) => {
                 console.log('Milestone reached:', data);
+
+                // Trigger Shouting Protocol if this is a transfer hub
+                if (data.milestone && data.milestone.stopName) {
+                    // Try to find protocols for this stop
+                    const hub = this.protocolService.findHub(data.milestone.stopName);
+                    if (hub) {
+                        console.log('[TripPlanner] Transfer hub detected:', hub.name);
+                        // Get destination from next segment if available
+                        const nextStopName = this.getNextDestinationName();
+                        this.protocolService.setActiveProtocol(data.milestone.stopName, nextStopName);
+                    }
+                }
             }
         });
+    }
+
+    /**
+     * Get the next destination name from current route
+     */
+    private getNextDestinationName(): string | undefined {
+        if (!this.selectedRoute) return undefined;
+
+        const segments = this.selectedRoute.legs || this.selectedRoute.segments;
+        if (segments && segments.length > 0) {
+            // Return the final destination
+            return segments[segments.length - 1].toStop?.name;
+        }
+        return undefined;
+    }
+
+    /**
+     * Dismiss the active protocol panel
+     */
+    dismissProtocol() {
+        this.protocolService.clearActiveProtocol();
+    }
+
+    checkNightMode() {
+        const hour = new Date().getHours();
+        // Night mode from 8PM (20) to 5AM (5)
+        this.isNightMode = hour >= 20 || hour < 5;
+        console.log('[TripPlanner] Night mode check:', this.isNightMode, 'Hour:', hour);
     }
 
     // --- Location Detection ---
@@ -162,28 +456,14 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.isDetectingLocation = true;
         this.locationError = null;
 
-        // Immediately show "Detecting..." in the field when button is clicked
-        this.fromQuery = '📍 Detecting your location...';
+        this.locationError = '';
+        this.fromQuery = '🛰️ Waiting for GPS lock (Improving accuracy)...';
 
         try {
-            if (!navigator.geolocation) {
-                throw new Error('Geolocation is not supported by your browser');
-            }
+            const coords = await firstValueFrom(this.geolocationService.getCurrentPosition());
 
-            const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-                navigator.geolocation.getCurrentPosition(
-                    resolve,
-                    reject,
-                    {
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    }
-                );
-            });
-
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
+            const lat = coords.latitude;
+            const lng = coords.longitude;
 
             // Set the location
             this.fromLocation = { lat, lng };
@@ -215,8 +495,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
             // Automatically start real-time tracking after initial detection
             if (!this.isTrackingLocation) {
-                this.startLocationTracking();
+                // this.startLocationTracking(); // Opt-in
             }
+
+            // Fetch nearby stops
+            this.fetchNearbyStops(lat, lng);
         } catch (error: any) {
             // Log as info instead of error since user denial is expected behavior
             console.log('[TripPlanner] Location detection:', error.code === 1 ? 'User denied permission' : error.message || error);
@@ -238,53 +521,58 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         }
     }
 
-    // Start real-time location tracking
+    /**
+     * Start real-time location tracking (Simplified per revert)
+     */
     startLocationTracking() {
-        if (this.isTrackingLocation || !navigator.geolocation) return;
-
+        if (this.isTrackingLocation) return;
         this.isTrackingLocation = true;
-        console.log('[TripPlanner] Starting real-time location tracking');
 
         this.locationWatchId = navigator.geolocation.watchPosition(
             (position) => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
-
-                // Update location
-                this.fromLocation = { lat, lng };
-                this.center = { lat, lng };
-
-                // Update marker
-                this.addMarker(lat, lng, 'My Location');
-
-                // Update coordinates in field
-                this.fromQuery = `📍 My Location (${lat.toFixed(6)}, ${lng.toFixed(6)})`;
-
-                // Optionally update address (throttled to avoid too many API calls)
-                // You might want to add debouncing here
-                this.geocodingService.reverseGeocode(lat, lng).subscribe({
-                    next: (result) => {
-                        if (result && (result.name || result.area)) {
-                            this.fromQuery = `📍 ${result.name || result.area}`;
-                        }
-                    },
-                    error: () => {
-                        // Keep coordinates on error
-                    }
-                });
-
-                console.log('[TripPlanner] Location updated:', { lat, lng });
+                this.updateTrackingLocation(lat, lng);
             },
-            (error) => {
-                console.log('[TripPlanner] Location tracking error:', error.message);
-                this.stopLocationTracking();
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 5000 // Cache position for 5 seconds
-            }
+            (error) => console.error('[TripPlanner] Watch error:', error),
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
+    }
+
+    private updateTrackingLocation(lat: number, lng: number) {
+        this.fromLocation = { lat, lng };
+        this.center = { lat, lng };
+        this.addMarker(lat, lng, 'My Location');
+        console.log('[TripPlanner] Tracking update:', { lat, lng });
+    }
+
+    /**
+     * Fetch nearby bus stops
+     */
+    fetchNearbyStops(lat: number, lng: number) {
+        this.isLoadingNearby = true;
+        this.busStopService.getNearbyStops(lat, lng, 1000, 5).subscribe({
+            next: (response) => {
+                if (response.success && response.data) {
+                    this.nearbyStops = response.data;
+                    console.log('[TripPlanner] Nearby stops fetched:', response.data.length);
+
+                    if (response.data.length > 0 && response.data[0].distance && response.data[0].distance <= 1000) {
+                        const nearest = response.data[0];
+                        this.fromQuery = `📍 ${nearest.name}`;
+                        this.fromLocation = {
+                            lat: nearest.location.coordinates[1],
+                            lng: nearest.location.coordinates[0]
+                        };
+                    }
+                }
+                this.isLoadingNearby = false;
+            },
+            error: (err) => {
+                console.error('[TripPlanner] Failed to fetch nearby stops', err);
+                this.isLoadingNearby = false;
+            }
+        });
     }
 
     // Stop real-time location tracking
@@ -327,9 +615,9 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     }
 
     performSearch(query: string, field: 'from' | 'to') {
-        // Search both bus stops AND general locations
+        // Search both bus stops AND general locations using enhanced search
         forkJoin({
-            busStops: this.busStopHttpService.searchBusStops(query).pipe(
+            busStops: this.busStopService.searchWithLocalNames(query, 10).pipe(
                 catchError(() => of({ success: false, data: [] }))
             ),
             locations: this.geocodingService.search(query).pipe(
@@ -337,19 +625,21 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             )
         }).subscribe(results => {
             const busStopResults: SearchResult[] = results.busStops.success && results.busStops.data
-                ? results.busStops.data.map((s: any) => ({
+                ? results.busStops.data.map((s: EnhancedBusStop) => ({
                     name: s.name,
-                    displayName: s.name,
-                    area: s.area,
+                    displayName: this.formatStopDisplay(s),
+                    area: s.district || s.city,
                     latitude: s.location?.coordinates?.[1] || 0,
                     longitude: s.location?.coordinates?.[0] || 0,
                     type: 'bus_stop' as const,
                     location: s.location,
-                    // Local Route Intelligence fields
+                    // Enhanced fields
                     localNames: s.localNames || [],
-                    verificationStatus: s.verificationStatus || 'pending',
-                    upvotes: s.upvotes || 0,
-                    transportModes: s.transportModes || []
+                    verificationStatus: 'verified',
+                    upvotes: 0,
+                    transportModes: s.transportModes || [],
+                    tier: s.tier || 'node',
+                    id: s._id || s.id
                 }))
                 : [];
 
@@ -374,72 +664,134 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 lat: result.latitude,
                 lng: result.longitude
             };
-            this.addMarker(this.fromLocation.lat, this.fromLocation.lng, 'Origin');
+            this.addMarker(this.fromLocation.lat, this.fromLocation.lng, 'Origin', result.tier);
         } else if (this.activeSearchField === 'to') {
             this.toQuery = result.name;
             this.toLocation = {
                 lat: result.latitude,
                 lng: result.longitude
             };
-            this.addMarker(this.toLocation.lat, this.toLocation.lng, 'Destination');
+            this.addMarker(this.toLocation.lat, this.toLocation.lng, 'Destination', result.tier);
             this.center = { ...this.toLocation };
         }
         this.searchResults = [];
         this.activeSearchField = null;
     }
 
-    addMarker(lat: number, lng: number, title: string) {
+    addMarker(lat: number, lng: number, title: string, tier?: 'primary' | 'sub-landmark' | 'node') {
         this.testMarkers = [
             ...this.testMarkers.filter(m => m.title !== title),
-            { lat, lng, title }
+            { lat, lng, title, tier }
         ];
     }
 
-    // --- Route Finding ---
-    async findRoutes() {
+    // --- City-Intelligent Snapping ---
+    routePolylines: any[] = [];
+
+    onMapClick(event: any) {
+        // Handle both direct coords and Leaflet-style events
+        const coords = event.latlng ? { lat: event.latlng.lat, lng: event.latlng.lng } : event;
+        const lat = coords.lat;
+        const lng = coords.lng;
+
         if (!this.fromLocation) {
-            alert('Please select a starting point');
-            return;
-        }
-        if (!this.toLocation) {
-            alert('Please select a destination');
-            return;
-        }
-
-        this.isLoadingRoutes = true;
-        this.generatedRoutes = [];
-        this.selectedRoute = null;
-
-        try {
-            console.log('[TripPlanner] Generating routes...', {
-                from: this.fromLocation,
-                to: this.toLocation
-            });
-
-            const routes = await this.orchestrator.planTrip(
-                {
-                    latitude: this.fromLocation.lat,
-                    longitude: this.fromLocation.lng
-                },
-                {
-                    latitude: this.toLocation.lat,
-                    longitude: this.toLocation.lng
-                }
-            );
-
-            this.generatedRoutes = routes;
-            console.log('[TripPlanner] Generated routes:', routes);
-
-            if (routes.length === 0) {
-                alert('No routes found. Try different locations.');
-            }
-        } catch (error) {
-            console.error('[TripPlanner] Route generation failed:', error);
-            alert('Failed to generate routes. Please try again.');
-        } finally {
-            this.isLoadingRoutes = false;
+            this.snapToSideOfRoad(coords.lat, coords.lng, 'from');
+        } else if (!this.toLocation) {
+            this.snapToSideOfRoad(coords.lat, coords.lng, 'to');
+        } else {
+            // Both set, maybe reset 'to'?
+            this.snapToSideOfRoad(coords.lat, coords.lng, 'to');
         }
     }
+
+    private snapToSideOfRoad(lat: number, lng: number, field: 'from' | 'to') {
+        this.isLoadingNearby = true;
+        this.busStopService.getAllStops({ page: 1, limit: 5 }).subscribe({
+            next: (data: BusStop[]) => {
+                if (data && data.length > 0) {
+                    const nearest = data[0];
+                    const side = nearest.backboneSide;
+
+                    if (side && side !== 'C') {
+                        console.log(`🧭 Snapped to ${side === 'L' ? 'Left' : 'Right'} side landmark: ${nearest.name}`);
+                        if (field === 'from') {
+                            this.alertMessage = `Pickup set at ${nearest.name} (${side === 'L' ? 'Left' : 'Right'} side). Use pedestrian bridge if you are on the other side!`;
+                        }
+                    }
+
+                    // Use safe coordinate extraction
+                    const latitude = nearest.latitude || (nearest.location?.coordinates?.[1]);
+                    const longitude = nearest.longitude || (nearest.location?.coordinates?.[0]);
+
+                    if (latitude && longitude) {
+                        this.activeSearchField = field;
+                        this.selectResult({
+                            name: nearest.name,
+                            displayName: nearest.name,
+                            latitude,
+                            longitude,
+                            type: 'bus_stop',
+                            tier: nearest.tier,
+                            id: nearest.id || (nearest as any)._id
+                        } as any);
+                    } else {
+                        this.rawCoordFallback(lat, lng, field);
+                    }
+                } else {
+                    this.rawCoordFallback(lat, lng, field);
+                }
+                this.isLoadingNearby = false;
+            },
+            error: () => {
+                this.rawCoordFallback(lat, lng, field);
+                this.isLoadingNearby = false;
+            }
+        });
+    }
+
+    private rawCoordFallback(lat: number, lng: number, field: 'from' | 'to') {
+        const point = { lat, lng };
+        if (field === 'from') {
+            this.fromLocation = point;
+            this.fromQuery = `📍 Point (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+            this.addMarker(lat, lng, 'Origin');
+        } else {
+            this.toLocation = point;
+            this.toQuery = `📍 Point (${lat.toFixed(4)}, ${lng.toFixed(4)})`;
+            this.addMarker(lat, lng, 'Destination');
+        }
+    }
+
+    private updateRoutePolylines() {
+        if (!this.selectedRoute) {
+            this.routePolylines = [];
+            return;
+        }
+
+        const segments = this.selectedRoute.legs || this.selectedRoute.segments;
+        this.routePolylines = segments.map(seg => ({
+            path: [], // Backend needs to provide decoded polyline or we decode here
+            color: this.getSegmentHexColor(seg),
+            isBackbone: seg.backbonePriority
+        }));
+    }
+
+    private getSegmentHexColor(seg: any): string {
+        const type = seg.vehicleType || seg.type;
+        switch (type) {
+            case 'walk': return '#94a3b8';
+            case 'bus': return '#0ea5e9';
+            case 'keke': return '#f59e0b';
+            case 'taxi': return '#8b5cf6';
+            default: return '#0ea5e9';
+        }
+    }
+
+    // --- Route Finding ---
+    // --- Route Finding ---
+
+
+
 
     selectRoute(route: GeneratedRoute) {
         this.selectedRoute = route;
@@ -466,12 +818,27 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             // Start the trip
             await this.orchestrator.startTrip(tripId);
 
-            alert('Trip started! Redirecting to tracking...');
-            // TODO: Navigate to trip tracking page
-            // this.router.navigate(['/trip-tracking']);
+            // Hide route results after starting
+            this.generatedRoutes = [];
+            this.selectedRoute = null;
+
+            console.log('[TripPlanner] Trip started successfully');
         } catch (error) {
             console.error('[TripPlanner] Failed to start trip:', error);
             alert('Failed to start trip. Please try again.');
+        }
+    }
+
+    async stopActiveTrip() {
+        if (confirm('Are you sure you want to stop the current trip?')) {
+            try {
+                await this.orchestrator.cancelTrip('User terminated trip');
+                this.isNavigating = false;
+                console.log('[TripPlanner] Trip stopped by user');
+            } catch (error) {
+                console.error('[TripPlanner] Failed to stop trip:', error);
+                alert('Failed to stop trip. Please try again.');
+            }
         }
     }
 
@@ -492,16 +859,21 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     /**
      * Get verification badge for a bus stop
      */
-    getVerificationBadge(status?: VerificationStatus): { icon: string, text: string, class: string } {
-        switch (status) {
-            case 'verified':
-                return { icon: '✓', text: 'Verified', class: 'badge-verified' };
-            case 'community':
-                return { icon: '⭐', text: 'Community', class: 'badge-community' };
-            case 'pending':
-            default:
-                return { icon: '🆕', text: 'New', class: 'badge-pending' };
+    getVerificationBadge(status?: VerificationStatus, upvotes: number = 0): { icon: string, text: string, class: string } {
+        // Community Verified logic: 5+ upvotes -> Community, 10+ -> Verified (or admin)
+        if (status === 'verified') {
+            return { icon: '✓', text: 'Verified', class: 'badge-verified' };
         }
+
+        if (upvotes >= 10) {
+            return { icon: '✓', text: 'Verified', class: 'badge-verified' };
+        }
+
+        if (upvotes >= 5 || status === 'community') {
+            return { icon: '⭐', text: 'Community', class: 'badge-community' };
+        }
+
+        return { icon: '🆕', text: 'New', class: 'badge-pending' };
     }
 
     /**
@@ -525,6 +897,62 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             'walking': 'fas fa-walking'
         };
         return modes.map(mode => iconMap[mode]);
+    }
+
+    /**
+     * Upvote a stop
+     */
+    upvoteStop(stopId: string | number | undefined) {
+        if (stopId === undefined || stopId === null || stopId === '') {
+            console.warn('[TripPlanner] Cannot upvote: Stop ID is missing');
+            return;
+        }
+        this.busStopService.upvoteStop(stopId).subscribe({
+            next: (res) => {
+                console.log('Upvoted successfully');
+            },
+            error: (err) => console.error('Failed to upvote', err)
+        });
+    }
+
+    /**
+     * Format stop display with local names and tier
+     */
+    formatStopDisplay(stop: EnhancedBusStop): string {
+        const tierIcon = this.getTierIcon(stop.tier);
+        const localName = stop.localNames && stop.localNames.length > 0 ? stop.localNames[0] : '';
+
+        if (localName && localName !== stop.name) {
+            return `${tierIcon} ${stop.name} (${localName})`;
+        }
+        return `${tierIcon} ${stop.name}`;
+    }
+
+    /**
+     * Get tier icon
+     */
+    getTierIcon(tier: BusStopTier): string {
+        const icons = {
+            'primary': '⭐',
+            'sub-landmark': '📍',
+            'node': '⚪'
+        };
+        return icons[tier] || '⚪';
+    }
+
+    /**
+     * Get icon for landmark types
+     */
+    getLandmarkIcon(type: string): string {
+        const iconMap: { [key: string]: string } = {
+            'medical': 'fas fa-hospital',
+            'shopping': 'fas fa-shopping-cart',
+            'government': 'fas fa-building',
+            'education': 'fas fa-graduation-cap',
+            'transport': 'fas fa-bus',
+            'landmark': 'fas fa-map-marker-alt'
+        };
+        return iconMap[type.toLowerCase()] || 'fas fa-map-marker-alt';
     }
 
     // --- Navigation Logic ---
