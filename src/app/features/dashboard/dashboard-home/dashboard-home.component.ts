@@ -50,8 +50,8 @@ interface Route {
   fare: string;
   buses: number;
   trending: boolean;
-  fromLocation?: { latitude: number; longitude: number };
-  toLocation?: { latitude: number; longitude: number };
+  fromLocation?: { lat: number; lng: number };
+  toLocation?: { lat: number; lng: number };
 }
 
 interface Event {
@@ -114,7 +114,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   orchestratorState$: any;
 
   // Current user location
-  currentUserLocation: { latitude: number; longitude: number } | null = null;
+  currentUserLocation: { lat: number; lng: number } | null = null;
 
   // Data arrays
   nearbyStops: DashboardBusStop[] = [];
@@ -269,15 +269,20 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       }
 
       if (environment.geolocation.enabled) {
-        const coords = await firstValueFrom(this.geolocationService.getCurrentPosition());
-        this.currentUserLocation = {
-          latitude: coords.latitude,
-          longitude: coords.longitude
-        };
+        // Use the smart location retry logic
+        const coords = await this.geolocationService.getSmartLocation();
+        if (coords) {
+          this.currentUserLocation = {
+            lat: coords.latitude,
+            lng: coords.longitude
+          };
+        } else {
+          throw new Error('GPS Timeout');
+        }
       } else {
         this.currentUserLocation = {
-          latitude: environment.geolocation.defaultCenter.lat,
-          longitude: environment.geolocation.defaultCenter.lng
+          lat: environment.geolocation.defaultCenter.lat,
+          lng: environment.geolocation.defaultCenter.lng
         };
         console.warn('[Dashboard] Geolocation not available, using default');
       }
@@ -308,8 +313,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
     try {
       const response = await this.busStopService.getNearbyStops(
-        this.currentUserLocation.latitude,
-        this.currentUserLocation.longitude,
+        this.currentUserLocation.lat,
+        this.currentUserLocation.lng,
         2000 // 2km radius as per integration guide
       ).toPromise();
 
@@ -703,8 +708,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       this.router.navigate(['/trip-planner'], {
         state: {
           fromLocation: {
-            lat: this.currentUserLocation.latitude,
-            lng: this.currentUserLocation.longitude
+            lat: this.currentUserLocation.lat,
+            lng: this.currentUserLocation.lng
           },
           toLocation: {
             lat: stop.latitude,
