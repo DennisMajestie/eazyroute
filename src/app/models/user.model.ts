@@ -68,3 +68,12 @@ export interface PasswordResetConfirm {
 export interface ResendOTPRequest {
     email: string;
 }
+
+export interface SocialAuthRequest {
+    provider: 'google' | 'apple';
+    token: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    profilePicture?: string;
+}

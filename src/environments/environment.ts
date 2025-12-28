@@ -10,6 +10,8 @@ export const environment: Environment = {
   socketUrl: 'https://along-backend-lo8n.onrender.com',
   appName: 'Along_9ja',
   useMockSockets: false,
+  googleClientId: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com',
+  appleClientId: 'com.eazyroute.signin-client', // Placeholder
 
   googleMapsApiKey: 'YOUR_GOOGLE_MAPS_API_KEY',
 

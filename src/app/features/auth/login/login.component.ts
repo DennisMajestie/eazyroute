@@ -23,6 +23,8 @@ export class LoginComponent {
     passwordFocused: boolean = false;
     errorMessage: string = '';
     successMessage: string = '';
+    isGoogleAuthenticating: boolean = false;
+    isAppleAuthenticating: boolean = false;
 
     constructor(
         private router: Router,
@@ -108,11 +110,21 @@ export class LoginComponent {
     }
 
     loginWithGoogle(): void {
-        console.log('Google OAuth initiated');
+        this.isGoogleAuthenticating = true;
+        this.errorMessage = '';
+        this.authService.loginWithGoogle();
+
+        // Use a timeout to reset state if prompt doesn't open
+        setTimeout(() => this.isGoogleAuthenticating = false, 3000);
     }
 
     loginWithApple(): void {
-        console.log('Apple Sign-In initiated');
+        this.isAppleAuthenticating = true;
+        this.errorMessage = '';
+        this.authService.loginWithApple();
+
+        // Reset state after attempt
+        setTimeout(() => this.isAppleAuthenticating = false, 2000);
     }
 
     goToSignup(): void {

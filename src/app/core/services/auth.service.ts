@@ -16,8 +16,11 @@ import {
     RegisterRequest,
     OTPVerifyRequest,
     PasswordResetRequest,
-    PasswordResetConfirm
+    PasswordResetConfirm,
+    SocialAuthRequest
 } from '../../models/user.model';
+
+declare var google: any;
 
 @Injectable({
     providedIn: 'root'
@@ -111,6 +114,51 @@ export class AuthService {
 
     login(credentials: LoginRequest): Observable<AuthResponse> {
         return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials)
+            .pipe(tap(response => this.handleAuth(response)));
+    }
+
+    /**
+     * Google Sign-In Implementation
+     * Note: Requires the Google Identity Services SDK in index.html
+     */
+    loginWithGoogle(): void {
+        if (typeof google === 'undefined') {
+            console.error('[Auth] Google SDK not loaded');
+            return;
+        }
+
+        google.accounts.id.initialize({
+            client_id: environment.googleClientId,
+            callback: (response: any) => {
+                this.handleSocialAuth('google', response.credential).subscribe({
+                    next: (res) => console.log('[Auth] Google login success'),
+                    error: (err) => console.error('[Auth] Google login failed', err)
+                });
+            },
+            auto_select: false,
+            cancel_on_tap_outside: true
+        });
+
+        google.accounts.id.prompt();
+    }
+
+    /**
+     * Apple Sign-In Implementation
+     * Note: Requires Apple Developer setup and JS SDK in index.html
+     */
+    loginWithApple(): void {
+        console.warn('[Auth] Apple Sign-In requested - requires developer account setup');
+        // Implementation for Apple JS SDK would go here
+        // window.AppleID.auth.signIn();
+    }
+
+    /**
+     * Exchange social provider token for backend JWT
+     */
+    handleSocialAuth(provider: 'google' | 'apple', token: string): Observable<AuthResponse> {
+        const payload: SocialAuthRequest = { provider, token };
+
+        return this.http.post<AuthResponse>(`${this.API_URL}/social`, payload)
             .pipe(tap(response => this.handleAuth(response)));
     }
 
