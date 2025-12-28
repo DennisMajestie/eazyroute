@@ -336,14 +336,14 @@ export class ReroutingEngine {
 
       // Use AlongService for re-routing (supporting hybrid search)
       const fromPayload = {
-        latitude: Number(currentLocation.latitude),
-        longitude: Number(currentLocation.longitude),
+        lat: Number(currentLocation.latitude || (currentLocation as any).lat),
+        lng: Number(currentLocation.longitude || (currentLocation as any).lng),
         name: 'Current Location'
       };
 
       const toPayload = {
-        latitude: Number(destination.latitude),
-        longitude: Number(destination.longitude),
+        lat: Number(destination.latitude || (destination as any).lat),
+        lng: Number(destination.longitude || (destination as any).lng),
         name: 'Destination'
       };
 

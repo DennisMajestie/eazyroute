@@ -34,25 +34,8 @@ export class AlongService {
      * Get multi-modal route suggestions
      * Supports Hybrid Search: 'from' and 'to' can be objects (coords) or strings (place names)
      */
-    generateRoute(
-        from: { lat?: number; lng?: number; latitude?: number; longitude?: number; name?: string } | string,
-        to: { lat?: number; lng?: number; latitude?: number; longitude?: number; name?: string } | string
-    ): Observable<ApiResponse<AlongRoute>> {
-        const mapLocation = (loc: any) => {
-            if (typeof loc === 'string') return { name: loc, lat: 0, lng: 0 }; // Backend should handle pure text? Or geocode it? Spec says lat/lng/name required. 
-            // Assuming we prefer lat/lng if available.
-            return {
-                lat: loc.lat || loc.latitude || 0,
-                lng: loc.lng || loc.longitude || 0,
-                name: loc.name || 'Unknown Location'
-            };
-        };
-
-        const payload = {
-            from: mapLocation(from),
-            to: mapLocation(to)
-        };
-
+    generateRoute(from: any, to: any): Observable<ApiResponse<AlongRoute>> {
+        const payload = { from, to };
         return this.http.post<ApiResponse<AlongRoute>>(`${this.apiUrl}/generate-route`, payload);
     }
 

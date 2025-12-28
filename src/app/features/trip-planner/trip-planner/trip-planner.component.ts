@@ -102,16 +102,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
             // Use AlongService (Hybrid Search)
             // Pass name if available, otherwise just coords
-            const fromPayload = {
-                lat: this.fromLocation.lat,
-                lng: this.fromLocation.lng,
-                name: this.fromQuery || 'Origin'
-            };
-            const toPayload = {
-                lat: this.toLocation.lat,
-                lng: this.toLocation.lng,
-                name: this.toQuery || 'Destination'
-            };
+            const fromPayload = this.fromLocation || this.fromQuery;
+            const toPayload = this.toLocation || this.toQuery;
 
             // Call Backend
             const response = await firstValueFrom(this.alongService.generateRoute(fromPayload, toPayload));
