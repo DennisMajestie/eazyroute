@@ -262,8 +262,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       if (!environment.geolocation.enabled) {
         console.warn('[Dashboard] Geolocation disabled in environment');
         this.currentUserLocation = {
-          latitude: environment.geolocation.defaultCenter.lat,
-          longitude: environment.geolocation.defaultCenter.lng
+          lat: environment.geolocation.defaultCenter.lat,
+          lng: environment.geolocation.defaultCenter.lng
         };
         return;
       }
@@ -294,8 +294,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       }
 
       this.currentUserLocation = {
-        latitude: environment.geolocation.defaultCenter.lat,
-        longitude: environment.geolocation.defaultCenter.lng
+        lat: environment.geolocation.defaultCenter.lat,
+        lng: environment.geolocation.defaultCenter.lng
       };
     }
   }
