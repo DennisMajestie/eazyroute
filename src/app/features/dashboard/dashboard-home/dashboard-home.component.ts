@@ -515,10 +515,10 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   private calculateDistance(stopLocation: any): string {
     if (!this.currentUserLocation || !stopLocation) return 'N/A';
 
-    const lat1 = this.currentUserLocation.latitude;
-    const lon1 = this.currentUserLocation.longitude;
-    const lat2 = stopLocation.coordinates?.[1] || stopLocation.latitude;
-    const lon2 = stopLocation.coordinates?.[0] || stopLocation.longitude;
+    const lat1 = this.currentUserLocation.lat;
+    const lon1 = this.currentUserLocation.lng;
+    const lat2 = stopLocation.coordinates?.[1] || stopLocation.lat || stopLocation.latitude;
+    const lon2 = stopLocation.coordinates?.[0] || stopLocation.lng || stopLocation.longitude;
 
     if (!lat2 || !lon2) return 'N/A';
 
@@ -541,10 +541,10 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   private calculateDistanceMeters(stopLocation: any): number {
     if (!this.currentUserLocation || !stopLocation) return 0;
 
-    const lat1 = this.currentUserLocation.latitude;
-    const lon1 = this.currentUserLocation.longitude;
-    const lat2 = stopLocation.coordinates?.[1] || stopLocation.latitude;
-    const lon2 = stopLocation.coordinates?.[0] || stopLocation.longitude;
+    const lat1 = this.currentUserLocation.lat;
+    const lon1 = this.currentUserLocation.lng;
+    const lat2 = stopLocation.coordinates?.[1] || stopLocation.lat || stopLocation.latitude;
+    const lon2 = stopLocation.coordinates?.[0] || stopLocation.lng || stopLocation.longitude;
 
     if (!lat2 || !lon2) return 0;
 
