@@ -452,7 +452,12 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.fromQuery = '🛰️ Waiting for GPS lock (Improving accuracy)...';
 
         try {
-            const coords = await firstValueFrom(this.geolocationService.getCurrentPosition());
+            // Use the new smart location retry logic
+            const coords = await this.geolocationService.getSmartLocation();
+
+            if (!coords) {
+                throw new Error('Could not lock GPS signal after multiple attempts.');
+            }
 
             const lat = coords.latitude;
             const lng = coords.longitude;

@@ -1,5 +1,5 @@
 import { Injectable, signal } from '@angular/core';
-import { Observable, from, throwError } from 'rxjs';
+import { Observable, from, throwError, firstValueFrom } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 export interface Coordinates {
@@ -77,6 +77,34 @@ export class GeolocationService {
      */
     getCurrentPosition(): Observable<Coordinates> {
         return this.getCurrentPositionAccurate();
+    }
+
+    /**
+     * Get smart location with retry logic (handle GPS warm-up)
+     */
+    async getSmartLocation(): Promise<Coordinates | null> {
+        for (let i = 0; i < 3; i++) {
+            try {
+                console.log(`[Geolocation] Smart location attempt ${i + 1}...`);
+                const pos = await firstValueFrom(this.getCurrentPosition());
+
+                // On some mobile devices, initial lock might return 0,0
+                if (pos.latitude !== 0 || pos.longitude !== 0) {
+                    console.log('[Geolocation] GPS Lock successful!');
+                    return pos;
+                }
+
+                console.log(`[Geolocation] GPS Warming up (0,0)... retry ${i + 1}`);
+            } catch (error) {
+                console.warn(`[Geolocation] attempt ${i + 1} failed:`, error);
+            }
+
+            // Wait 2 seconds before retry
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
+        console.error('[Geolocation] Failed to get lock after 3 attempts');
+        return null;
     }
 
     /**
