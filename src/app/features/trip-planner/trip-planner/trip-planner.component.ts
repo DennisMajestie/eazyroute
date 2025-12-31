@@ -95,40 +95,42 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.selectedRoute = null;
 
         try {
-            console.log('[TripPlanner] Generating routes via AlongService...', {
-                from: this.fromLocation,
-                to: this.toLocation
-            });
-
-            // Use AlongService (Hybrid Search)
-            // Pass name if available, otherwise just coords
+            // Pass name/coords as payload
             const fromPayload = this.fromLocation || this.fromQuery;
             const toPayload = this.toLocation || this.toQuery;
 
-            // Call Backend
-            const response = await firstValueFrom(this.alongService.generateRoute(fromPayload, toPayload));
+            console.log('[TripPlanner] Generating multi-routes via AlongService...', {
+                from: fromPayload,
+                to: toPayload
+            });
 
-            if (response.success && response.data) {
-                // Map AlongRoute to GeneratedRoute
-                const generatedRoute = this.mapAlongRouteToGeneratedRoute(response.data);
-                this.generatedRoutes = [generatedRoute];
-                console.log('[TripPlanner] Generated route:', generatedRoute);
+            // Call Backend (New ALONG Algorithm Stack)
+            const response = await firstValueFrom(
+                this.alongService.generateMultiRoutes(fromPayload, toPayload).pipe(
+                    catchError(err => {
+                        console.error('[TripPlanner] API Error:', err);
+                        throw err;
+                    })
+                )
+            );
+
+            if (response && response.success && response.data && Array.isArray(response.data)) {
+                // Map multiple routes
+                this.generatedRoutes = response.data.map(route => this.mapAlongRouteToGeneratedRoute(route));
+
+                // Select FASTEST by default if available, otherwise first one
+                const fastest = this.generatedRoutes.find(r => r.classification === 'FASTEST');
+                this.selectedRoute = fastest || this.generatedRoutes[0] || null;
+
+                console.log('[TripPlanner] Generated multi-routes successfully:', this.generatedRoutes.length);
             } else {
-                console.warn('[TripPlanner] No routes found from backend');
+                console.warn('[TripPlanner] No valid route data in response:', response);
                 this.generatedRoutes = [];
-            }
-
-            if (this.generatedRoutes.length === 0) {
-                // Fallback to Orchestrator (Client-Side) if backend fails?
-                // Or just alert
-                // Let's try fallback just in case, or stick to alert.
-                // User complaint was "No routes", implying client side failed.
-                // So backend is the fix.
-                alert('No routes found. Try different locations.');
+                alert(response?.message || 'No routes found for this path. Try another location.');
             }
         } catch (error) {
             console.error('[TripPlanner] Route generation failed:', error);
-            alert('Failed to generate routes. Please try again.');
+            alert('Route service is currently unavailable. Please check your connection and try again.');
         } finally {
             this.isLoadingRoutes = false;
         }
@@ -166,19 +168,25 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                     avgSpeedKmh: 0
                 } as any,
                 cost: seg.cost || 0,
-                instructions: seg.instruction
+                instructions: seg.instruction,
+                // V3 Safety Guardrails
+                isBridge: seg.isBridge || false,
+                isBlocked: seg.isBlocked || false,
+                backboneName: seg.backboneName || null
             };
         });
 
         const route: GeneratedRoute = {
-            id: `route-${Date.now()}`,
+            id: `route-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
             segments: segments,
             totalDistance: alongRoute.totalDistance,
             totalTime: alongRoute.totalTime,
             totalCost: alongRoute.totalCost,
             rankingScore: { shortest: 0, cheapest: 0, balanced: 100 },
             generatedAt: new Date(),
-            strategy: 'balanced',
+            strategy: (alongRoute.classification?.toLowerCase() as any) || 'balanced',
+            classification: alongRoute.classification,
+            comparisonLabel: alongRoute.comparisonLabel,
             suggestion: alongRoute.suggestion
         };
 
@@ -269,10 +277,47 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     };
     isSubmitting = false;
 
+    // Traffic/Police Reporting
+    showTrafficReportModal = false;
+    reportType: 'traffic' | 'police' | 'vio' | 'accident' = 'traffic';
+    reportDescription = '';
+
+    toggleTrafficReport() {
+        this.showTrafficReportModal = !this.showTrafficReportModal;
+    }
+
+    async submitTrafficReport() {
+        if (!this.fromLocation) {
+            alert('Cannot report without your current location. Please enable GPS.');
+            return;
+        }
+
+        this.isSubmitting = true;
+        try {
+            const report = {
+                type: this.reportType,
+                location: this.fromLocation,
+                description: this.reportDescription
+            };
+
+            await firstValueFrom(this.alongService.reportCondition(report));
+            alert('Thank you! Your report has been submitted and will help other commuters.');
+            this.showTrafficReportModal = false;
+            this.reportDescription = '';
+        } catch (error) {
+            console.error('[TripPlanner] Report failed:', error);
+            alert('Failed to submit report. Please try again.');
+        } finally {
+            this.isSubmitting = false;
+        }
+    }
+
     // Navigation State
     routes: any[] = [];
     activeTripId: string | null = null;
     isNavigating = false;
+    isStartingTrip = false; // Loading state for start button
+    showAlternatives = false; // Toggle for alternative routes
     alertMessage = '';
     private updateInterval: any;
 
@@ -612,35 +657,42 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     }
 
     performSearch(query: string, field: 'from' | 'to') {
-        // Search both bus stops AND general locations using enhanced search
-        forkJoin({
-            busStops: this.busStopService.searchWithLocalNames(query, 10).pipe(
-                catchError(() => of({ success: false, data: [] }))
-            ),
-            locations: this.geocodingService.search(query).pipe(
-                catchError(() => of([]))
-            )
-        }).subscribe(results => {
-            const busStopResults: SearchResult[] = results.busStops.success && results.busStops.data
-                ? results.busStops.data.map((s: EnhancedBusStop) => ({
-                    name: s.name,
-                    displayName: this.formatStopDisplay(s),
-                    area: s.district || s.city,
-                    latitude: s.location?.coordinates?.[1] || 0,
-                    longitude: s.location?.coordinates?.[0] || 0,
-                    type: 'bus_stop' as const,
-                    location: s.location,
-                    // Enhanced fields
-                    localNames: s.localNames || [],
-                    verificationStatus: 'verified',
-                    upvotes: 0,
-                    transportModes: s.transportModes || [],
-                    tier: s.tier || 'node',
-                    id: s._id || s.id
-                }))
-                : [];
+        // Reset results first
+        this.searchResults = [];
 
-            const locationResults: SearchResult[] = results.locations.map(l => ({
+        // 1. Search Bus Stops (Local Data - High Priority)
+        this.busStopService.searchWithLocalNames(query, 10).pipe(
+            catchError(() => of({ success: false, data: [] }))
+        ).subscribe(res => {
+            if (this.activeSearchField !== field) return;
+
+            const busStops = (res.success && res.data ? res.data : []).map((s: EnhancedBusStop) => ({
+                name: s.name,
+                displayName: this.formatStopDisplay(s),
+                area: s.district || s.city,
+                latitude: s.location?.coordinates?.[1] || 0,
+                longitude: s.location?.coordinates?.[0] || 0,
+                type: 'bus_stop' as const,
+                location: s.location,
+                localNames: s.localNames || [],
+                verificationStatus: 'verified' as const,
+                upvotes: 0,
+                transportModes: s.transportModes || [],
+                tier: s.tier || 'node',
+                id: s._id || s.id
+            }));
+
+            // Merge with existing results, keeping bus stops at the top
+            this.searchResults = [...busStops, ...this.searchResults.filter(r => r.type !== 'bus_stop')];
+        });
+
+        // 2. Search General Locations (OSM - Fallback)
+        this.geocodingService.search(query).pipe(
+            catchError(() => of([]))
+        ).subscribe(locations => {
+            if (this.activeSearchField !== field) return;
+
+            const mappedLocations = locations.map(l => ({
                 name: l.name,
                 displayName: l.displayName,
                 area: l.area,
@@ -649,8 +701,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 type: 'location' as const
             }));
 
-            // Combine results, prioritizing bus stops
-            this.searchResults = [...busStopResults, ...locationResults];
+            // Append to results if not already there (simple de-dupe by name)
+            const existingNames = new Set(this.searchResults.map(r => r.name));
+            const uniqueLocations = mappedLocations.filter(l => !existingNames.has(l.name));
+
+            this.searchResults = [...this.searchResults, ...uniqueLocations];
         });
     }
 
@@ -801,6 +856,10 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             return;
         }
 
+        if (this.isStartingTrip) return;
+
+        this.isStartingTrip = true;
+
         try {
             console.log('[TripPlanner] Creating trip with route:', route);
 
@@ -822,7 +881,9 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             console.log('[TripPlanner] Trip started successfully');
         } catch (error) {
             console.error('[TripPlanner] Failed to start trip:', error);
-            alert('Failed to start trip. Please try again.');
+            alert('Failed to start trip. Please check your connection and try again.');
+        } finally {
+            this.isStartingTrip = false;
         }
     }
 

@@ -117,6 +117,11 @@ export interface RouteSegment {
     intermediateStops?: { id: string; name: string }[];
     bridgeEnabled?: boolean; // If this segment involves a pedestrian bridge
     backbonePriority?: boolean; // If this segment is part of a major highway corridor
+
+    // V3 Safety Guardrails
+    isBridge?: boolean;       // User must use a pedestrian bridge here
+    isBlocked?: boolean;      // Route is flagged as unsafe/blocked
+    backboneName?: string;    // Name of expressway (e.g., "Airport Road")
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -145,6 +150,8 @@ export interface GeneratedRoute {
     generatedAt: Date;
     suggestion?: string; // Handling 404/Alternative routing suggestions
     strategy: 'shortest' | 'cheapest' | 'balanced' | 'custom';
+    classification?: 'FASTEST' | 'CHEAPEST' | 'BALANCED'; // NEW: ALONG Algorithm Stack classification
+    comparisonLabel?: string; // NEW: e.g. "₦800 cheaper than fastest"
 
     // NEW: Backend optimization metadata
     metadata?: {

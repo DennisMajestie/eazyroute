@@ -51,8 +51,8 @@
         </small>
 
         <!-- Search Results for From -->
-        <ul *ngIf="activeSearchField === 'from' && searchResults.length > 0" class="list-group">
-          <li *ngFor="let result of searchResults" class="list-group-item" (click)="selectResult(result)"
+        <ul *ngIf="activeSearchField === 'from' && searchResults.length > 0" class="suggestion-list">
+          <li *ngFor="let result of searchResults" class="suggestion-item" (click)="selectResult(result)"
             [class.primary-landmark]="result.tier === 'primary'">
             <div class="d-flex justify-content-between align-items-start">
               <div class="flex-grow-1">
@@ -104,8 +104,8 @@
           (input)="onSearchInput('to', toQuery)">
 
         <!-- Search Results for To -->
-        <ul *ngIf="activeSearchField === 'to' && searchResults.length > 0" class="list-group">
-          <li *ngFor="let result of searchResults" class="list-group-item" (click)="selectResult(result)"
+        <ul *ngIf="activeSearchField === 'to' && searchResults.length > 0" class="suggestion-list">
+          <li *ngFor="let result of searchResults" class="suggestion-item" (click)="selectResult(result)"
             [class.primary-landmark]="result.tier === 'primary'">
             <div class="d-flex justify-content-between align-items-start">
               <div class="flex-grow-1">
@@ -178,9 +178,14 @@
       </button>
 
       <!-- Report Missing Stop Button -->
-      <button class="btn btn-outline-info w-100" (click)="toggleReportModal()">
-        <i class="fas fa-map-marker-plus"></i> Report Missing Stop
-      </button>
+      <div class="d-flex gap-2">
+        <button class="btn btn-outline-info flex-grow-1" (click)="toggleReportModal()">
+          <i class="fas fa-map-marker-plus"></i> Missing Stop
+        </button>
+        <button class="btn btn-outline-warning flex-grow-1" (click)="toggleTrafficReport()">
+          <i class="fas fa-bullhorn"></i> Report Traffic
+        </button>
+      </div>
     </section>
 
     <!-- Active Trip Section (Visible when a trip is active) -->
@@ -272,15 +277,36 @@
 
     <!-- Route Results (Hidden if trip active) -->
     <section *ngIf="!isLoadingRoutes && generatedRoutes.length > 0 && !state.hasActiveTrip" class="route-results">
-      <h5>✨ Available Routes ({{ generatedRoutes.length }})</h5>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5>✨ Best Route</h5>
+        <button *ngIf="generatedRoutes.length > 1" class="btn btn-sm btn-outline-primary"
+          (click)="showAlternatives = !showAlternatives">
+          <i class="fas" [class]="showAlternatives ? 'fa-chevron-up' : 'fa-code-branch'"></i>
+          {{ showAlternatives ? 'Hide Alternatives' : 'Show ' + (generatedRoutes.length - 1) + ' Alternatives' }}
+        </button>
+      </div>
 
       <div *ngFor="let route of generatedRoutes; let i = index" class="route-card"
-        [class.selected]="selectedRoute === route" (click)="selectRoute(route)">
+        [class.d-none]="!showAlternatives && selectedRoute !== route" [class.selected]="selectedRoute === route"
+        (click)="selectRoute(route)">
 
         <!-- Route Summary -->
-        <div class="route-summary">
-          <span class="route-badge">Route {{ i + 1 }}</span>
-          <div class="route-stats">
+        <div class="route-summary" [ngClass]="route.classification?.toLowerCase()">
+          <div class="d-flex justify-content-between align-items-center w-100">
+            <span class="route-badge">
+              <i class="fas" [ngClass]="{
+                'fa-bolt': route.classification === 'FASTEST',
+                'fa-piggy-bank': route.classification === 'CHEAPEST',
+                'fa-scale-balanced': route.classification === 'BALANCED'
+              }"></i>
+              {{ route.classification || 'Route ' + (i + 1) }}
+            </span>
+            <span *ngIf="route.comparisonLabel" class="comparison-label small fw-bold">
+              {{ route.comparisonLabel }}
+            </span>
+          </div>
+
+          <div class="route-stats mt-2">
             <span class="stat-item">
               <i class="fas fa-clock"></i> {{ route.totalTime }} min
             </span>
@@ -328,6 +354,20 @@
                   <div class="to-stop">{{ segment.toStop.name }}</div>
                 </div>
 
+                <!-- V3 Safety Guardrails -->
+                <div *ngIf="segment.isBridge" class="safety-badge bridge-warning mt-2">
+                  <i class="fas fa-bridge me-1"></i>
+                  <span>🌉 Use Pedestrian Bridge</span>
+                  <small *ngIf="segment.backboneName" class="d-block text-muted">
+                    Cross {{ segment.backboneName }} via bridge
+                  </small>
+                </div>
+
+                <div *ngIf="segment.isBlocked" class="safety-badge blocked-warning mt-2">
+                  <i class="fas fa-exclamation-triangle me-1"></i>
+                  <span>⚠️ Route Blocked/Unsafe</span>
+                </div>
+
                 <div class="segment-meta text-muted small mt-1">
                   <span><i class="fas fa-clock me-1"></i> {{ segment.estimatedTime }} min</span>
                   <span class="ms-3"><i class="fas fa-arrows-alt-v me-1"></i> {{ (segment.distance / 1000).toFixed(1) }}
@@ -339,8 +379,13 @@
         </div>
 
         <!-- Start Trip Button -->
-        <button class="btn btn-success w-100 mt-3" (click)="startTripWithRoute(route); $event.stopPropagation()">
-          <i class="fas fa-play"></i> Start This Route
+        <!-- Start Trip Button -->
+        <button class="btn btn-success w-100 mt-3" [disabled]="isStartingTrip"
+          (click)="startTripWithRoute(route); $event.stopPropagation()">
+          <span *ngIf="isStartingTrip" class="spinner-border spinner-border-sm me-2" role="status"
+            aria-hidden="true"></span>
+          <i *ngIf="!isStartingTrip" class="fas fa-play me-2"></i>
+          {{ isStartingTrip ? 'Starting Trip...' : 'Start This Route' }}
         </button>
       </div>
     </section>
@@ -467,6 +512,53 @@
             {{ isSubmitting ? 'Sending...' : 'Submit Report' }}
           </button>
           <button class="btn btn-outline-info" (click)="toggleReportModal()">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Report Traffic Modal -->
+    <div class="modal-overlay" *ngIf="showTrafficReportModal">
+      <div class="modal-content p-4 border-warning border-top border-4">
+        <h4>📢 Report Road Condition</h4>
+        <p class="text-muted mb-3">Your report helps others avoid delays and stay safe.</p>
+
+        <div class="mb-3">
+          <label class="d-block mb-2">What are you reporting?</label>
+          <div class="btn-group w-100" role="group">
+            <input type="radio" class="btn-check" name="reportType" id="type-traffic" value="traffic"
+              [(ngModel)]="reportType" checked>
+            <label class="btn btn-outline-warning" for="type-traffic">🚥 Traffic</label>
+
+            <input type="radio" class="btn-check" name="reportType" id="type-police" value="police"
+              [(ngModel)]="reportType">
+            <label class="btn btn-outline-warning" for="type-police">👮 Police</label>
+
+            <input type="radio" class="btn-check" name="reportType" id="type-vio" value="vio" [(ngModel)]="reportType">
+            <label class="btn btn-outline-warning" for="type-vio">🛑 VIO</label>
+
+            <input type="radio" class="btn-check" name="reportType" id="type-accident" value="accident"
+              [(ngModel)]="reportType">
+            <label class="btn btn-outline-warning" for="type-accident">💥 Accident</label>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label>Description (Optional)</label>
+          <textarea [(ngModel)]="reportDescription" class="form-control" rows="3"
+            placeholder="e.g. Heavy gridlock near Berger, avoid if possible..."></textarea>
+        </div>
+
+        <div class="alert alert-info py-2 small">
+          <i class="fas fa-map-marker-alt me-1"></i>
+          Using your current location: <strong>{{ fromQuery }}</strong>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button class="btn btn-warning flex-grow-1 fw-bold" [disabled]="isSubmitting" (click)="submitTrafficReport()">
+            {{ isSubmitting ? 'Submitting...' : 'Submit Report' }}
+          </button>
+          <button class="btn btn-outline-secondary" (click)="toggleTrafficReport()">
             Cancel
           </button>
         </div>

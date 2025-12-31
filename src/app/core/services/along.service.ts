@@ -58,6 +58,26 @@ export class AlongService {
     }
 
     /**
+     * Generate Multi Routes (ALONG Algorithm Stack)
+     * Returns top 3 classified options (FASTEST, CHEAPEST, BALANCED)
+     */
+    generateMultiRoutes(from: any, to: any): Observable<ApiResponse<AlongRoute[]>> {
+        const payload = { from, to };
+        return this.http.post<ApiResponse<AlongRoute[]>>(`${this.apiUrl}/generate-multi-routes`, payload);
+    }
+
+    /**
+     * Report Traffic/Police (Crowdsourcing)
+     */
+    reportCondition(report: {
+        type: 'traffic' | 'police' | 'vio' | 'accident',
+        location: { lat: number; lng: number },
+        description?: string
+    }): Observable<ApiResponse<any>> {
+        return this.http.post<ApiResponse<any>>(`${this.apiUrl}/report`, report);
+    }
+
+    /**
      * Hybrid Search (ALONG + OSM)
      * Search for landmarks, bus stops, and OSM places
      */

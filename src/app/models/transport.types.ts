@@ -36,7 +36,11 @@ export interface AlongSegment {
     intermediateStops?: { id: string; name: string }[];
     bridgeEnabled?: boolean;
     backbonePriority?: boolean;
-    instructions?: string; // Aligned with instructions plural
+    instructions?: string;
+    // V3 Safety Guardrails
+    isBridge?: boolean;       // User must use a pedestrian bridge here
+    isBlocked?: boolean;      // Route is flagged as unsafe/blocked
+    backboneName?: string;    // Name of the expressway (e.g., "Airport Road")
 }
 
 export interface AlongRoute {
@@ -53,11 +57,14 @@ export interface AlongRoute {
     minCost?: number;
     maxCost?: number;
     warnings?: string[];
+    classification?: 'FASTEST' | 'CHEAPEST' | 'BALANCED'; // NEW: Route classification
+    comparisonLabel?: string; // NEW: e.g., "₦800 cheaper than fastest"
     metadata?: {
-        strategy: string; // 'shortest' | 'cheapest' | 'balanced'
+        strategy: string;
         alternativeRoutes: boolean;
         isSurgeApplied?: boolean;
         backbonePriority?: boolean;
+        ribExitApplied?: boolean;     // V3: Village Exit Fee included
     };
 }
 
