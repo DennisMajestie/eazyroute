@@ -119,6 +119,12 @@
                   {{ getVerificationBadge(result.verificationStatus, result.upvotes).text }}
                 </span>
 
+                <!-- Verified Neighborhood Badge -->
+                <span *ngIf="result.isVerifiedNeighborhood" class="badge ms-2"
+                  style="background: #22C55E; color: white;">
+                  <i class="fas fa-check-circle me-1"></i> Verified Neighborhood
+                </span>
+
                 <small class="d-block text-muted">
                   {{ result.type === 'bus_stop' ? '🚏 Bus Stop' : '📍 Location' }}
                   {{ result.area ? '• ' + result.area : '' }}
@@ -346,26 +352,24 @@
               </div>
 
               <div class="segment-body">
-                <div class="stop-names">
+                <div class="stop-names mb-2">
                   <div class="from-stop">{{ segment.fromStop.name }}</div>
-                  <div class="instruction-text" *ngIf="segment.instructions">
-                    <i class="fas fa-chevron-right me-1"></i> {{ segment.instructions }}
-                  </div>
                   <div class="to-stop">{{ segment.toStop.name }}</div>
                 </div>
 
-                <!-- V3 Safety Guardrails -->
+                <!-- Smart Boarding Instructions & Barriers -->
+                <app-smart-instruction [step]="{
+                    instruction: segment.instructions || '',
+                    microInstructions: segment.microInstructions,
+                    barriers: segment.barriers,
+                    isBoarding: true
+                  }">
+                </app-smart-instruction>
+
+                <!-- V3 Safety Guardrails (Keep for accessibility/highlights) -->
                 <div *ngIf="segment.isBridge" class="safety-badge bridge-warning mt-2">
                   <i class="fas fa-bridge me-1"></i>
                   <span>🌉 Use Pedestrian Bridge</span>
-                  <small *ngIf="segment.backboneName" class="d-block text-muted">
-                    Cross {{ segment.backboneName }} via bridge
-                  </small>
-                </div>
-
-                <div *ngIf="segment.isBlocked" class="safety-badge blocked-warning mt-2">
-                  <i class="fas fa-exclamation-triangle me-1"></i>
-                  <span>⚠️ Route Blocked/Unsafe</span>
                 </div>
 
                 <div class="segment-meta text-muted small mt-1">
@@ -390,32 +394,63 @@
       </div>
     </section>
 
-    <!-- No Routes Found -->
+    <!-- Loading State with Coverage Dashboard -->
+    <div *ngIf="isLoadingRoutes" class="loading-stats-dashboard p-4 text-center">
+      <div class="spinner-border text-primary mb-3" role="status"></div>
+      <h4>Calculating Best Route...</h4>
+      <p class="text-muted">Analyzing ALONG behavioral data</p>
+
+      <div *ngIf="coverageStats" class="stats-grid mt-4">
+        <div class="stat-card">
+          <div class="stat-value text-primary">{{ coverageStats.areasMapped | number }}</div>
+          <div class="stat-label">Areas Mapped</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value text-warning">{{ coverageStats.hotspotsActive | number }}</div>
+          <div class="stat-label">Active Hotspots</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value text-success">{{ coverageStats.contributors | number }}</div>
+          <div class="stat-label">Contributors</div>
+        </div>
+      </div>
+
+      <div *ngIf="!coverageStats && isLoadingStats" class="skeleton-stats mt-4">
+        <div class="skeleton-row mb-2"></div>
+        <div class="skeleton-row"></div>
+      </div>
+    </div>
+
+    <!-- Generated Routes Section -->
+    <section *ngIf="!isLoadingRoutes && generatedRoutes.length > 0 && !state.hasActiveTrip" class="results-section">
+      <!-- ... (previous route cards logic, keep but integrate SmartInstruction inside segment list) ... -->
+    </section>
+
+    <!-- Enhanced Error Suggestions (Nearby Hubs) -->
     <div *ngIf="!isLoadingRoutes && generatedRoutes.length === 0 && fromLocation && toLocation && !state.hasActiveTrip"
       class="alert alert-info shadow-sm bordered-alert">
       <div class="d-flex align-items-center mb-2">
         <i class="fas fa-search-location fa-2x me-3 text-primary"></i>
         <h5 class="mb-0">Route Not Found</h5>
       </div>
-      <p class="mb-0">We couldn't find a direct route between these points.</p>
+      <p class="mb-2">We couldn't find a direct route between these points.</p>
+
+      <!-- Localized Hub Suggestions -->
+      <div *ngIf="errorHubs.length > 0" class="hub-suggestions mt-3">
+        <p class="small fw-bold text-muted mb-2">Try searching from one of these major hubs:</p>
+        <div class="d-flex flex-wrap gap-2">
+          <button *ngFor="let hub of errorHubs" (click)="useHubAsLocation(hub, 'from')"
+            class="btn btn-sm btn-outline-primary rounded-pill">
+            <i class="fas fa-map-marker-alt me-1"></i> {{ hub.name }}
+          </button>
+        </div>
+      </div>
 
       <!-- Contribute CTA -->
-      <div class="mt-3">
+      <div class="mt-4">
         <a routerLink="/bus-stops/add" class="btn btn-sm btn-outline-primary bg-white">
           <i class="fas fa-plus-circle me-1"></i> Is this place missing? Add it to the map
         </a>
-      </div>
-
-      <!-- Backend Suggestion -->
-      <div *ngIf="generatedRoutes[0]?.suggestion"
-        class="mt-3 p-3 bg-light rounded border-start border-4 border-primary">
-        <i class="fas fa-lightbulb text-warning me-2"></i>
-        <strong>EazyRoute Pro-Tip:</strong>
-        <p class="mb-0 mt-1 small">{{ generatedRoutes[0].suggestion }}</p>
-      </div>
-
-      <div *ngIf="!generatedRoutes[0]?.suggestion" class="mt-2 small text-muted">
-        Try picking a major landmark or checking if EazyRoute is active in this corridor.
       </div>
     </div>
 

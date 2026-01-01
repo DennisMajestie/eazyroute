@@ -117,8 +117,21 @@ export class GeolocationService {
             accuracy: position.coords.accuracy,
             timestamp: position.timestamp
         };
+
         this.currentLocation.set(coords);
         this.locationError.set(null);
+
+        // Abuja Proximity Check (Lagos Bias Prevention)
+        const distanceToAbuja = this.calculateDistance(
+            coords.latitude, coords.longitude,
+            environment.geolocation.defaultCenter.lat, environment.geolocation.defaultCenter.lng
+        );
+
+        if (distanceToAbuja > 100) { // More than 100km from Abuja
+            console.warn(`[Geolocation] User is far from Abuja (${distanceToAbuja.toFixed(1)}km). Environmental bias suspected.`);
+            // Note: We don't force a move, but we could set a flag for other components to show a warning
+        }
+
         return coords;
     }
 

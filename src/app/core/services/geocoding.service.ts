@@ -30,8 +30,13 @@ export class GeocodingService {
         }
 
         // Focus search on Abuja, Nigeria
+        // Viewbox (min lon, min lat, max lon, max lat) for Abuja FCT
+        const viewbox = '7.15,8.85,7.65,9.25';
+
         const params = {
-            q: `${query}, Abuja, Nigeria`,
+            q: query, // Removed suffix to allow more flexible searches within the box
+            viewbox: viewbox,
+            bounded: '1', // Constrain results to the viewbox
             format: 'json',
             limit: '5',
             addressdetails: '1'

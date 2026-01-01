@@ -122,6 +122,8 @@ export interface RouteSegment {
     isBridge?: boolean;       // User must use a pedestrian bridge here
     isBlocked?: boolean;      // Route is flagged as unsafe/blocked
     backboneName?: string;    // Name of expressway (e.g., "Airport Road")
+    microInstructions?: string[];
+    barriers?: string[];
 }
 
 // ═══════════════════════════════════════════════════════════════════

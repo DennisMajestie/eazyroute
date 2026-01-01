@@ -18,6 +18,7 @@ import { CommuterProtocolService, HubProtocol, BoardingProtocol } from '../../..
 import { SafetyService, SafetyLevel } from '../../../core/services/safety.service';
 import { VerificationStatus, TransportMode, BusStop } from '../../../models/bus-stop.model';
 import { GeneratedRoute, RouteSegment } from '../../../core/engines/types/easyroute.types';
+import { SmartInstructionComponent } from '../../../shared/components/smart-instruction/smart-instruction.component';
 
 interface SearchResult {
     name: string;
@@ -36,12 +37,14 @@ interface SearchResult {
     transportModes?: TransportMode[];
     id?: string | number;
     tier?: 'primary' | 'sub-landmark' | 'node';
+    source?: string;
+    isVerifiedNeighborhood?: boolean;
 }
 
 @Component({
     selector: 'app-trip-planner',
     standalone: true,
-    imports: [CommonModule, FormsModule, MapComponent],
+    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent],
     templateUrl: './trip-planner.component.html',
     styleUrl: './trip-planner.component.scss'
 })
@@ -93,6 +96,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.isLoadingRoutes = true;
         this.generatedRoutes = [];
         this.selectedRoute = null;
+        this.fetchCoverageStats();
+
 
         try {
             // Pass name/coords as payload
@@ -128,11 +133,49 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 this.generatedRoutes = [];
                 alert(response?.message || 'No routes found for this path. Try another location.');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('[TripPlanner] Route generation failed:', error);
-            alert('Route service is currently unavailable. Please check your connection and try again.');
+            // Localized Error Suggestions (Nearby Hubs)
+            if (error.error && error.error.data && error.error.data.nearbyHubs) {
+                this.errorHubs = error.error.data.nearbyHubs;
+            } else if (error.nearbyHubs) {
+                this.errorHubs = error.nearbyHubs;
+            } else {
+                this.errorHubs = [];
+            }
         } finally {
             this.isLoadingRoutes = false;
+        }
+    }
+
+    private fetchCoverageStats() {
+        this.isLoadingStats = true;
+        this.alongService.getStats().subscribe({
+            next: (res) => {
+                if (res.success) this.coverageStats = res.data;
+                this.isLoadingStats = false;
+            },
+            error: () => this.isLoadingStats = false
+        });
+    }
+
+    useHubAsLocation(hub: any, field: 'from' | 'to') {
+        const result: SearchResult = {
+            name: hub.name,
+            latitude: hub.latitude,
+            longitude: hub.longitude,
+            type: 'bus_stop',
+            tier: hub.tier || 'primary'
+        };
+        this.selectResult(result);
+
+        // Update the query field manually
+        if (field === 'from') this.fromQuery = hub.name;
+        else this.toQuery = hub.name;
+
+        // Auto-trigger route generation if both are set
+        if (this.fromLocation && this.toLocation) {
+            this.findRoutes();
         }
     }
 
@@ -169,6 +212,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 } as any,
                 cost: seg.cost || 0,
                 instructions: seg.instruction,
+                microInstructions: seg.microInstructions || [],
+                barriers: seg.barriers || [],
                 // V3 Safety Guardrails
                 isBridge: seg.isBridge || false,
                 isBlocked: seg.isBlocked || false,
@@ -336,6 +381,12 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     // Shouting Protocols
     // Shouting Protocols
     activeProtocol$ = this.protocolService.getActiveProtocol();
+
+    // Behavioral Layer (ALONG)
+    coverageStats: { areasMapped: number; hotspotsActive: number; contributors: number } | null = null;
+    errorHubs: any[] = [];
+    isLoadingStats = false;
+
 
     // Safety & Panic Button
     showSafetyModal = false;
@@ -706,6 +757,40 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             const uniqueLocations = mappedLocations.filter(l => !existingNames.has(l.name));
 
             this.searchResults = [...this.searchResults, ...uniqueLocations];
+        });
+
+        // 3. Search Behavioral Localities (ALONG - High Priority neighborhoods)
+        this.alongService.search(query).pipe(
+            catchError(() => of({ success: false, data: [] }))
+        ).subscribe(res => {
+            if (this.activeSearchField !== field) return;
+
+            const localities = (res.success && res.data ? res.data : []).map((l: any) => ({
+                name: l.name,
+                displayName: l.displayName || l.name,
+                area: l.area || l.district,
+                latitude: l.lat || l.latitude,
+                longitude: l.lng || l.longitude,
+                type: 'location' as const,
+                source: l.source,
+                isVerifiedNeighborhood: l.source === 'along-locality',
+                tier: 'primary' as const
+            }));
+
+            // Merge and prioritize: verified neighborhoods should be at the top of 'location' type results
+            const verified = localities.filter(l => l.isVerifiedNeighborhood);
+            const others = localities.filter(l => !l.isVerifiedNeighborhood);
+
+            // Logic: [Bus Stops] -> [Verified Neighborhoods] -> [Other Localities] -> [OSM Results]
+            const existingIds = new Set(this.searchResults.map(r => r.name));
+            const uniqueVerified = verified.filter(v => !existingIds.has(v.name));
+            const uniqueOthers = others.filter(o => !existingIds.has(o.name));
+
+            // Insert verified neighborhoods after bus stops
+            const busStops = this.searchResults.filter(r => r.type === 'bus_stop');
+            const everythingElse = this.searchResults.filter(r => r.type !== 'bus_stop');
+
+            this.searchResults = [...busStops, ...uniqueVerified, ...uniqueOthers, ...everythingElse];
         });
     }
 
