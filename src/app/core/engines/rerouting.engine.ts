@@ -351,12 +351,12 @@ export class ReroutingEngine {
 
       const response = await firstValueFrom(this.alongService.generateRoute(fromPayload, toPayload));
 
-      if (response && response.success && response.data) {
-        const mappedRoute = this.mapAlongRouteToGeneratedRoute(response.data);
+      if (response && response.success && response.data && response.data.path) {
+        const mappedRoute = this.mapAlongRouteToGeneratedRoute(response.data.path);
         console.log('[Rerouting] Alternative route generated:', mappedRoute);
         return mappedRoute;
       } else {
-        console.warn('[Rerouting] AlongService returned no routes for reroute');
+        console.warn('[Rerouting] AlongService returned no routes for reroute:', response);
       }
 
       // Fallback to legacy if needed, or just return null

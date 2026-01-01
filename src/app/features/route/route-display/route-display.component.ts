@@ -93,11 +93,11 @@ export class RouteDisplayComponent implements OnInit {
         this.alongService.generateRoute(fromInput, toInput)
             .subscribe({
                 next: (response) => {
-                    if (response.success && response.data) {
-                        this.route = response.data;
+                    if (response.success && response.data && response.data.path) {
+                        this.route = response.data.path;
 
                         // Use optimized legs if available, fallback to segments
-                        if ((this.route as any).legs && (this.route as any).legs.length > 0) {
+                        if (this.route && (this.route as any).legs && (this.route as any).legs.length > 0) {
                             this.route.segments = (this.route as any).legs;
 
                             // Show optimization toast if applied
@@ -107,11 +107,15 @@ export class RouteDisplayComponent implements OnInit {
                         }
 
                         // Ensure instructions exist for Quick Summary
-                        if (!this.route.instructions || this.route.instructions.length === 0) {
+                        if (this.route && (!this.route.instructions || this.route.instructions.length === 0)) {
                             this.route.instructions = this.route.segments
                                 .map(s => s.instruction)
                                 .filter(i => !!i);
                         }
+                    } else if (response.errorType === 'LOCATION_NOT_COVERED') {
+                        this.error = response.suggestion || 'This area is not yet covered by ALONG.';
+                    } else {
+                        this.error = response.message || 'No route found for this path.';
                     }
                     this.isLoading = false;
                 },
