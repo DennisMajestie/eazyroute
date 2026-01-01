@@ -128,19 +128,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 return;
             }
 
-            if (response && response.success && response.data) {
-                const unifiedData = response.data;
+            if (response && response.success && response.data && Array.isArray(response.data)) {
                 const routes: any[] = [];
 
-                // Primary path
-                if (unifiedData.path) {
-                    routes.push(this.mapAlongRouteToGeneratedRoute(unifiedData.path));
-                }
-
-                // Alternative routes
-                if (unifiedData.routes && Array.isArray(unifiedData.routes)) {
-                    unifiedData.routes.forEach(r => routes.push(this.mapAlongRouteToGeneratedRoute(r)));
-                }
+                // Map all routes in the array
+                response.data.forEach(r => routes.push(this.mapAlongRouteToGeneratedRoute(r)));
 
                 this.generatedRoutes = routes;
 
@@ -148,7 +140,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 const fastest = this.generatedRoutes.find(r => r.classification === 'FASTEST');
                 this.selectedRoute = fastest || this.generatedRoutes[0] || null;
 
-                console.log('[TripPlanner] V4 routes loaded:', this.generatedRoutes.length);
+                console.log('[TripPlanner] V3/V4 routes loaded:', this.generatedRoutes.length);
             } else {
                 console.warn('[TripPlanner] No valid route data:', response);
                 this.generatedRoutes = [];

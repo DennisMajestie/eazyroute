@@ -351,8 +351,8 @@ export class ReroutingEngine {
 
       const response = await firstValueFrom(this.alongService.generateRoute(fromPayload, toPayload));
 
-      if (response && response.success && response.data && response.data.path) {
-        const mappedRoute = this.mapAlongRouteToGeneratedRoute(response.data.path);
+      if (response && response.success && response.data && response.data.length > 0) {
+        const mappedRoute = this.mapAlongRouteToGeneratedRoute(response.data[0]);
         console.log('[Rerouting] Alternative route generated:', mappedRoute);
         return mappedRoute;
       } else {

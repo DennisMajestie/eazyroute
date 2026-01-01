@@ -94,16 +94,3 @@ export interface ApiResponse<T> {
     suggestion?: string; // e.g. "We don't cover Lagos yet. Try searching near Abuja."
     nearbyHubs?: { id: string; name: string; lat: number; lng: number }[]; // For recovery
 }
-
-/**
- * V4 Unified Route Response
- */
-export interface UnifiedRouteResponse {
-    path: AlongRoute;           // Primary route
-    routes: AlongRoute[];       // Alternatives
-    metadata: {
-        totalFound: number;
-        transferCount: number;
-        processingTimeMs?: number;
-    };
-}

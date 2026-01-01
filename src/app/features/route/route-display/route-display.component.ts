@@ -93,8 +93,8 @@ export class RouteDisplayComponent implements OnInit {
         this.alongService.generateRoute(fromInput, toInput)
             .subscribe({
                 next: (response) => {
-                    if (response.success && response.data && response.data.path) {
-                        this.route = response.data.path;
+                    if (response.success && response.data && response.data.length > 0) {
+                        this.route = response.data[0];
 
                         // Use optimized legs if available, fallback to segments
                         if (this.route && (this.route as any).legs && (this.route as any).legs.length > 0) {
