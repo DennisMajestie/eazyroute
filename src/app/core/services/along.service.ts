@@ -24,6 +24,15 @@ export class AlongService {
      * Determining the best boarding point based on user location
      */
     inferBoarding(lat: number, lng: number, destination?: string): Observable<ApiResponse<BoardingInference[]>> {
+        // Prevent calling with invalid (0,0) coordinates
+        if (lat === 0 && lng === 0) {
+            console.warn('[AlongService] Blocked inferBoarding call with (0,0) coordinates');
+            return new Observable(observer => {
+                observer.error({ message: 'Invalid Location (0,0)' });
+                observer.complete();
+            });
+        }
+
         let params = new HttpParams()
             .set('latitude', lat.toString())
             .set('longitude', lng.toString());
@@ -40,6 +49,15 @@ export class AlongService {
      * data now returns an array of routes directly.
      */
     generateRoute(from: any, to: any): Observable<ApiResponse<AlongRoute[]>> {
+        // Validate From Location Coordinates
+        if (this.isInvalidCoordinate(from)) {
+            console.warn('[AlongService] Blocked generateRoute call with invalid From details:', from);
+            return new Observable(observer => {
+                observer.error({ message: 'Invalid "From" Location (0,0)' });
+                observer.complete();
+            });
+        }
+
         const url = `${this.apiUrl}/generate-route`;
 
         // V4 Payload Requirement: fromLocation/toLocation
@@ -114,5 +132,14 @@ export class AlongService {
      */
     getStats(): Observable<ApiResponse<{ areasMapped: number; hotspotsActive: number; contributors: number }>> {
         return this.http.get<ApiResponse<any>>(`${this.apiUrl}/stats`);
+    }
+
+    private isInvalidCoordinate(location: any): boolean {
+        if (!location) return true;
+        // Check if object has lat/lng structure
+        if (typeof location === 'object' && 'lat' in location && 'lng' in location) {
+            return location.lat === 0 && location.lng === 0;
+        }
+        return false;
     }
 }

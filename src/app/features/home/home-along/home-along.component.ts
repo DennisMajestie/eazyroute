@@ -190,6 +190,10 @@ export class HomeAlongComponent implements OnInit {
       const lat = coords.latitude;
       const lng = coords.longitude;
 
+      if (lat === 0 && lng === 0) {
+        throw new Error('GPS returned (0,0). Waiting for valid lock.');
+      }
+
       // Create SelectedLocation object
       const detectedLocation: SelectedLocation = {
         type: 'bus_stop',

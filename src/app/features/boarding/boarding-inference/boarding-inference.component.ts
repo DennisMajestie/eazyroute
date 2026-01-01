@@ -85,6 +85,7 @@ export class BoardingInferenceComponent implements OnInit {
      */
     inferBoardingPoints() {
         if (!this.currentLocation) return;
+        if (this.currentLocation.lat === 0 && this.currentLocation.lng === 0) return;
 
         this.isLoading = true;
         this.error = '';

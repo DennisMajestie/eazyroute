@@ -286,10 +286,12 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             const busStops = await firstValueFrom(this.busStopService.searchBusStops(query));
             if (busStops.success && busStops.data && busStops.data.length > 0) {
                 const stop = busStops.data[0];
-                return {
-                    lat: stop.location?.coordinates?.[1] || 0,
-                    lng: stop.location?.coordinates?.[0] || 0
-                };
+                const lat = stop.location?.coordinates?.[1];
+                const lng = stop.location?.coordinates?.[0];
+
+                if (lat !== undefined && lng !== undefined) {
+                    return { lat, lng };
+                }
             }
             return null;
         } catch (e) {
