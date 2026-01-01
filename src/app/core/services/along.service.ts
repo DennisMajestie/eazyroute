@@ -60,10 +60,22 @@ export class AlongService {
 
         const url = `${this.apiUrl}/generate-route`;
 
-        // V4 Payload Requirement: fromLocation/toLocation
+        // Normalize Payload: Ensure latitude/longitude are present if it's an object
+        // Maps {lat, lng} -> {lat, lng, latitude, longitude} to satisfy any backend parser
+        const normalize = (loc: any) => {
+            if (typeof loc === 'object' && loc !== null && 'lat' in loc && 'lng' in loc) {
+                return {
+                    ...loc,
+                    latitude: loc.lat,
+                    longitude: loc.lng
+                };
+            }
+            return loc;
+        };
+
         const payload = {
-            fromLocation: from,
-            toLocation: to
+            fromLocation: normalize(from),
+            toLocation: normalize(to)
         };
 
         return this.http.post<ApiResponse<AlongRoute[]>>(url, payload);
