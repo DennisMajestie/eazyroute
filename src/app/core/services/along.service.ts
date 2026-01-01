@@ -39,6 +39,7 @@ export class AlongService {
      * Refactored to use multi-route stack for consistency and to fix 404 on legacy endpoint
      */
     generateRoute(from: any, to: any): Observable<ApiResponse<AlongRoute>> {
+        console.log('🚀 [AlongService] generateRoute called - redirecting to multi-routes');
         return this.generateMultiRoutes(from, to).pipe(
             map(res => {
                 if (res.success && res.data && res.data.length > 0) {
@@ -66,6 +67,7 @@ export class AlongService {
         to: string | { lat: number; lng: number },
         modes?: TransportMode[]
     ): Observable<EnhancedRouteResponse> {
+        console.log('🚀 [AlongService] generateEnhancedRoute called - redirecting to multi-routes');
         return this.generateMultiRoutes(from, to, modes).pipe(
             map(res => {
                 if (res.success && res.data && res.data.length > 0) {
@@ -93,11 +95,14 @@ export class AlongService {
      * Returns top 3 classified options (FASTEST, CHEAPEST, BALANCED)
      */
     generateMultiRoutes(from: any, to: any, modes?: TransportMode[]): Observable<ApiResponse<AlongRoute[]>> {
+        const url = `${this.apiUrl}/generate-multi-routes`;
+        console.log('🚀 [AlongService] generateMultiRoutes hitting URL:', url);
+
         const payload: any = { from, to };
         if (modes && modes.length > 0) {
             payload.modes = modes;
         }
-        return this.http.post<ApiResponse<AlongRoute[]>>(`${this.apiUrl}/generate-multi-routes`, payload);
+        return this.http.post<ApiResponse<AlongRoute[]>>(url, payload);
     }
 
     /**
