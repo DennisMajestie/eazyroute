@@ -104,14 +104,14 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             const fromPayload = this.fromLocation || this.fromQuery;
             const toPayload = this.toLocation || this.toQuery;
 
-            console.log('[TripPlanner] Generating multi-routes via AlongService...', {
+            console.log('[TripPlanner] V4 Route Generation...', {
                 from: fromPayload,
                 to: toPayload
             });
 
-            // Call Backend (New ALONG Algorithm Stack)
+            // Call Backend (V4 ALONG Algorithm Stack)
             const response = await firstValueFrom(
-                this.alongService.generateMultiRoutes(fromPayload, toPayload).pipe(
+                this.alongService.generateRoute(fromPayload, toPayload).pipe(
                     catchError(err => {
                         console.error('[TripPlanner] API Error:', err);
                         throw err;
@@ -119,33 +119,59 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 )
             );
 
-            if (response && response.success && response.data && Array.isArray(response.data)) {
-                // Map multiple routes
-                this.generatedRoutes = response.data.map(route => this.mapAlongRouteToGeneratedRoute(route));
+            // Handle Soft Failure (Location Not Covered)
+            if (response.success === false && response.errorType === 'LOCATION_NOT_COVERED') {
+                console.warn('[TripPlanner] Soft failure - location not covered:', response.suggestion);
+                this.alertMessage = response.suggestion || 'This area is not yet covered by ALONG.';
+                this.errorHubs = response.nearbyHubs || [];
+                this.generatedRoutes = [];
+                return;
+            }
+
+            if (response && response.success && response.data) {
+                const unifiedData = response.data;
+                const routes: any[] = [];
+
+                // Primary path
+                if (unifiedData.path) {
+                    routes.push(this.mapAlongRouteToGeneratedRoute(unifiedData.path));
+                }
+
+                // Alternative routes
+                if (unifiedData.routes && Array.isArray(unifiedData.routes)) {
+                    unifiedData.routes.forEach(r => routes.push(this.mapAlongRouteToGeneratedRoute(r)));
+                }
+
+                this.generatedRoutes = routes;
 
                 // Select FASTEST by default if available, otherwise first one
                 const fastest = this.generatedRoutes.find(r => r.classification === 'FASTEST');
                 this.selectedRoute = fastest || this.generatedRoutes[0] || null;
 
-                console.log('[TripPlanner] Generated multi-routes successfully:', this.generatedRoutes.length);
+                console.log('[TripPlanner] V4 routes loaded:', this.generatedRoutes.length);
             } else {
-                console.warn('[TripPlanner] No valid route data in response:', response);
+                console.warn('[TripPlanner] No valid route data:', response);
                 this.generatedRoutes = [];
-                alert(response?.message || 'No routes found for this path. Try another location.');
+                this.alertMessage = response?.message || 'No routes found. Try another location.';
             }
         } catch (error: any) {
             console.error('[TripPlanner] Route generation failed:', error);
-            // Localized Error Suggestions (Nearby Hubs)
-            if (error.error && error.error.data && error.error.data.nearbyHubs) {
-                this.errorHubs = error.error.data.nearbyHubs;
-            } else if (error.nearbyHubs) {
-                this.errorHubs = error.nearbyHubs;
-            } else {
-                this.errorHubs = [];
-            }
+            this.errorHubs = error.error?.nearbyHubs || error.nearbyHubs || [];
         } finally {
             this.isLoadingRoutes = false;
         }
+    }
+
+    /**
+     * Recovery Helper: Select a suggested hub after a soft failure
+     */
+    selectHub(hub: { name: string, lat: number, lng: number }) {
+        this.toLocation = { lat: hub.lat, lng: hub.lng };
+        this.toQuery = hub.name;
+        this.addMarker(hub.lat, hub.lng, 'Destination');
+        this.center = { ...this.toLocation };
+        this.errorHubs = [];
+        this.findRoutes();
     }
 
     private fetchCoverageStats() {

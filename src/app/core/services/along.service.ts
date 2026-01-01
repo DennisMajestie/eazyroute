@@ -3,12 +3,13 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { AlongRoute, ApiResponse, BoardingInference } from '../../models/transport.types';
+import { AlongRoute, ApiResponse, BoardingInference, UnifiedRouteResponse } from '../../models/transport.types';
 import { EnhancedRoute, EnhancedRouteResponse, TransportMode } from '../../models/enhanced-bus-stop.model';
 
 /**
  * AlongService - Behavioral Layer Routing & Logic
  * Handles the "ALONG" algorithm stack, hybrid searches, and boarding inference.
+ * Updated for V4 ALONG Framework Alignment.
  */
 @Injectable({
     providedIn: 'root'
@@ -35,48 +36,38 @@ export class AlongService {
     }
 
     /**
-     * Generate Route (Trip Planner)
-     * Refactored to use multi-route stack for consistency and to fix 404 on legacy endpoint
+     * Generate Route (Trip Planner) - V4 ALONG Framework
+     * Integrated support for Soft Failures and Unified Response
      */
-    generateRoute(from: any, to: any): Observable<ApiResponse<AlongRoute>> {
-        console.log('🚀 [AlongService] generateRoute called - redirecting to multi-routes');
-        return this.generateMultiRoutes(from, to).pipe(
-            map(res => {
-                if (res.success && res.data && res.data.length > 0) {
-                    return {
-                        success: true,
-                        data: res.data[0],
-                        message: res.message
-                    };
-                }
-                return {
-                    success: false,
-                    data: null as any,
-                    message: res.message || 'No routes found'
-                };
-            })
-        );
+    generateRoute(from: any, to: any): Observable<ApiResponse<UnifiedRouteResponse>> {
+        const url = `${this.apiUrl}/generate-route`;
+
+        // V4 Payload Requirement: fromLocation/toLocation
+        const payload = {
+            fromLocation: from,
+            toLocation: to
+        };
+
+        return this.http.post<ApiResponse<UnifiedRouteResponse>>(url, payload);
     }
 
     /**
      * Generate Enhanced Route (New multi-modal format)
-     * Redirected to generate-multi-routes to prevent 404s
+     * Redirected to standard generate-route for V4 Unified Schema
      */
     generateEnhancedRoute(
         from: string | { lat: number; lng: number },
         to: string | { lat: number; lng: number },
         modes?: TransportMode[]
     ): Observable<EnhancedRouteResponse> {
-        console.log('🚀 [AlongService] generateEnhancedRoute called - redirecting to multi-routes');
-        return this.generateMultiRoutes(from, to, modes).pipe(
+        return this.generateRoute(from, to).pipe(
             map(res => {
-                if (res.success && res.data && res.data.length > 0) {
-                    // Map AlongRoute to EnhancedRoute (they share core properties)
-                    const route = res.data[0];
+                if (res.success && res.data && res.data.path) {
+                    const route = res.data.path;
                     const enhanced: EnhancedRoute = {
                         from: route.from,
                         to: route.to,
-                        segments: (route.segments as any), // Types are largely compatible
+                        segments: (route.segments as any),
                         totalDistance: route.totalDistance,
                         totalTime: route.totalTime,
                         totalCost: route.totalCost,
@@ -92,17 +83,26 @@ export class AlongService {
 
     /**
      * Generate Multi Routes (ALONG Algorithm Stack)
-     * Returns top 3 classified options (FASTEST, CHEAPEST, BALANCED)
+     * Legacy wrapper for Unified Response in V4
      */
     generateMultiRoutes(from: any, to: any, modes?: TransportMode[]): Observable<ApiResponse<AlongRoute[]>> {
-        const url = `${this.apiUrl}/generate-multi-routes`;
-        console.log('🚀 [AlongService] generateMultiRoutes hitting URL:', url);
-
-        const payload: any = { from, to };
-        if (modes && modes.length > 0) {
-            payload.modes = modes;
-        }
-        return this.http.post<ApiResponse<AlongRoute[]>>(url, payload);
+        return this.generateRoute(from, to).pipe(
+            map(res => {
+                const routes: AlongRoute[] = [];
+                if (res.success && res.data) {
+                    if (res.data.path) routes.push(res.data.path);
+                    if (res.data.routes) routes.push(...res.data.routes);
+                }
+                return {
+                    success: res.success,
+                    data: routes,
+                    message: res.message,
+                    errorType: res.errorType,
+                    suggestion: res.suggestion,
+                    nearbyHubs: res.nearbyHubs
+                };
+            })
+        );
     }
 
     /**
