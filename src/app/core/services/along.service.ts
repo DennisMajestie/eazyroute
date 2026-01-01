@@ -61,11 +61,12 @@ export class AlongService {
         const url = `${this.apiUrl}/generate-route`;
 
         // Normalize Payload: Ensure latitude/longitude are present if it's an object
-        // Maps {lat, lng} -> {lat, lng, latitude, longitude} to satisfy any backend parser
+        // Maps {lat, lng} -> {latitude, longitude} (Clean Object)
         const normalize = (loc: any) => {
             if (typeof loc === 'object' && loc !== null && 'lat' in loc && 'lng' in loc) {
+                // Return ONLY coordinates to force backend to use them
+                // This prevents backend from trying to geocode "My Location" string if present
                 return {
-                    ...loc,
                     latitude: loc.lat,
                     longitude: loc.lng
                 };
