@@ -151,7 +151,8 @@ export class AlongService {
         if (!location) return true;
         // Check if object has lat/lng structure
         if (typeof location === 'object' && 'lat' in location && 'lng' in location) {
-            return location.lat === 0 && location.lng === 0;
+            // Falsy check catches 0, null, and undefined
+            return !location.lat && !location.lng;
         }
         return false;
     }

@@ -817,19 +817,27 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     selectResult(result: SearchResult) {
         if (this.activeSearchField === 'from') {
             this.fromQuery = result.name;
-            this.fromLocation = {
-                lat: result.latitude,
-                lng: result.longitude
-            };
-            this.addMarker(this.fromLocation.lat, this.fromLocation.lng, 'Origin', result.tier);
+            if (result.latitude && result.longitude) {
+                this.fromLocation = {
+                    lat: result.latitude,
+                    lng: result.longitude
+                };
+                this.addMarker(this.fromLocation.lat, this.fromLocation.lng, 'Origin', result.tier);
+            } else {
+                this.fromLocation = null; // Forces recalculation/name use
+            }
         } else if (this.activeSearchField === 'to') {
             this.toQuery = result.name;
-            this.toLocation = {
-                lat: result.latitude,
-                lng: result.longitude
-            };
-            this.addMarker(this.toLocation.lat, this.toLocation.lng, 'Destination', result.tier);
-            this.center = { ...this.toLocation };
+            if (result.latitude && result.longitude) {
+                this.toLocation = {
+                    lat: result.latitude,
+                    lng: result.longitude
+                };
+                this.addMarker(this.toLocation.lat, this.toLocation.lng, 'Destination', result.tier);
+                this.center = { ...this.toLocation };
+            } else {
+                this.toLocation = null;
+            }
         }
         this.searchResults = [];
         this.activeSearchField = null;

@@ -253,8 +253,8 @@ export class HomeAlongComponent implements OnInit {
             type: item.type,
             name: item.name,
             hierarchy: item.hierarchy || (item.source === 'osm' ? 'External' : 'Local'),
-            latitude: item.location?.lat || item.location?.coordinates?.[1] || 0,
-            longitude: item.location?.lng || item.location?.coordinates?.[0] || 0,
+            latitude: item.location?.lat ?? item.location?.coordinates?.[1],
+            longitude: item.location?.lng ?? item.location?.coordinates?.[0],
             source: item.source
           } as any)); // Using any to bypass strict type check for now if LocalitySearchResult is strict
 
