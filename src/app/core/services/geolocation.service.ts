@@ -83,28 +83,43 @@ export class GeolocationService {
      * Get smart location with retry logic (handle GPS warm-up)
      */
     async getSmartLocation(): Promise<Coordinates | null> {
-        for (let i = 0; i < 3; i++) {
+        let lastPos: Coordinates | null = null;
+
+        for (let i = 0; i < 4; i++) {
             try {
                 console.log(`[Geolocation] Smart location attempt ${i + 1}...`);
                 const pos = await firstValueFrom(this.getCurrentPosition());
 
-                // On some mobile devices, initial lock might return 0,0
-                if (pos.latitude !== 0 || pos.longitude !== 0) {
-                    console.log('[Geolocation] GPS Lock successful!');
-                    return pos;
+                // 1. Basic Block (0,0) or Lagos Ghost
+                if (pos.latitude === 0 && pos.longitude === 0) continue;
+                if (Math.abs(pos.latitude - 6.4474) < 0.0001) continue;
+
+                // 2. Accuracy Filter
+                if (pos.accuracy && pos.accuracy > 1000) {
+                    console.log(`[Geolocation] GPS too inaccurate (${pos.accuracy}m)... waiting.`);
+                    continue;
                 }
 
-                console.log(`[Geolocation] GPS Warming up (0,0)... retry ${i + 1}`);
+                // 3. Warm-up Sequence: Compare with last read
+                if (lastPos) {
+                    const delta = this.calculateDistance(pos.latitude, pos.longitude, lastPos.latitude, lastPos.longitude);
+                    if (delta < 0.05) { // If movement is less than 50m between reads, consider it stable
+                        console.log('[Geolocation] GPS Stabilized!');
+                        return pos;
+                    }
+                    console.log(`[Geolocation] GPS shifting (${(delta * 1000).toFixed(0)}m)... warming up.`);
+                }
+
+                lastPos = pos;
             } catch (error) {
                 console.warn(`[Geolocation] attempt ${i + 1} failed:`, error);
             }
 
-            // Wait 2 seconds before retry
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Wait 1.5 seconds before retry
+            await new Promise(resolve => setTimeout(resolve, 1500));
         }
 
-        console.error('[Geolocation] Failed to get lock after 3 attempts');
-        return null;
+        return lastPos; // Return best available if not perfectly stable
     }
 
     /**
@@ -118,19 +133,29 @@ export class GeolocationService {
             timestamp: position.timestamp
         };
 
+        // 1. Accuracy Filter: Reject if accuracy > 1000m
+        if (coords.accuracy && coords.accuracy > 1000) {
+            console.warn(`[Geolocation] Rejected inaccurate fix: ${coords.accuracy}m`);
+            return coords; // Return anyway, but components should check accuracy
+        }
+
+        // 2. Detect "Lagos Ghost": 6.4474, 3.3903
+        if (Math.abs(coords.latitude - 6.4474) < 0.0001 && Math.abs(coords.longitude - 3.3903) < 0.0001) {
+            console.error('[Geolocation] Lagos Ghost detected! Blocking uninitialized GPS coords.');
+            return coords;
+        }
+
+        // 3. Abuja Bounding Box Check: [7.2, 7.6] (lng) and [8.8, 9.2] (lat)
+        const isInsideAbuja =
+            coords.latitude >= 8.8 && coords.latitude <= 9.2 &&
+            coords.longitude >= 7.2 && coords.longitude <= 7.6;
+
+        if (!isInsideAbuja) {
+            console.warn(`[Geolocation] User is outside the Abuja coverage box (${coords.latitude}, ${coords.longitude})`);
+        }
+
         this.currentLocation.set(coords);
         this.locationError.set(null);
-
-        // Abuja Proximity Check (Lagos Bias Prevention)
-        const distanceToAbuja = this.calculateDistance(
-            coords.latitude, coords.longitude,
-            environment.geolocation.defaultCenter.lat, environment.geolocation.defaultCenter.lng
-        );
-
-        if (distanceToAbuja > 100) { // More than 100km from Abuja
-            console.warn(`[Geolocation] User is far from Abuja (${distanceToAbuja.toFixed(1)}km). Environmental bias suspected.`);
-            // Note: We don't force a move, but we could set a flag for other components to show a warning
-        }
 
         return coords;
     }
@@ -246,17 +271,21 @@ export class GeolocationService {
     }
 
     /**
-     * Check if coordinates are valid
+     * Check if coordinates are valid and trustable
      */
-    isValidCoordinates(lat: number, lng: number): boolean {
-        return (
-            lat >= -90 &&
-            lat <= 90 &&
-            lng >= -180 &&
-            lng <= 180 &&
-            !isNaN(lat) &&
-            !isNaN(lng)
-        );
+    isValidCoordinates(lat: number, lng: number, accuracy?: number): boolean {
+        // 1. Range Check
+        const inRange = lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180 && !isNaN(lat) && !isNaN(lng);
+        if (!inRange) return false;
+
+        // 2. 0,0 and Lagos Ghost Block
+        if (lat === 0 && lng === 0) return false;
+        if (Math.abs(lat - 6.4474) < 0.0001 && Math.abs(lng - 3.3903) < 0.0001) return false;
+
+        // 3. Accuracy Filter
+        if (accuracy !== undefined && accuracy > 1000) return false;
+
+        return true;
     }
 
     /**

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, from, throwError } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AlongRoute, ApiResponse, BoardingInference } from '../../models/transport.types';
 import { EnhancedRoute, EnhancedRouteResponse, TransportMode } from '../../models/enhanced-bus-stop.model';
@@ -41,7 +41,15 @@ export class AlongService {
             params = params.set('destination', destination);
         }
 
-        return this.http.get<ApiResponse<BoardingInference[]>>(`${this.apiUrl}/infer-boarding`, { params });
+        return this.http.get<ApiResponse<BoardingInference[]>>(`${this.apiUrl}/infer-boarding`, { params }).pipe(
+            catchError(err => {
+                const errorMsg = err.error?.message || '';
+                if (errorMsg.includes('Detected Lagos ISP leak')) {
+                    console.error('[AlongService] Lagos ISP Leak detected during Boarding Inference!');
+                }
+                return throwError(() => err);
+            })
+        );
     }
 
     /**
@@ -79,7 +87,16 @@ export class AlongService {
             toLocation: normalize(to)
         };
 
-        return this.http.post<ApiResponse<AlongRoute[]>>(url, payload);
+        return this.http.post<ApiResponse<AlongRoute[]>>(url, payload).pipe(
+            catchError(err => {
+                const errorMsg = err.error?.message || '';
+                if (errorMsg.includes('Detected Lagos ISP leak')) {
+                    console.error('[AlongService] Lagos ISP Leak detected by Backend!');
+                    // We can re-throw with a specific key or just let the component handle the string
+                }
+                return throwError(() => err);
+            })
+        );
     }
 
     /**

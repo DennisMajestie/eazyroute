@@ -66,6 +66,12 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     // ... imports ...
     // --- Route Finding ---
     async findRoutes() {
+        // Pre-validation: Don't send placeholder strings as queries
+        if (!this.fromLocation && (this.fromQuery.includes('Waiting') || this.fromQuery.includes('Detecting'))) {
+            this.locationError = 'Please wait for GPS lock or type your starting point manually.';
+            return;
+        }
+
         // Resolve locations if they are missing but text exists
         if (!this.fromLocation && this.fromQuery.length > 2) {
             const resolved = await this.resolveLocation(this.fromQuery);
@@ -148,7 +154,14 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             }
         } catch (error: any) {
             console.error('[TripPlanner] Route generation failed:', error);
-            this.errorHubs = error.error?.nearbyHubs || error.nearbyHubs || [];
+
+            // Check for Lagos ISP leak in backend error message
+            const errorMsg = error.error?.message || error.message || '';
+            if (errorMsg.includes('Detected Lagos ISP leak')) {
+                this.handleISPLeak();
+            } else {
+                this.errorHubs = error.error?.nearbyHubs || error.nearbyHubs || [];
+            }
         } finally {
             this.isLoadingRoutes = false;
         }
@@ -578,6 +591,14 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             const lat = coords.latitude;
             const lng = coords.longitude;
 
+            // 1. Abuja Bounding Box Warning
+            const isInsideAbuja = lat >= 8.8 && lat <= 9.2 && lng >= 7.2 && lng <= 7.6;
+            if (!isInsideAbuja) {
+                this.handleISPLeak();
+                this.isDetectingLocation = false;
+                return;
+            }
+
             // Set the location
             this.fromLocation = { lat, lng };
             this.center = { lat, lng };
@@ -632,6 +653,14 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         } finally {
             this.isDetectingLocation = false;
         }
+    }
+
+    private handleISPLeak() {
+        this.locationError = '🔌 ISP Leak: We detected you might be in Abuja, but your browser is reporting Lagos. Please type your location manually.';
+        this.fromLocation = null;
+        this.fromQuery = '';
+        this.isDetectingLocation = false;
+        console.warn('[TripPlanner] Lagos ISP Leak detected. Clearing phantom coords.');
     }
 
     /**

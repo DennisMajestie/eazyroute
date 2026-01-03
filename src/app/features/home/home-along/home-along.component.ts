@@ -136,8 +136,28 @@ export class HomeAlongComponent implements OnInit {
             this.showSmartBoarding = false;
           }
         },
-        error: (err) => console.error('Smart Boarding Error:', err)
+        error: (err) => {
+          console.error('Smart Boarding Error:', err);
+          const errorMsg = err.error?.message || '';
+          if (errorMsg.includes('Detected Lagos ISP leak')) {
+            this.handleISPLeak();
+          }
+        }
       });
+  }
+
+  /**
+   * Handle Lagos ISP Leak (Recovery UI)
+   */
+  private handleISPLeak() {
+    this.locationError = '🔌 ISP Leak: We detected you might be in Abuja, but your browser is reporting Lagos. Please type your location manually.';
+    this.fromLocation = null;
+    this.fromInput = '';
+    this.boardingInferences = [];
+    this.showSmartBoarding = false;
+
+    // If a toast service was available, we'd use it here.
+    // For now, locationError will show in the template if wired up.
   }
 
   /**
@@ -185,13 +205,23 @@ export class HomeAlongComponent implements OnInit {
     this.fromInput = '📍 Detecting your location...';
 
     try {
-      const coords = await firstValueFrom(this.geolocationService.getCurrentPosition());
+      // Use getSmartLocation for stabilized, high-accuracy fix
+      const coords = await this.geolocationService.getSmartLocation();
+
+      if (!coords) {
+        throw new Error('GPS Timeout. Please ensure you are in a clear area and try again.');
+      }
 
       const lat = coords.latitude;
       const lng = coords.longitude;
 
-      if (lat === 0 && lng === 0) {
-        throw new Error('GPS returned (0,0). Waiting for valid lock.');
+      // 1. Abuja Bounding Box Warning
+      const isInsideAbuja = lat >= 8.8 && lat <= 9.2 && lng >= 7.2 && lng <= 7.6;
+      if (!isInsideAbuja) {
+        this.locationError = '📍 Coverage currently limited to Abuja. Please select an Abuja neighborhood manually.';
+        this.fromInput = '';
+        this.isDetectingLocation = false;
+        return;
       }
 
       // Create SelectedLocation object
@@ -369,7 +399,12 @@ export class HomeAlongComponent implements OnInit {
       queryParams.fromHierarchy = this.fromLocation.hierarchy;
       queryParams.fromType = this.fromLocation.type;
     } else {
-      queryParams.fromName = this.fromInput; // Backend handles geocoding
+      // Avoid sending "Detecting..." or suspect query strings
+      if (!this.fromInput || this.fromInput.includes('Detecting') || this.fromInput.includes('Current Location')) {
+        alert('Please select or type a specific starting point.');
+        return;
+      }
+      queryParams.fromName = this.fromInput;
       queryParams.isHybridFrom = true;
     }
 
