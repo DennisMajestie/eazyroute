@@ -135,7 +135,7 @@ export class AlongService {
                 totalTime: route.totalDuration || route.totalTime || 0,
                 totalCost: route.totalCost || 0,
                 instructions: (route.instructions || []) as string[],
-                metadata: route.metadata || { strategy: 'standard', alternativeRoutes: false }
+                metadata: { strategy: 'standard', alternativeRoutes: false, ...(route.metadata || {}) }
             } as unknown as AlongRoute];
         }
 
@@ -149,7 +149,7 @@ export class AlongService {
                 totalTime: response.totalDuration || response.totalTime || 0,
                 totalCost: response.totalCost || 0,
                 instructions: (response.instructions || []) as string[],
-                metadata: response.metadata || { strategy: 'standard', alternativeRoutes: false }
+                metadata: { strategy: 'standard', alternativeRoutes: false, ...(response.metadata || {}) }
             } as unknown as AlongRoute];
         }
 
