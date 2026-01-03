@@ -138,12 +138,15 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 const routes: any[] = [];
 
                 // Map all routes in the array, ensuring we don't map null/undefined elements
-                response.data.filter(r => !!r).forEach(r => routes.push(this.mapAlongRouteToGeneratedRoute(r)));
+                response.data.filter(r => !!r).forEach(r => {
+                    const mapped = this.mapAlongRouteToGeneratedRoute(r);
+                    if (mapped) routes.push(mapped);
+                });
 
                 this.generatedRoutes = routes;
 
                 // Select FASTEST by default if available, otherwise first one
-                const fastest = this.generatedRoutes.find(r => r.classification === 'FASTEST');
+                const fastest = this.generatedRoutes.find(r => r?.classification === 'FASTEST');
                 this.selectedRoute = fastest || this.generatedRoutes[0] || null;
 
                 console.log('[TripPlanner] V3/V4 routes loaded:', this.generatedRoutes.length);
@@ -218,39 +221,39 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         const sourceSegments = useLegs ? alongRoute.legs : (alongRoute.segments || []);
 
         // Map segments (AlongSegment -> RouteSegment)
-        const segments: RouteSegment[] = sourceSegments.map((seg: any, index: number) => {
+        const segments: RouteSegment[] = (sourceSegments || []).map((seg: any, index: number) => {
             return {
                 id: `seg-${index}-${Date.now()}`,
                 fromStop: {
-                    id: 'temp-from',
-                    name: seg.fromStop || 'Start',
-                    latitude: 0,
-                    longitude: 0,
+                    id: seg?.fromStopId || 'temp-from',
+                    name: seg?.fromStop || seg?.from?.name || 'Start',
+                    latitude: seg?.from?.lat || 0,
+                    longitude: seg?.from?.lng || 0,
                     type: 'landmark'
                 } as any,
                 toStop: {
-                    id: 'temp-to',
-                    name: seg.toStop || 'End',
-                    latitude: 0,
-                    longitude: 0,
+                    id: seg?.toStopId || 'temp-to',
+                    name: seg?.toStop || seg?.to?.name || 'End',
+                    latitude: seg?.to?.lat || 0,
+                    longitude: seg?.to?.lng || 0,
                     type: 'landmark'
                 } as any,
-                distance: seg.distance,
-                estimatedTime: seg.estimatedTime,
+                distance: seg?.distance || 0,
+                estimatedTime: seg?.estimatedTime || seg?.duration || 0,
                 mode: {
-                    type: seg.type || seg.vehicleType || 'walk',
-                    name: (seg.type || 'walk').toUpperCase(),
+                    type: seg?.type || seg?.vehicleType || 'walk',
+                    name: (seg?.type || seg?.vehicleType || 'walk').toUpperCase(),
                     availabilityFactor: 1,
                     avgSpeedKmh: 0
                 } as any,
-                cost: seg.cost || 0,
-                instructions: seg.instruction,
-                microInstructions: seg.microInstructions || [],
-                barriers: seg.barriers || [],
+                cost: seg?.cost || 0,
+                instructions: seg?.instruction || seg?.instructions || '',
+                microInstructions: seg?.microInstructions || [],
+                barriers: seg?.barriers || [],
                 // V3 Safety Guardrails
-                isBridge: seg.isBridge || false,
-                isBlocked: seg.isBlocked || false,
-                backboneName: seg.backboneName || null
+                isBridge: seg?.isBridge || false,
+                isBlocked: seg?.isBlocked || false,
+                backboneName: seg?.backboneName || null
             };
         });
 

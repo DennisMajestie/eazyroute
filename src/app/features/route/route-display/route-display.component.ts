@@ -92,27 +92,22 @@ export class RouteDisplayComponent implements OnInit {
 
         this.alongService.generateRoute(fromInput, toInput)
             .subscribe({
-                next: (response) => {
-                    if (response.success && response.data && response.data.length > 0) {
+                next: (response: any) => {
+                    if (response && response.success && Array.isArray(response.data) && response.data.length > 0) {
                         this.route = response.data[0];
 
-                        // Use optimized legs if available, fallback to segments
-                        if (this.route && (this.route as any).legs && (this.route as any).legs.length > 0) {
-                            this.route.segments = (this.route as any).legs;
+                        if (this.route) {
+                            // Service already mapped legs to segments if needed
+                            this.route.instructions = (this.route.instructions || [])
+                                .filter(i => !!i);
 
-                            // Show optimization toast if applied
-                            if ((this.route as any).metadata?.optimizationApplied) {
-                                console.log('✅ Route optimized - merged consecutive hops');
+                            if (this.route.instructions.length === 0) {
+                                this.route.instructions = (this.route.segments || [])
+                                    .map((s: any) => s?.instruction || s?.instructions || '')
+                                    .filter(i => !!i);
                             }
                         }
-
-                        // Ensure instructions exist for Quick Summary
-                        if (this.route && (!this.route.instructions || this.route.instructions.length === 0)) {
-                            this.route.instructions = (this.route.segments || [])
-                                .map(s => s.instruction)
-                                .filter(i => !!i);
-                        }
-                    } else if (response.errorType === 'LOCATION_NOT_COVERED') {
+                    } else if (response?.errorType === 'LOCATION_NOT_COVERED') {
                         this.error = response.suggestion || 'This area is not yet covered by ALONG.';
                     } else {
                         this.error = response.message || 'No route found for this path.';

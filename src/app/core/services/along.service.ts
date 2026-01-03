@@ -5,6 +5,7 @@ import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AlongRoute, ApiResponse, BoardingInference } from '../../models/transport.types';
 import { EnhancedRoute, EnhancedRouteResponse, TransportMode } from '../../models/enhanced-bus-stop.model';
+import { RouteResponse } from '../../models/route.model';
 
 /**
  * AlongService - Behavioral Layer Routing & Logic
@@ -87,16 +88,92 @@ export class AlongService {
             toLocation: normalize(to)
         };
 
-        return this.http.post<ApiResponse<AlongRoute[]>>(url, payload).pipe(
+        return this.http.post<any>(url, payload).pipe(
+            map(response => {
+                // Apply Robust Alignment Extraction
+                const routes = this.extractRoutes(response);
+                return {
+                    success: response.success !== false, // Default to true if missing
+                    data: routes,
+                    message: response.message || response.error || '',
+                    errorType: response.errorType,
+                    nearbyHubs: response.nearbyHubs,
+                    suggestion: response.suggestion
+                } as ApiResponse<AlongRoute[]>;
+            }),
             catchError(err => {
                 const errorMsg = err.error?.message || '';
                 if (errorMsg.includes('Detected Lagos ISP leak')) {
                     console.error('[AlongService] Lagos ISP Leak detected by Backend!');
-                    // We can re-throw with a specific key or just let the component handle the string
                 }
                 return throwError(() => err);
             })
         );
+    }
+
+    /**
+     * CRITICAL: Extract routes/legs from various possible backend structures
+     * Aligned with Frontend-Backend Alignment Doc
+     */
+    private extractRoutes(response: any): AlongRoute[] {
+        if (!response) return [];
+
+        // 1. Check for standard data wrapper
+        if (response.data && Array.isArray(response.data)) {
+            return response.data;
+        }
+
+        // 2. Check for "route" object containing "legs"
+        if (response.route && response.route.legs && Array.isArray(response.route.legs)) {
+            // Map the single route response to an array containing one AlongRoute
+            const route = response.route;
+            return [{
+                from: route.from || 'Unknown',
+                to: route.to || 'Unknown',
+                segments: route.legs || route.segments || [],
+                totalDistance: route.totalDistance || 0,
+                totalTime: route.totalDuration || route.totalTime || 0,
+                totalCost: route.totalCost || 0,
+                instructions: route.instructions || [],
+                metadata: route.metadata || { strategy: 'standard', alternativeRoutes: false }
+            } as AlongRoute];
+        }
+
+        // 3. Check for "legs" at top level
+        if (response.legs && Array.isArray(response.legs)) {
+            return [{
+                from: 'Unknown',
+                to: 'Unknown',
+                segments: response.legs,
+                totalDistance: response.totalDistance || 0,
+                totalTime: response.totalDuration || response.totalTime || 0,
+                totalCost: response.totalCost || 0,
+                instructions: response.instructions || [],
+                metadata: response.metadata || { strategy: 'standard', alternativeRoutes: false }
+            } as AlongRoute];
+        }
+
+        // 4. Check if response IS the array of routes/legs
+        if (Array.isArray(response)) {
+            // Check if it's an array of routes or an array of legs
+            if (response.length > 0 && (response[0].mode || response[0].instruction)) {
+                // It's probably an array of legs (one route)
+                return [{
+                    from: 'Unknown',
+                    to: 'Unknown',
+                    segments: response,
+                    totalDistance: 0,
+                    totalTime: 0,
+                    totalCost: 0,
+                    instructions: [],
+                    metadata: { strategy: 'standard', alternativeRoutes: false }
+                } as AlongRoute];
+            }
+            return response;
+        }
+
+        console.warn('[AlongService] Unrecognized response structure:', response);
+        return [];
     }
 
     /**

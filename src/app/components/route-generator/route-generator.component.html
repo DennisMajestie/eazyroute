@@ -1,0 +1,64 @@
+<div class="route-generator">
+    <h2>Route Generator Diagnostic</h2>
+
+    <div class="form-group">
+        <label>From:</label>
+        <input [(ngModel)]="fromLocation.name" type="text" placeholder="Location Name" />
+    </div>
+
+    <div class="form-group">
+        <label>To:</label>
+        <input [(ngModel)]="toLocation.name" type="text" placeholder="Destination Name" />
+    </div>
+
+    <button (click)="generateRoute()" [disabled]="loading" class="btn-primary">
+        {{ loading ? 'Generating...' : 'Generate Route' }}
+    </button>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Generating route...</p>
+    </div>
+
+    <!-- Error State -->
+    <div *ngIf="error" class="error-message">
+        <strong>Error:</strong> {{ error }}
+    </div>
+
+    <!-- Success State - Route Display -->
+    <div *ngIf="routeLegs.length > 0 && !loading" class="route-display">
+        <h3>Route Found</h3>
+
+        <div class="route-summary">
+            <span>Total Distance: {{ (totalDistance / 1000).toFixed(2) }} km</span>
+            <span>Total Duration: {{ totalDuration }} min</span>
+        </div>
+
+        <div class="route-legs">
+            <div *ngFor="let leg of routeLegs; let i = index" class="route-leg">
+                <div class="leg-number">{{ i + 1 }}</div>
+                <div class="leg-details">
+                    <div class="leg-locations">
+                        <span class="from">{{ leg.fromStop || 'Point' }}</span>
+                        <span class="arrow">→</span>
+                        <span class="to">{{ leg.toStop || 'Point' }}</span>
+                    </div>
+                    <div class="leg-info">
+                        <span class="mode">{{ (leg.vehicleType || leg.type || 'unknown') | uppercase }}</span>
+                        <span class="distance">{{ (leg.distance / 1000).toFixed(2) }} km</span>
+                        <span class="duration" *ngIf="leg.estimatedTime">{{ leg.estimatedTime }} min</span>
+                    </div>
+                    <div class="leg-instruction mt-2">
+                        <em>{{ leg.instruction }}</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="routeLegs.length === 0 && !loading && !error" class="empty-state">
+        <p>Enter locations and click "Generate Route" to see results</p>
+    </div>
+</div>
