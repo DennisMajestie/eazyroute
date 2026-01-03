@@ -134,9 +134,9 @@ export class AlongService {
                 totalDistance: route.totalDistance || 0,
                 totalTime: route.totalDuration || route.totalTime || 0,
                 totalCost: route.totalCost || 0,
-                instructions: route.instructions || [],
+                instructions: (route.instructions || []) as string[],
                 metadata: route.metadata || { strategy: 'standard', alternativeRoutes: false }
-            } as AlongRoute];
+            } as unknown as AlongRoute];
         }
 
         // 3. Check for "legs" at top level
@@ -148,9 +148,9 @@ export class AlongService {
                 totalDistance: response.totalDistance || 0,
                 totalTime: response.totalDuration || response.totalTime || 0,
                 totalCost: response.totalCost || 0,
-                instructions: response.instructions || [],
+                instructions: (response.instructions || []) as string[],
                 metadata: response.metadata || { strategy: 'standard', alternativeRoutes: false }
-            } as AlongRoute];
+            } as unknown as AlongRoute];
         }
 
         // 4. Check if response IS the array of routes/legs
@@ -165,9 +165,9 @@ export class AlongService {
                     totalDistance: 0,
                     totalTime: 0,
                     totalCost: 0,
-                    instructions: [],
+                    instructions: [] as string[],
                     metadata: { strategy: 'standard', alternativeRoutes: false }
-                } as AlongRoute];
+                } as unknown as AlongRoute];
             }
             return response;
         }
