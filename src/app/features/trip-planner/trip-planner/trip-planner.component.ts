@@ -134,11 +134,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 return;
             }
 
-            if (response && response.success && response.data && Array.isArray(response.data)) {
+            if (response && response.success && Array.isArray(response.data)) {
                 const routes: any[] = [];
 
-                // Map all routes in the array
-                response.data.forEach(r => routes.push(this.mapAlongRouteToGeneratedRoute(r)));
+                // Map all routes in the array, ensuring we don't map null/undefined elements
+                response.data.filter(r => !!r).forEach(r => routes.push(this.mapAlongRouteToGeneratedRoute(r)));
 
                 this.generatedRoutes = routes;
 
@@ -211,9 +211,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     }
 
     private mapAlongRouteToGeneratedRoute(alongRoute: any): GeneratedRoute {
+        if (!alongRoute) return null as any;
+
         // Use optimized legs if available, otherwise map segments
-        const useLegs = alongRoute.legs && alongRoute.legs.length > 0;
-        const sourceSegments = useLegs ? alongRoute.legs : alongRoute.segments;
+        const useLegs = alongRoute.legs && Array.isArray(alongRoute.legs) && alongRoute.legs.length > 0;
+        const sourceSegments = useLegs ? alongRoute.legs : (alongRoute.segments || []);
 
         // Map segments (AlongSegment -> RouteSegment)
         const segments: RouteSegment[] = sourceSegments.map((seg: any, index: number) => {
@@ -766,7 +768,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         ).subscribe(res => {
             if (this.activeSearchField !== field) return;
 
-            const busStops = (res.success && res.data ? res.data : []).map((s: EnhancedBusStop) => ({
+            const busStops = (res && res.success && Array.isArray(res.data) ? res.data : []).map((s: EnhancedBusStop) => ({
                 name: s.name,
                 displayName: this.formatStopDisplay(s),
                 area: s.district || s.city,
@@ -814,7 +816,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         ).subscribe(res => {
             if (this.activeSearchField !== field) return;
 
-            const localities = (res.success && res.data ? res.data : []).map((l: any) => ({
+            const localities = (res && res.success && Array.isArray(res.data) ? res.data : []).map((l: any) => ({
                 name: l.name,
                 displayName: l.displayName || l.name,
                 area: l.area || l.district,

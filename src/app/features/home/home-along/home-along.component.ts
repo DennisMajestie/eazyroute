@@ -277,7 +277,7 @@ export class HomeAlongComponent implements OnInit {
     // Hybrid Search (ALONG Framework)
     this.alongService.search(query).subscribe({
       next: (response) => {
-        if (response.success && response.data) {
+        if (response && response.success && Array.isArray(response.data)) {
           // Map to LocalitySearchResult format for compatibility or use new format
           this.searchResults = response.data.map((item: any) => ({
             type: item.type,

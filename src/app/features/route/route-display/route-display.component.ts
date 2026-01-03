@@ -108,7 +108,7 @@ export class RouteDisplayComponent implements OnInit {
 
                         // Ensure instructions exist for Quick Summary
                         if (this.route && (!this.route.instructions || this.route.instructions.length === 0)) {
-                            this.route.instructions = this.route.segments
+                            this.route.instructions = (this.route.segments || [])
                                 .map(s => s.instruction)
                                 .filter(i => !!i);
                         }

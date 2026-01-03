@@ -43,7 +43,7 @@ export class GeocodingService {
         };
 
         return this.http.get<any[]>(this.nominatimUrl, { params }).pipe(
-            map(results => results.map(r => ({
+            map(results => (results || []).map(r => ({
                 name: r.name || r.display_name.split(',')[0],
                 displayName: r.display_name,
                 latitude: parseFloat(r.lat),
