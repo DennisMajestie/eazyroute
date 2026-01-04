@@ -145,12 +145,16 @@ export class RouteDisplayComponent implements OnInit {
         this.alongService.generateRoute(fromInput, toInput)
             .subscribe({
                 next: (response: any) => {
+                    console.log('[RouteDisplay] API Response:', response);
+
                     if (response && response.success && Array.isArray(response.data) && response.data.length > 0) {
-                        this.routes = response.data;
+                        // Defensive Filtering
+                        this.routes = response.data.filter((r: any) => !!r);
                         this.selectedRouteIndex = 0;
 
                         // Post-process instructions for all routes
                         this.routes.forEach(r => {
+                            if (!r) return;
                             r.instructions = (r.instructions || [])
                                 .filter(i => !!i);
 
@@ -164,16 +168,20 @@ export class RouteDisplayComponent implements OnInit {
                     } else if (response?.errorType === 'LOCATION_NOT_COVERED') {
                         this.error = response.suggestion || 'This area is not yet covered by ALONG.';
                     } else {
-                        this.error = response.message || 'No route found for this path.';
+                        console.warn('[RouteDisplay] Unexpected response structure:', response);
+                        this.error = response?.message || 'No route found for this path.';
+                        this.routes = [];
                     }
                     this.isLoading = false;
                 },
                 error: (err) => {
+                    console.error('[RouteDisplay] Subscription Failed:', err);
                     this.error = err.error?.message || 'Failed to generate route. Please try again.';
+                    this.routes = [];
                     this.isLoading = false;
-                    console.error('Route generation error:', err);
                 }
             });
+
     }
 
     /**

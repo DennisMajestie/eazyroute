@@ -94,20 +94,32 @@ export class AlongService {
 
         return this.http.post<any>(url, payload).pipe(
             map(response => {
+                console.log('[AlongService] Raw API Response:', response);
+
                 // Apply Robust Alignment Extraction
                 const routes = this.extractRoutes(response);
+                console.log('[AlongService] Extracted Routes:', routes ? routes.length : 'null/undefined');
+
+                if (!Array.isArray(routes)) {
+                    console.warn('[AlongService] extractRoutes did not return an array:', routes);
+                    return {
+                        success: response?.success === true,
+                        data: [],
+                        message: response?.message || 'No routes available'
+                    } as ApiResponse<AlongRoute[]>;
+                }
 
                 // Post-process to ensure From/To names match search names if they look like IDs
-                const processedRoutes = routes.map(route => {
+                const processedRoutes = routes.filter(r => !!r).map(route => {
                     const searchFrom = (typeof from === 'string' ? from : from.name);
                     const searchTo = (typeof to === 'string' ? to : to.name);
 
                     // Normalize Route-level names
-                    const normalizedFrom = (route.from && (route.from.includes('landmark') || route.from.includes('node')))
+                    const normalizedFrom = (route.from && typeof route.from === 'string' && (route.from.includes('landmark') || route.from.includes('node')))
                         ? searchFrom
                         : (route.from || searchFrom);
 
-                    const normalizedTo = (route.to && (route.to.includes('landmark') || route.to.includes('node')))
+                    const normalizedTo = (route.to && typeof route.to === 'string' && (route.to.includes('landmark') || route.to.includes('node')))
                         ? searchTo
                         : (route.to || searchTo);
 
@@ -119,20 +131,20 @@ export class AlongService {
                     };
 
                     // Also normalize the very first and very last segment names if they match
-                    if (newRoute.segments && newRoute.segments.length > 0) {
+                    if (newRoute.segments && Array.isArray(newRoute.segments) && newRoute.segments.length > 0) {
                         const first = newRoute.segments[0];
                         const last = newRoute.segments[newRoute.segments.length - 1];
 
-                        if (first.fromStop && (first.fromStop.includes('landmark') || first.fromStop.includes('node'))) {
+                        if (first?.fromStop && typeof first.fromStop === 'string' && (first.fromStop.includes('landmark') || first.fromStop.includes('node'))) {
                             first.fromStop = normalizedFrom;
                         }
-                        if (last.toStop && (last.toStop.includes('landmark') || last.toStop.includes('node'))) {
+                        if (last?.toStop && typeof last.toStop === 'string' && (last.toStop.includes('landmark') || last.toStop.includes('node'))) {
                             last.toStop = normalizedTo;
                         }
 
                         // Re-generate instructions if they were ID-based
                         newRoute.segments.forEach((s: any) => {
-                            if (s.instruction && (s.instruction.includes('landmark') || s.instruction.includes('node'))) {
+                            if (s?.instruction && typeof s.instruction === 'string' && (s.instruction.includes('landmark') || s.instruction.includes('node'))) {
                                 // Simple replacement 
                                 s.instruction = s.instruction.split('landmark')[0].split('node')[0].trim();
                                 if (s === last) s.instruction += ` to ${normalizedTo}`;
@@ -154,12 +166,14 @@ export class AlongService {
                 } as ApiResponse<AlongRoute[]>;
             }),
             catchError(err => {
+                console.error('[AlongService] generateRoute error:', err);
                 const errorMsg = err.error?.message || '';
                 if (errorMsg.includes('Detected Lagos ISP leak')) {
                     console.error('[AlongService] Lagos ISP Leak detected by Backend!');
                 }
                 return throwError(() => err);
             })
+
         );
     }
 

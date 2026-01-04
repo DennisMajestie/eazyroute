@@ -125,6 +125,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 )
             );
 
+            console.log('[TripPlanner] API Response received:', response);
+
             // Handle Soft Failure (Location Not Covered)
             if (response.success === false && response.errorType === 'LOCATION_NOT_COVERED') {
                 console.warn('[TripPlanner] Soft failure - location not covered:', response.suggestion);
@@ -138,7 +140,10 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 const routes: any[] = [];
 
                 // Map all routes in the array, ensuring we don't map null/undefined elements
-                response.data.filter(r => !!r).forEach(r => {
+                const validRoutes = response.data.filter(r => !!r);
+                console.log('[TripPlanner] Valid routes found:', validRoutes.length);
+
+                validRoutes.forEach(r => {
                     const mapped = this.mapAlongRouteToGeneratedRoute(r);
                     if (mapped) routes.push(mapped);
                 });
@@ -151,10 +156,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
                 console.log('[TripPlanner] V3/V4 routes loaded:', this.generatedRoutes.length);
             } else {
-                console.warn('[TripPlanner] No valid route data:', response);
+                console.warn('[TripPlanner] No valid route data in response:', response);
                 this.generatedRoutes = [];
                 this.alertMessage = response?.message || 'No routes found. Try another location.';
             }
+
         } catch (error: any) {
             console.error('[TripPlanner] Route generation failed:', error);
 
