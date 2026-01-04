@@ -96,9 +96,57 @@ export class AlongService {
             map(response => {
                 // Apply Robust Alignment Extraction
                 const routes = this.extractRoutes(response);
+
+                // Post-process to ensure From/To names match search names if they look like IDs
+                const processedRoutes = routes.map(route => {
+                    const searchFrom = (typeof from === 'string' ? from : from.name);
+                    const searchTo = (typeof to === 'string' ? to : to.name);
+
+                    // Normalize Route-level names
+                    const normalizedFrom = (route.from && (route.from.includes('landmark') || route.from.includes('node')))
+                        ? searchFrom
+                        : (route.from || searchFrom);
+
+                    const normalizedTo = (route.to && (route.to.includes('landmark') || route.to.includes('node')))
+                        ? searchTo
+                        : (route.to || searchTo);
+
+                    // Create normalized route object
+                    const newRoute = {
+                        ...route,
+                        from: normalizedFrom,
+                        to: normalizedTo
+                    };
+
+                    // Also normalize the very first and very last segment names if they match
+                    if (newRoute.segments && newRoute.segments.length > 0) {
+                        const first = newRoute.segments[0];
+                        const last = newRoute.segments[newRoute.segments.length - 1];
+
+                        if (first.fromStop && (first.fromStop.includes('landmark') || first.fromStop.includes('node'))) {
+                            first.fromStop = normalizedFrom;
+                        }
+                        if (last.toStop && (last.toStop.includes('landmark') || last.toStop.includes('node'))) {
+                            last.toStop = normalizedTo;
+                        }
+
+                        // Re-generate instructions if they were ID-based
+                        newRoute.segments.forEach((s: any) => {
+                            if (s.instruction && (s.instruction.includes('landmark') || s.instruction.includes('node'))) {
+                                // Simple replacement 
+                                s.instruction = s.instruction.split('landmark')[0].split('node')[0].trim();
+                                if (s === last) s.instruction += ` to ${normalizedTo}`;
+                                else if (s === first) s.instruction = `From ${normalizedFrom} take ${s.vehicleType}...`;
+                            }
+                        });
+                    }
+
+                    return newRoute;
+                });
+
                 return {
-                    success: response.success !== false, // Default to true if missing
-                    data: routes,
+                    success: response.success !== false,
+                    data: processedRoutes,
                     message: response.message || response.error || '',
                     errorType: response.errorType,
                     nearbyHubs: response.nearbyHubs,
@@ -122,21 +170,20 @@ export class AlongService {
     private extractRoutes(response: any): AlongRoute[] {
         if (!response) return [];
 
+        let routes: any[] = [];
+
         // 0. V4 K-Best Routing: check for { data: { routes: [] } }
         if (response.data && !Array.isArray(response.data) && response.data.routes && Array.isArray(response.data.routes)) {
-            return response.data.routes;
+            routes = response.data.routes;
         }
-
         // 1. Check for standard data wrapper
-        if (response.data && Array.isArray(response.data)) {
-            return response.data;
+        else if (response.data && Array.isArray(response.data)) {
+            routes = response.data;
         }
-
         // 2. Check for "route" object containing "legs"
-        if (response.route && response.route.legs && Array.isArray(response.route.legs)) {
-            // Map the single route response to an array containing one AlongRoute
+        else if (response.route && typeof response.route === 'object') {
             const route = response.route;
-            return [{
+            routes = [{
                 from: route.from || 'Unknown',
                 to: route.to || 'Unknown',
                 segments: route.legs || route.segments || [],
@@ -145,12 +192,11 @@ export class AlongService {
                 totalCost: route.totalCost || 0,
                 instructions: (route.instructions || []) as string[],
                 metadata: { strategy: 'standard', alternativeRoutes: false, ...(route.metadata || {}) }
-            } as unknown as AlongRoute];
+            }];
         }
-
         // 3. Check for "legs" at top level
-        if (response.legs && Array.isArray(response.legs)) {
-            return [{
+        else if (response.legs && Array.isArray(response.legs)) {
+            routes = [{
                 from: 'Unknown',
                 to: 'Unknown',
                 segments: response.legs,
@@ -159,15 +205,12 @@ export class AlongService {
                 totalCost: response.totalCost || 0,
                 instructions: (response.instructions || []) as string[],
                 metadata: { strategy: 'standard', alternativeRoutes: false, ...(response.metadata || {}) }
-            } as unknown as AlongRoute];
+            }];
         }
-
         // 4. Check if response IS the array of routes/legs
-        if (Array.isArray(response)) {
-            // Check if it's an array of routes or an array of legs
+        else if (Array.isArray(response)) {
             if (response.length > 0 && (response[0].mode || response[0].instruction)) {
-                // It's probably an array of legs (one route)
-                return [{
+                routes = [{
                     from: 'Unknown',
                     to: 'Unknown',
                     segments: response,
@@ -176,13 +219,43 @@ export class AlongService {
                     totalCost: 0,
                     instructions: [] as string[],
                     metadata: { strategy: 'standard', alternativeRoutes: false }
-                } as unknown as AlongRoute];
+                }];
+            } else {
+                routes = response;
             }
-            return response;
+        } else {
+            console.warn('[AlongService] Unrecognized response structure:', response);
+            return [];
         }
 
-        console.warn('[AlongService] Unrecognized response structure:', response);
-        return [];
+        // Normalize all segments in all routes
+        return routes.map(r => ({
+            ...r,
+            segments: this.normalizeSegments(r.segments || [])
+        }));
+    }
+
+    /**
+     * Normalize segment keys to match AlongSegment interface
+     */
+    private normalizeSegments(segments: any[]): any[] {
+        return segments.map(s => ({
+            ...s,
+            // Mode Normalization
+            vehicleType: s.vehicleType || s.mode || (s.type === 'ride' ? 'taxi' : s.type),
+            type: s.type || (s.mode === 'walking' ? 'walk' : 'ride'),
+
+            // Stop Normalization
+            fromStop: s.fromStop || s.fromName || (s.start_address ? s.start_address : ''),
+            toStop: s.toStop || s.toName || (s.end_address ? s.end_address : ''),
+
+            // Distance/Time Normalization
+            distance: s.distance?.value || s.distance || 0,
+            estimatedTime: s.duration?.value ? Math.round(s.duration.value / 60) : (s.estimatedTime || 0),
+
+            // Instruction Fallback
+            instruction: s.instruction || s.instructions || `Take ${s.mode || s.vehicleType || 'transport'} to ${s.toName || s.toStop || 'next stop'}`
+        }));
     }
 
     /**

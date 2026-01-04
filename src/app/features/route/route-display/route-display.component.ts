@@ -224,7 +224,10 @@ export class RouteDisplayComponent implements OnInit {
      * Get segment emoji based on type
      */
     getSegmentEmoji(segment: AlongSegment): string {
-        const type = (segment.vehicleType || segment.type || 'unknown').toLowerCase();
+        const mode = (segment.vehicleType || '').toLowerCase();
+        const type = (segment.type || '').toLowerCase();
+        const identifier = mode || type || 'unknown';
+
         const emojiMap: { [key: string]: string } = {
             'walk': '🚶',
             'walking': '🚶',
@@ -232,20 +235,26 @@ export class RouteDisplayComponent implements OnInit {
             'okada': '🏍️',
             'cab': '🚕',
             'taxi': '🚕',
+            'car': '🚕',
             'bus': '🚌',
+            'danfo': '🚌',
             'transfer': '🔄',
             'cross': '🔄',
             'wait': '⏳',
-            'ride': '🚗'
+            'ride': '🚗',
+            'transit': '🚌'
         };
-        return emojiMap[type] || '📍';
+        return emojiMap[identifier] || '📍';
     }
 
     /**
      * Get segment color based on type
      */
     getSegmentColor(segment: AlongSegment): string {
-        const type = (segment.vehicleType || segment.type || 'unknown').toLowerCase();
+        const mode = (segment.vehicleType || '').toLowerCase();
+        const type = (segment.type || '').toLowerCase();
+        const identifier = mode || type || 'unknown';
+
         const colorMap: { [key: string]: string } = {
             'walk': 'var(--walking-color)',
             'walking': 'var(--walking-color)',
@@ -253,12 +262,15 @@ export class RouteDisplayComponent implements OnInit {
             'okada': 'var(--okada-color)',
             'cab': 'var(--taxi-color)',
             'taxi': 'var(--taxi-color)',
+            'car': 'var(--taxi-color)',
             'bus': 'var(--bus-color)',
+            'danfo': 'var(--bus-color)',
             'transfer': 'var(--transfer-color)',
             'cross': 'var(--transfer-color)',
-            'wait': 'var(--walking-color)'
+            'wait': 'var(--walking-color)',
+            'transit': 'var(--bus-color)'
         };
-        return colorMap[type] || 'var(--primary)';
+        return colorMap[identifier] || 'var(--primary)';
     }
 
     /**

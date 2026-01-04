@@ -391,27 +391,32 @@
   
   &.transfer {
     align-items: center;
-    margin: -8px 0; // Overlap slightly to connect
+    margin: 4px 0; 
     z-index: 2;
+    padding-left: 2px; // Fine-tune alignment with the line
     
     .point-label {
-      font-size: 0.85rem;
+      font-size: 0.8rem;
+      font-weight: 600;
       color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
     }
   }
 }
 
 .timeline-segment {
   display: flex;
-  gap: 16px;
+  flex-direction: column; // Stack card and transfer point vertically
+  gap: 8px;
   position: relative;
-  padding-bottom: 16px;
+  padding-bottom: 24px;
   
   .segment-connector {
     position: absolute;
     left: 7px;
-    top: -10px;
-    bottom: -10px;
+    top: -12px;
+    bottom: -12px;
     width: 2px;
     background-color: #cbd5e1;
     z-index: 1;
@@ -420,15 +425,17 @@
 
 /* Mode Card */
 .mode-card {
-  flex: 1; // Take remaining width
+  flex: 1; 
   background: white;
   border: 1px solid #e2e8f0;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  margin-left: 32px; // Make space for timeline line
+  margin-left: 32px; // Space for timeline line
+  margin-right: 4px;
   overflow: hidden;
   transition: all 0.2s ease;
   cursor: pointer;
+  z-index: 2; // Above the connector line
   
   &:hover {
     box-shadow: 0 4px 6px rgba(0,0,0,0.05);
@@ -436,7 +443,7 @@
   }
   
   &.expanded {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.15);
     border-color: var(--primary, #0ea5e9);
   }
 
