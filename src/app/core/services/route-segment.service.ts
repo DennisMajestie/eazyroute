@@ -72,4 +72,17 @@ export class RouteSegmentService {
     incrementPopularity(segmentId: string): Observable<any> {
         return this.http.post(`${this.apiUrl}/${segmentId}/use`, {});
     }
+
+    /**
+     * Submit a crowd-sourced route segment (price/time)
+     */
+    submitCommunitySegment(data: {
+        fromStopId: string;
+        toStopId: string;
+        transportMode: string;
+        priceRange: { min: number; max: number };
+        estimatedTime: number;
+    }): Observable<any> {
+        return this.http.post(`${this.apiUrl}/community-submit`, data);
+    }
 }

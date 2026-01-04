@@ -124,6 +124,7 @@
 
 import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
+import { GeneratedRoute } from '../engines/types/easyroute.types';
 
 @Injectable({
     providedIn: 'root'
@@ -234,5 +235,94 @@ export class StorageService {
         Object.values(environment.storageKeys).forEach(key => {
             localStorage.removeItem(key);
         });
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // IndexedDB Caching (Offline Top Routes)
+    // ═══════════════════════════════════════════════════════════════
+    private dbPromise: Promise<IDBDatabase> | null = null;
+
+    private openDB(): Promise<IDBDatabase> {
+        if (this.dbPromise) return this.dbPromise;
+        this.dbPromise = new Promise((resolve, reject) => {
+            const request = indexedDB.open('eazyroute-db', 1);
+            request.onupgradeneeded = (event: any) => {
+                const db: IDBDatabase = event.target.result;
+                if (!db.objectStoreNames.contains('routes')) {
+                    const store = db.createObjectStore('routes', { keyPath: 'id' });
+                    store.createIndex('userId', 'userId', { unique: false });
+                    store.createIndex('timestamp', 'timestamp', { unique: false });
+                }
+            };
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+        return this.dbPromise;
+    }
+
+    async cacheTopRoutesForUser(userId: string, routes: GeneratedRoute[]): Promise<void> {
+        try {
+            const db = await this.openDB();
+            const tx = db.transaction('routes', 'readwrite');
+            const store = tx.objectStore('routes');
+            // Clear previous cache for user
+            const index = store.index('userId');
+            const toDelete: any[] = [];
+            await new Promise<void>((res) => {
+                const req = index.openCursor(IDBKeyRange.only(userId));
+                req.onsuccess = (ev: any) => {
+                    const cursor = ev.target.result;
+                    if (cursor) {
+                        toDelete.push(cursor.primaryKey);
+                        cursor.continue();
+                    } else {
+                        res();
+                    }
+                };
+                req.onerror = () => res();
+            });
+            toDelete.forEach(pk => store.delete(pk));
+            // Save new top 5
+            const top = routes.slice(0, 5);
+            const now = Date.now();
+            for (const r of top) {
+                store.put({ id: `${userId}-${r.id}`, userId, route: r, timestamp: now });
+            }
+            await new Promise<void>((resolveTx) => {
+                tx.oncomplete = () => resolveTx();
+                tx.onerror = () => resolveTx();
+                tx.onabort = () => resolveTx();
+            });
+        } catch {
+            // Fallback to localStorage
+            localStorage.setItem(`routes_cache_${userId}`, JSON.stringify(routes.slice(0, 5)));
+        }
+    }
+
+    async getCachedTopRoutesForUser(userId: string): Promise<GeneratedRoute[]> {
+        try {
+            const db = await this.openDB();
+            const tx = db.transaction('routes', 'readonly');
+            const store = tx.objectStore('routes');
+            const index = store.index('userId');
+            const results: GeneratedRoute[] = [];
+            await new Promise<void>((res) => {
+                const req = index.openCursor(IDBKeyRange.only(userId));
+                req.onsuccess = (ev: any) => {
+                    const cursor = ev.target.result;
+                    if (cursor) {
+                        results.push(cursor.value.route as GeneratedRoute);
+                        cursor.continue();
+                    } else {
+                        res();
+                    }
+                };
+                req.onerror = () => res();
+            });
+            return results.slice(0, 5);
+        } catch {
+            const raw = localStorage.getItem(`routes_cache_${userId}`);
+            return raw ? JSON.parse(raw) : [];
+        }
     }
 }

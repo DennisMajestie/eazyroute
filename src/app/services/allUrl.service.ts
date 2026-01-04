@@ -53,7 +53,7 @@ export class AllUrlService {
       delete: API_URL + '/routes/', // append ID
 
       // 🆕 ROUTE GENERATION ENGINE ENDPOINTS
-      generate: API_URL + '/routes/generate', // Generate multiple route candidates
+      generate: API_URL + '/along/generate-route',
       calculateFare: API_URL + '/routes/calculate-fare', // Calculate fare for route
       alternatives: API_URL + '/routes/alternatives', // Get alternative routes
     },

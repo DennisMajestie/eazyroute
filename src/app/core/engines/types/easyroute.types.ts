@@ -111,6 +111,9 @@ export interface RouteSegment {
     mode: TransportMode;
     cost: number; // ₦
     instructions?: string;
+    boardingInstructions?: string; // e.g., "Look for green taxis under the bridge"
+    waitWeight?: number; // Estimated loading time in minutes
+    isPlanB?: boolean; // Flag for alternative routes
     polyline?: string; // Encoded polyline for map display
 
     // V2 Routing Fields
@@ -165,6 +168,7 @@ export interface GeneratedRoute {
         backbonePriority?: boolean;         // True if route heavily utilizes highway backbones
         transferCount?: number;             // Number of vehicle changes
         ribExitApplied?: boolean;           // True if Rib Exit fee is included
+        arrivalWindow?: { minMinutes: number; maxMinutes: number; confidence: number }; // Probabilistic Arrival Window (PAW)
     };
 }
 

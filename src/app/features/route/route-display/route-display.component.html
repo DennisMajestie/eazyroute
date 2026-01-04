@@ -9,6 +9,49 @@
         </div>
     </div>
 
+    <!-- Night Mode Active Banner -->
+    <div class="night-mode-banner" *ngIf="isNightMode">
+        <div class="banner-header">
+            <span class="icon">🌙</span>
+            <span>Night Mode Active</span>
+        </div>
+        <div class="safety-tips-list">
+            <div class="tip" *ngFor="let tip of nightTips">
+                <span class="tip-icon">{{ tip.icon }}</span>
+                <span class="tip-text">{{ tip.text }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Route Selection Tabs -->
+    <div class="route-tabs" *ngIf="routes && routes.length > 0">
+        <div class="route-tab" *ngFor="let r of routes; let i = index" [class.active]="i === selectedRouteIndex"
+            (click)="selectRoute(i)">
+
+            <div class="tab-badge" [class.fastest]="r.classification === 'FASTEST'"
+                [class.cheapest]="r.classification === 'CHEAPEST'">
+                {{ r.classification || getStrategyLabel(r.metadata?.strategy || 'balanced') }}
+            </div>
+            <div class="tab-info">
+                <span class="tab-time">{{ r.totalTime }} min</span>
+                <span class="tab-cost">₦{{ r.totalCost }}</span>
+            </div>
+            <div class="tab-diff" *ngIf="getRouteDiff(r)">
+                {{ getRouteDiff(r) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Route Rationale & Warnings -->
+    <div class="route-rationale" *ngIf="route?.rationale || route?.metadata?.ribExitApplied">
+        <div class="rationale-text" *ngIf="route?.rationale">
+            💡 {{ route?.rationale }}
+        </div>
+        <div class="warning-tag" *ngIf="route?.metadata?.ribExitApplied">
+            🚧 Village Exit Fee Included
+        </div>
+    </div>
+
     <!-- Route Summary Bar -->
     <div class="route-summary" *ngIf="route">
         <div class="summary-item">
@@ -124,6 +167,17 @@
                                 <p class="instruction">{{ segment.instructions || segment.instruction }}</p>
                             </div>
 
+                            <!-- Boarding Protocol (Shouting) -->
+                            <div class="protocol-card" *ngIf="getHubProtocol(segment) as protocol">
+                                <div class="protocol-header">🗣️ Conductor Shout</div>
+                                <div class="shout-box">"{{ protocol.shout }}"</div>
+                                <div class="protocol-meta">
+                                    <span class="location">📍 {{ protocol.location }}</span>
+                                    <span class="price">💰 ₦{{ protocol.price.min }} - {{ protocol.price.max }}</span>
+                                </div>
+                                <div class="protocol-tip">💡 {{ protocol.tip }}</div>
+                            </div>
+
                             <!-- Pedestrian Bridge Alert -->
                             <div class="bridge-alert" *ngIf="segment.bridgeEnabled">
                                 <span class="alert-icon">🌉</span>
@@ -158,6 +212,14 @@
                                 *ngIf="segment.type === 'wait' || segment.type === 'transfer'">
                                 <span class="micro-icon">⚠️</span>
                                 <span>Check for oncoming traffic</span>
+                            </div>
+
+                            <!-- Contribute Price Button -->
+                            <div class="contribute-section" *ngIf="segment.type !== 'walk' && segment.type !== 'wait'">
+                                <button class="btn-link-sm"
+                                    (click)="$event.stopPropagation(); openSubmitPrice(segment)">
+                                    ➕ Contribute Price Info
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -214,4 +276,10 @@
             Go to Home
         </button>
     </div>
+
+    <!-- Submit Price Modal -->
+    <app-submit-price *ngIf="showSubmitPriceModal" [fromStopName]="submitData.from" [toStopName]="submitData.to"
+        [transportMode]="submitData.mode" [fromStopId]="submitData.fromId" [toStopId]="submitData.toId"
+        (close)="showSubmitPriceModal = false" (submitted)="onPriceSubmitted()">
+    </app-submit-price>
 </div>

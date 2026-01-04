@@ -116,7 +116,9 @@ export class HomeAlongComponent implements OnInit {
       .pipe(
         filter(() => !!this.fromLocation && !this.isSearching), // Only poll if we have a location and not searching
         switchMap(() => {
-          if (this.fromLocation) {
+          if (this.fromLocation && this.fromLocation.coords &&
+            typeof this.fromLocation.coords.lat === 'number' &&
+            typeof this.fromLocation.coords.lng === 'number') {
             return this.alongService.inferBoarding(
               this.fromLocation.coords.lat,
               this.fromLocation.coords.lng
@@ -251,9 +253,37 @@ export class HomeAlongComponent implements OnInit {
       this.isDetectingLocation = false;
     } catch (error: any) {
       console.error('Location detection error:', error);
-      this.locationError = error.message || 'Could not detect location. Please enter manually.';
+
+      // Fallback: Check Last Known Location
+      const lastKnown = localStorage.getItem('lastKnownLocation');
+      if (lastKnown) {
+        try {
+          const { lat, lng } = JSON.parse(lastKnown);
+          console.log('Using Last Known Location:', lat, lng);
+
+          const detectedLocation: SelectedLocation = {
+            type: 'bus_stop',
+            name: `Last Known Location`,
+            coords: { lat, lng }
+          };
+
+          this.fromLocation = detectedLocation;
+          this.fromInput = detectedLocation.name;
+          this.locationError = "Using your last known location due to weak GPS.";
+          this.isDetectingLocation = false;
+          return;
+        } catch (e) {
+          console.warn('Failed to parse last known location');
+        }
+      }
+
+      this.locationError = "Abuja's buildings can be thick! Try moving closer to the street or pick your location manually.";
       this.isDetectingLocation = false;
       this.fromInput = '';
+
+      // Manual Override: Trigger search for manual input
+      this.activeField = 'from';
+      // Optionally focus the input if possible, or just let the user know
     }
   }
 

@@ -3,20 +3,22 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AlongService } from '../../../core/services/along.service';
+import { SafetyService, SafetyTip } from '../../../core/services/safety.service';
+import { CommuterProtocolService, BoardingProtocol } from '../../../core/services/commuter-protocol.service';
 import { AlongRoute, AlongSegment } from '../../../models/transport.types';
+import { SubmitPriceComponent } from '../../community/submit-price/submit-price.component';
 
 @Component({
     selector: 'app-route-display',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, SubmitPriceComponent],
     templateUrl: './route-display.component.html',
     styleUrls: ['./route-display.component.scss']
 })
 export class RouteDisplayComponent implements OnInit {
     // Route data
-    route: AlongRoute | null = null;
-    fromLocation: { lat: number; lng: number; name: string } | null = null;
-    toLocation: { lat: number; lng: number; name: string } | null = null;
+    routes: AlongRoute[] = [];
+    selectedRouteIndex: number = 0;
 
     // UI state
     isLoading = false;
@@ -24,11 +26,53 @@ export class RouteDisplayComponent implements OnInit {
     expandedSegments: Set<number> = new Set();
     showStops: { [key: number]: boolean } = {};
 
+    // Safety
+    isNightMode = false;
+    nightTips: SafetyTip[] = [];
+
+    // Crowdsourcing (Price Submission)
+    showSubmitPriceModal = false;
+    submitData = { from: '', to: '', mode: '', fromId: '', toId: '' };
+
+    fromLocation: { lat: number; lng: number; name: string } | null = null;
+    toLocation: { lat: number; lng: number; name: string } | null = null;
+
+    get route(): AlongRoute | null {
+        return this.routes[this.selectedRouteIndex] || null;
+    }
+
     constructor(
         private activatedRoute: ActivatedRoute,
         private router: Router,
-        private alongService: AlongService
+        private alongService: AlongService,
+        private safetyService: SafetyService,
+        private protocolService: CommuterProtocolService
     ) { }
+
+    /**
+     * Measure difference between routes (Cost/Time)
+     */
+    getRouteDiff(route: AlongRoute): string {
+        const current = this.routes[0]; // Compare against best/first route
+        if (!current || route === current) return '';
+
+        const costDiff = (route.totalCost || 0) - (current.totalCost || 0);
+        const timeDiff = (route.totalTime || 0) - (current.totalTime || 0);
+
+        if (costDiff < 0) return `Save ₦${Math.abs(costDiff)}`;
+        if (timeDiff < 0) return `${Math.abs(timeDiff)} min faster`;
+
+        return '';
+    }
+
+    /**
+     * Select a specific route
+     */
+    selectRoute(index: number) {
+        this.selectedRouteIndex = index;
+        this.expandedSegments.clear();
+        this.showStops = {};
+    }
 
     /**
      * Toggle intermediate stops dropdown
@@ -38,12 +82,19 @@ export class RouteDisplayComponent implements OnInit {
     }
 
     ngOnInit() {
+        // Check Night Mode
+        this.isNightMode = this.safetyService.isNightMode();
+        if (this.isNightMode) {
+            this.nightTips = this.safetyService.NIGHT_SAFETY_TIPS;
+        }
+
         // Get locations from query params
         this.activatedRoute.queryParams.subscribe(params => {
-            // Check for From location (Hybrid or Coordinate)
+            // Check for From location (Hybrid, Coordinate, or Name-only)
             if (params['fromName']) {
-                if (params['isHybridFrom']) {
-                    this.fromLocation = { lat: 0, lng: 0, name: params['fromName'] }; // Dummy coords for type safety, service handles string
+                if (params['isHybridFrom'] || (!params['fromLat'] && !params['fromLng'])) {
+                    // Treat as name-based lookup (hybrid mode)
+                    this.fromLocation = { lat: 0, lng: 0, name: params['fromName'] };
                 } else if (params['fromLat'] && params['fromLng']) {
                     this.fromLocation = {
                         lat: parseFloat(params['fromLat']),
@@ -53,9 +104,10 @@ export class RouteDisplayComponent implements OnInit {
                 }
             }
 
-            // Check for To location (Hybrid or Coordinate)
+            // Check for To location (Hybrid, Coordinate, or Name-only)
             if (params['toName']) {
-                if (params['isHybridTo']) {
+                if (params['isHybridTo'] || (!params['toLat'] && !params['toLng'])) {
+                    // Treat as name-based lookup (hybrid mode)
                     this.toLocation = { lat: 0, lng: 0, name: params['toName'] };
                 } else if (params['toLat'] && params['toLng']) {
                     this.toLocation = {
@@ -94,19 +146,21 @@ export class RouteDisplayComponent implements OnInit {
             .subscribe({
                 next: (response: any) => {
                     if (response && response.success && Array.isArray(response.data) && response.data.length > 0) {
-                        this.route = response.data[0];
+                        this.routes = response.data;
+                        this.selectedRouteIndex = 0;
 
-                        if (this.route) {
-                            // Service already mapped legs to segments if needed
-                            this.route.instructions = (this.route.instructions || [])
+                        // Post-process instructions for all routes
+                        this.routes.forEach(r => {
+                            r.instructions = (r.instructions || [])
                                 .filter(i => !!i);
 
-                            if (this.route.instructions.length === 0) {
-                                this.route.instructions = (this.route.segments || [])
+                            if (r.instructions.length === 0) {
+                                r.instructions = (r.segments || [])
                                     .map((s: any) => s?.instruction || s?.instructions || '')
-                                    .filter(i => !!i);
+                                    .filter((i: any) => !!i);
                             }
-                        }
+                        });
+
                     } else if (response?.errorType === 'LOCATION_NOT_COVERED') {
                         this.error = response.suggestion || 'This area is not yet covered by ALONG.';
                     } else {
@@ -132,6 +186,7 @@ export class RouteDisplayComponent implements OnInit {
             case 'balanced': return '⚖️';
             case 'hub-based': return '🏙️';
             case 'safe': return '🛡️';
+            case 'fastest': return '🚀';
             default: return '📍';
         }
     }
@@ -146,6 +201,7 @@ export class RouteDisplayComponent implements OnInit {
             case 'balanced': return 'Balanced';
             case 'hub-based': return 'Hub-Based';
             case 'safe': return 'Safe Route';
+            case 'fastest': return 'Fastest';
             default: return 'Standard';
         }
     }
@@ -311,5 +367,39 @@ export class RouteDisplayComponent implements OnInit {
      */
     goBack() {
         this.router.navigate(['/home']);
+    }
+
+    /**
+     * Open Price Submission Modal for a specific segment
+     */
+    openSubmitPrice(segment: AlongSegment) {
+        this.submitData = {
+            from: segment.fromStop || segment.instruction.split(' from ')[1]?.split(' to ')[0] || 'Unknown Origin',
+            to: segment.toStop || segment.instruction.split(' to ')[1] || 'Unknown Dest',
+            mode: (segment.vehicleType || 'keke').toLowerCase(),
+            fromId: 'UNKNOWN', // MVP: Backend handles name resolution or accepts names
+            toId: 'UNKNOWN'
+        };
+        this.showSubmitPriceModal = true;
+    }
+
+    onPriceSubmitted() {
+        // Show success toast or just refresh route? 
+        // usage: RouteSegmentService.incrementPopularity might happen in background
+    }
+
+    /**
+     * Get Boarding Protocol for a segment
+     */
+    getHubProtocol(segment: AlongSegment): BoardingProtocol | null {
+        if (!segment.fromStop) return null;
+
+        // Check if there is a protocol for this hub and destination
+        const result = this.protocolService.getProtocolForDestination(
+            segment.fromStop,
+            segment.toStop || ''
+        );
+
+        return result ? result.protocol : null;
     }
 }

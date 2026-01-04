@@ -6,8 +6,8 @@ import { Environment } from './environment.interface';
 
 export const environment: Environment = {
     production: false,
-    apiUrl: 'http://172.20.10.2:3000/api/v1',
-    socketUrl: 'http://172.20.10.2:3000',
+    apiUrl: 'http://localhost:3000/api/v1',
+    socketUrl: 'http://localhost:3000',
     appName: 'Along_9ja',
     useMockSockets: false,
 

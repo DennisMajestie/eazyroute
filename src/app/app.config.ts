@@ -1,5 +1,5 @@
 // src/app/app.config.ts
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
@@ -23,6 +23,7 @@ import {
   NotificationServiceAdapter
 } from './core/engines/adapters/engine-adapters.provider';
 import { provideEasyrouteEngines } from './core/engines/adapters/engine-providers.config';
+import { provideServiceWorker } from '@angular/service-worker';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -53,6 +54,9 @@ export const appConfig: ApplicationConfig = {
     { provide: LOCATION_SERVICE, useClass: LocationServiceAdapter },
     { provide: ROUTING_SERVICE, useClass: RoutingServiceAdapter },
     { provide: FARE_CALCULATOR, useClass: FareCalculatorAdapter },
-    { provide: NOTIFICATION_SERVICE, useClass: NotificationServiceAdapter }
+    { provide: NOTIFICATION_SERVICE, useClass: NotificationServiceAdapter }, provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          })
   ]
 };

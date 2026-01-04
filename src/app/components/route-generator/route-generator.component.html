@@ -3,7 +3,28 @@
 
     <div class="form-group">
         <label>From:</label>
-        <input [(ngModel)]="fromLocation.name" type="text" placeholder="Location Name" />
+        <div class="input-with-action">
+            <input [(ngModel)]="fromLocation.name" type="text" placeholder="Location Name" />
+            <button class="btn-icon" (click)="useMyLocation()" [disabled]="isLocating" title="Use My Location">
+                {{ isLocating ? '⏳' : '📍' }}
+            </button>
+        </div>
+
+        <!-- Nearby Stops Dropdown -->
+        <div class="dropdown-menu" *ngIf="showNearbyDropdown && nearbyStops.length > 0">
+            <div class="dropdown-header">
+                <span>Nearby Stops</span>
+                <button (click)="showNearbyDropdown = false">×</button>
+            </div>
+            <div class="dropdown-item" *ngFor="let stop of nearbyStops" (click)="selectNearbyStop(stop)">
+                <span class="icon">🚏</span>
+                <div class="info">
+                    <span class="name">{{ stop.name }}</span>
+                    <span class="meta">{{ (stop.distance).toFixed(0) }}m away • {{ stop.verified ? '✅ Verified' : '⚠️
+                        Unverified' }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="form-group">
@@ -60,5 +81,10 @@
     <!-- Empty State -->
     <div *ngIf="routeLegs.length === 0 && !loading && !error" class="empty-state">
         <p>Enter locations and click "Generate Route" to see results</p>
+
+        <div class="report-missing">
+            <span>Can't find a place?</span>
+            <a routerLink="/bus-stops/add" class="link-btn">Report Missing Place</a>
+        </div>
     </div>
 </div>

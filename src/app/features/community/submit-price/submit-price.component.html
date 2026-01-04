@@ -1,0 +1,58 @@
+<div class="modal-overlay" (click)="onClose()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>💰 Contribute Price</h3>
+            <button class="close-btn" (click)="onClose()">×</button>
+        </div>
+
+        <div class="modal-body" *ngIf="!success">
+            <p class="helper-text">Help others by adding price info for:</p>
+            <div class="route-segment-info">
+                <span class="stop">{{ fromStopName }}</span>
+                <span class="arrow">→</span>
+                <span class="stop">{{ toStopName }}</span>
+            </div>
+
+            <div class="form-group">
+                <label>Transport Mode</label>
+                <select [(ngModel)]="transportMode">
+                    <option value="keke">🛺 Keke</option>
+                    <option value="taxi">🚕 Taxi</option>
+                    <option value="bus">🚌 Bus</option>
+                    <option value="okada">🏍️ Okada</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Min Price (₦)</label>
+                    <input type="number" [(ngModel)]="priceMin" placeholder="100" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Max Price (₦)</label>
+                    <input type="number" [(ngModel)]="priceMax" placeholder="150" min="0">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Est. Time (mins)</label>
+                <input type="number" [(ngModel)]="estimatedTime" placeholder="10" min="1">
+            </div>
+
+            <div class="error-msg" *ngIf="error">{{ error }}</div>
+        </div>
+
+        <div class="modal-body success-body" *ngIf="success">
+            <div class="success-icon">🎉</div>
+            <h4>Thank You!</h4>
+            <p>Your contribution earns you points and helps the community.</p>
+        </div>
+
+        <div class="modal-footer" *ngIf="!success">
+            <button class="btn btn-secondary" (click)="onClose()">Cancel</button>
+            <button class="btn btn-primary" (click)="submit()" [disabled]="isSubmitting || !priceMin">
+                {{ isSubmitting ? 'Sending...' : 'Submit' }}
+            </button>
+        </div>
+    </div>
+</div>

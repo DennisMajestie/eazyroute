@@ -20,6 +20,9 @@ export interface GenerateRoutesRequest {
     longitude: number;
   };
   maxAlternatives?: number;
+  preferences?: {
+    optimizeFor: string;
+  };
 }
 
 export interface CalculateFareRequest {
@@ -43,9 +46,14 @@ export class RouteGenerationHttpService {
    * Generate multiple route candidates
    */
   generateRoutes(request: GenerateRoutesRequest): Observable<RouteGenerationResponse> {
+    const payload = {
+      ...request,
+      preferences: request.preferences || { optimizeFor: 'balanced' }
+    };
+
     return this.http.post<RouteGenerationResponse>(
       this.urls.routes.generate,
-      request
+      payload
     );
   }
 

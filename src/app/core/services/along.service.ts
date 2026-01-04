@@ -69,23 +69,27 @@ export class AlongService {
 
         const url = `${this.apiUrl}/generate-route`;
 
-        // Normalize Payload: Ensure latitude/longitude are present if it's an object
-        // Maps {lat, lng} -> {latitude, longitude} (Clean Object)
+        // Normalize Payload: Ensure lat/lng keys are present if it's an object
         const normalize = (loc: any) => {
             if (typeof loc === 'object' && loc !== null && 'lat' in loc && 'lng' in loc) {
-                // Return ONLY coordinates to force backend to use them
-                // This prevents backend from trying to geocode "My Location" string if present
-                return {
+                const payload: any = {
                     latitude: loc.lat,
-                    longitude: loc.lng
+                    longitude: loc.lng,
+                    lat: loc.lat,
+                    lng: loc.lng
                 };
+                if (loc.name) payload.name = loc.name;
+                return payload;
             }
             return loc;
         };
 
         const payload = {
+            startLocation: normalize(from),
+            endLocation: normalize(to),
             fromLocation: normalize(from),
-            toLocation: normalize(to)
+            toLocation: normalize(to),
+            preferences: { optimizeFor: 'balanced' }
         };
 
         return this.http.post<any>(url, payload).pipe(
@@ -117,6 +121,11 @@ export class AlongService {
      */
     private extractRoutes(response: any): AlongRoute[] {
         if (!response) return [];
+
+        // 0. V4 K-Best Routing: check for { data: { routes: [] } }
+        if (response.data && !Array.isArray(response.data) && response.data.routes && Array.isArray(response.data.routes)) {
+            return response.data.routes;
+        }
 
         // 1. Check for standard data wrapper
         if (response.data && Array.isArray(response.data)) {

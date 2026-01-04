@@ -4,16 +4,20 @@
 // Location: src/app/core/engines/adapters/location-service.adapter.ts
 // ═══════════════════════════════════════════════════════════════════
 
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { GeolocationService, Coordinates } from '../../services/geolocation.service';
-import { ILocationService, Location } from '../types/easyroute.types';
+import { ILocationService, Location, IBusStopRepository } from '../types/easyroute.types';
 import { Observable, firstValueFrom, map } from 'rxjs';
+import { BUS_STOP_REPOSITORY } from './engine-adapters.provider';
 
 @Injectable({
     providedIn: 'root'
 })
 export class LocationServiceAdapter implements ILocationService {
-    constructor(private geolocationService: GeolocationService) { }
+    constructor(
+        private geolocationService: GeolocationService,
+        @Inject(BUS_STOP_REPOSITORY) private busStopRepo: IBusStopRepository
+    ) { }
 
     async getCurrentLocation(): Promise<Location> {
         try {
@@ -96,6 +100,45 @@ export class LocationServiceAdapter implements ILocationService {
             }
         }
         return false;
+    }
+
+    async snapToNearestNode(location: Location): Promise<Location> {
+        try {
+            const nearbyStops = await this.busStopRepo.findNearby(location, 150);
+            if (!nearbyStops || nearbyStops.length === 0) {
+                return location;
+            }
+            // Find the closest stop
+            let closest = nearbyStops[0];
+            let minDist = this.calculateDistance(location, {
+                latitude: closest.latitude,
+                longitude: closest.longitude
+            } as Location);
+            for (let i = 1; i < nearbyStops.length; i++) {
+                const stop = nearbyStops[i];
+                const dist = this.calculateDistance(location, {
+                    latitude: stop.latitude,
+                    longitude: stop.longitude
+                } as Location);
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = stop;
+                }
+            }
+            // Snap only if within 75 meters
+            if (minDist <= 75) {
+                return {
+                    latitude: closest.latitude,
+                    longitude: closest.longitude,
+                    timestamp: new Date(),
+                    confidence: 95,
+                    isFiltered: true
+                };
+            }
+            return location;
+        } catch (e) {
+            return location;
+        }
     }
 
     private toRadians(degrees: number): number {

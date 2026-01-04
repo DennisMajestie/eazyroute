@@ -4,8 +4,14 @@ import { Observable, BehaviorSubject, interval, of } from 'rxjs';
 import { switchMap, tap, catchError, filter } from 'rxjs/operators';
 import { GeolocationService } from './geolocation.service';
 import { AllUrlService } from '../../services/allUrl.service';
+import { WebSocketService } from './websocket.service';
 
 export type SafetyLevel = 'yellow' | 'orange' | 'red';
+
+export interface SafetyTip {
+    icon: string;
+    text: string;
+}
 
 @Injectable({
     providedIn: 'root'
@@ -16,15 +22,44 @@ export class SafetyService {
 
     // Safety State
     private safetyLevel$ = new BehaviorSubject<SafetyLevel | null>(null);
+    public sosAlert$ = new BehaviorSubject<any>(null); // For UI components to consume
 
     // Audio for Fake Call
     private ringtoneAudio = new Audio('/assets/audio/iphone_ringtone.mp3');
 
+    // Night Mode Tips
+    public readonly NIGHT_SAFETY_TIPS: SafetyTip[] = [
+        { icon: '🛑', text: "Don't board if the back seat is full of men and the front seat is empty." },
+        { icon: '🛑', text: "Don't board if the car has tinted glass or the inner door handles are missing." },
+        { icon: '🛡️', text: "Always sit by the door/window, never in the middle." }
+    ];
+
     constructor(
         private http: HttpClient,
         private geolocationService: GeolocationService,
-        private urlService: AllUrlService
-    ) { }
+        private urlService: AllUrlService,
+        private webSocketService: WebSocketService
+    ) {
+        this.initSafetyListeners();
+    }
+
+    /**
+     * Initialize WebSocket Listeners for SOS
+     */
+    private initSafetyListeners() {
+        this.webSocketService.on('sos:broadcast').subscribe((data: any) => {
+            console.log('[SafetyService] Received SOS Broadcast:', data);
+            this.sosAlert$.next(data);
+        });
+    }
+
+    /**
+     * Check if it is currently Night Mode (8PM - 5AM)
+     */
+    isNightMode(): boolean {
+        const hour = new Date().getHours();
+        return hour >= 20 || hour < 5;
+    }
 
     // --- Level 1: Fake Call ---
     triggerFakeCall() {

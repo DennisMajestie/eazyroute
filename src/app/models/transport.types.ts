@@ -59,6 +59,7 @@ export interface AlongRoute {
     warnings?: string[];
     classification?: 'FASTEST' | 'CHEAPEST' | 'BALANCED'; // NEW: Route classification
     comparisonLabel?: string; // NEW: e.g., "₦800 cheaper than fastest"
+    alternatives?: AlongRoute[]; // NEW: K-Best alternatives
     metadata?: {
         strategy: string;
         alternativeRoutes: boolean;

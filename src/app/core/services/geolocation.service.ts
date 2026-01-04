@@ -80,46 +80,76 @@ export class GeolocationService {
     }
 
     /**
-     * Get smart location with retry logic (handle GPS warm-up)
+     * Get smart location with retry logic (Smart Strategy)
+     * 1. High-Accuracy (GPS) < 50m
+     * 2. Retry 1: Threshold < 100m
+     * 3. Retry 2: Accept Coarse (IP-based)
      */
     async getSmartLocation(): Promise<Coordinates | null> {
-        let lastPos: Coordinates | null = null;
-
-        for (let i = 0; i < 4; i++) {
-            try {
-                console.log(`[Geolocation] Smart location attempt ${i + 1}...`);
-                const pos = await firstValueFrom(this.getCurrentPosition());
-
-                // 1. Basic Block (0,0) or Lagos Ghost
-                if (pos.latitude === 0 && pos.longitude === 0) continue;
-                if (Math.abs(pos.latitude - 6.4474) < 0.0001) continue;
-
-                // 2. Accuracy Filter
-                if (pos.accuracy && pos.accuracy > 1000) {
-                    console.log(`[Geolocation] GPS too inaccurate (${pos.accuracy}m)... waiting.`);
-                    continue;
-                }
-
-                // 3. Warm-up Sequence: Compare with last read
-                if (lastPos) {
-                    const delta = this.calculateDistance(pos.latitude, pos.longitude, lastPos.latitude, lastPos.longitude);
-                    if (delta < 0.05) { // If movement is less than 50m between reads, consider it stable
-                        console.log('[Geolocation] GPS Stabilized!');
-                        return pos;
-                    }
-                    console.log(`[Geolocation] GPS shifting (${(delta * 1000).toFixed(0)}m)... warming up.`);
-                }
-
-                lastPos = pos;
-            } catch (error) {
-                console.warn(`[Geolocation] attempt ${i + 1} failed:`, error);
-            }
-
-            // Wait 1.5 seconds before retry
-            await new Promise(resolve => setTimeout(resolve, 1500));
+        // Attempt 1: High Accuracy (GPS) - 7s timeout
+        try {
+            console.log('[Geolocation] Attempt 1: High Accuracy (GPS)');
+            return await this.getPositionWithTimeout(50, 7000, true);
+        } catch (e) {
+            console.warn("[Geolocation] GPS failed, falling back to Tower/WiFi...");
         }
 
-        return lastPos; // Return best available if not perfectly stable
+        // Attempt 2: Low Accuracy (Fast) - 5s timeout
+        try {
+            console.log('[Geolocation] Attempt 2: Low Accuracy (Cell/WiFi)');
+            return await this.getPositionWithTimeout(100, 5000, false);
+        } catch (e) {
+            console.warn('[Geolocation] Attempt 2 failed:', e);
+        }
+
+        // Attempt 3: Coarse Location (Accept anything)
+        try {
+            console.log('[Geolocation] Attempt 3: Coarse Location');
+            const pos = await this.getPositionWithTimeout(Infinity, 5000, false);
+            // Mark as coarse/low accuracy for UI warnings
+            pos.accuracy = pos.accuracy || 5000;
+            return pos;
+        } catch (e) {
+            console.error('[Geolocation] All attempts failed:', e);
+            return null;
+        }
+    }
+
+    /**
+     * Helper to get position with timeout and specific options
+     */
+    private getPositionWithTimeout(
+        targetAccuracy: number,
+        timeoutMs: number,
+        highAccuracy: boolean = true
+    ): Promise<Coordinates> {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error('Geolocation not supported'));
+                return;
+            }
+
+            const tid = setTimeout(() => {
+                reject(new Error('Timeout'));
+            }, timeoutMs);
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    clearTimeout(tid);
+                    const coords = this.mapPositionToCoords(position);
+                    resolve(coords);
+                },
+                (error) => {
+                    clearTimeout(tid);
+                    reject(error);
+                },
+                {
+                    enableHighAccuracy: highAccuracy,
+                    timeout: timeoutMs,
+                    maximumAge: 0
+                }
+            );
+        });
     }
 
     /**

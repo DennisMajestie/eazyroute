@@ -11,6 +11,7 @@
 
 
 import { Injectable, Inject } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { BusStop } from '../../models/bus-stop.model';
 import {
     Location,
@@ -34,6 +35,7 @@ import {
     ROUTING_SERVICE,
     FARE_CALCULATOR
 } from './adapters/engine-adapters.provider';
+import { StorageService } from '../services/storage.service';
 
 @Injectable({
     providedIn: 'root'
@@ -46,7 +48,8 @@ export class RouteGenerationEngine {
         @Inject(BUS_STOP_REPOSITORY) private busStopRepo: IBusStopRepository,
         @Inject(ROUTING_SERVICE) private routingService: IRoutingService,
         @Inject(FARE_CALCULATOR) private fareCalculator: IFareCalculator,
-        @Inject(LOCATION_SERVICE) private locationService: ILocationService
+        @Inject(LOCATION_SERVICE) private locationService: ILocationService,
+        private storageService: StorageService
     ) { }
 
 
@@ -69,6 +72,17 @@ export class RouteGenerationEngine {
     ): Promise<GeneratedRoute[]> {
         console.log('[RouteGen] Starting route generation...', { startLocation, endLocation });
 
+        // Node Snapping: improve origin/destination alignment to nearest known node
+        try {
+            const locSvc: any = this.locationService as any;
+            if (typeof locSvc.snapToNearestNode === 'function') {
+                const snappedStart = await locSvc.snapToNearestNode(startLocation);
+                const snappedEnd = await locSvc.snapToNearestNode(endLocation);
+                startLocation = snappedStart || startLocation;
+                endLocation = snappedEnd || endLocation;
+            }
+        } catch (e) { }
+
         // Step 1: Find nearby stops at start and end
         const startStops = await this.busStopRepo.findNearby(
             startLocation,
@@ -87,8 +101,8 @@ export class RouteGenerationEngine {
             return await this.generateDirectRoute(startLocation, endLocation);
         }
 
-        // Step 2: Generate path combinations
-        const routeCandidates: GeneratedRoute[] = [];
+        // Step 2: Generate path combinations in PARALLEL
+        const routePromises: Promise<GeneratedRoute>[] = [];
 
         // Limit combinations to avoid performance issues
         const maxStartStops = Math.min(3, startStops.length);
@@ -96,35 +110,32 @@ export class RouteGenerationEngine {
 
         for (let i = 0; i < maxStartStops; i++) {
             for (let j = 0; j < maxEndStops; j++) {
-                try {
-                    // Generate route variants (different strategies)
-                    const shortestRoute = await this.generateShortestRoute(
-                        startLocation,
-                        endLocation,
-                        startStops[i],
-                        endStops[j]
-                    );
-
-                    const cheapestRoute = await this.generateCheapestRoute(
-                        startLocation,
-                        endLocation,
-                        startStops[i],
-                        endStops[j]
-                    );
-
-                    const balancedRoute = await this.generateBalancedRoute(
-                        startLocation,
-                        endLocation,
-                        startStops[i],
-                        endStops[j]
-                    );
-
-                    routeCandidates.push(shortestRoute, cheapestRoute, balancedRoute);
-                } catch (error) {
-                    console.error('[RouteGen] Error generating route variant:', error);
-                }
+                // Queue all calculations
+                routePromises.push(
+                    this.generateShortestRoute(startLocation, endLocation, startStops[i], endStops[j])
+                        .catch(err => {
+                            console.error('[RouteGen] Error generating shortest variant:', err);
+                            return null as any;
+                        }),
+                    this.generateCheapestRoute(startLocation, endLocation, startStops[i], endStops[j])
+                        .catch(err => {
+                            console.error('[RouteGen] Error generating cheapest variant:', err);
+                            return null as any;
+                        }),
+                    this.generateBalancedRoute(startLocation, endLocation, startStops[i], endStops[j])
+                        .catch(err => {
+                            console.error('[RouteGen] Error generating balanced variant:', err);
+                            return null as any;
+                        })
+                );
             }
         }
+
+        // Wait for all to finish
+        const results = await Promise.all(routePromises);
+
+        // Filter out failures (nulls)
+        const routeCandidates = results.filter(r => r !== null);
 
         // Step 3: Remove duplicates and rank
         const uniqueRoutes = this.deduplicateRoutes(routeCandidates);
@@ -133,7 +144,16 @@ export class RouteGenerationEngine {
         console.log(`[RouteGen] Generated ${rankedRoutes.length} unique routes`);
 
         // Return top candidates (use maxAlternatives parameter)
-        return rankedRoutes.slice(0, Math.min(maxAlternatives, this.config.maxRouteCandidates));
+        const top = rankedRoutes.slice(0, Math.min(maxAlternatives, this.config.maxRouteCandidates));
+
+        // Cache top routes for offline (IndexedDB)
+        try {
+            const user = this.storageService.getUser();
+            const userId = user?.id || 'guest';
+            await this.storageService.cacheTopRoutesForUser(userId, top);
+        } catch { }
+
+        return top;
     }
     /**
      * ═══════════════════════════════════════════════════════════════
@@ -365,6 +385,12 @@ export class RouteGenerationEngine {
         const totalTime = segments.reduce((sum, seg) => sum + seg.estimatedTime, 0);
         const totalCost = segments.reduce((sum, seg) => sum + seg.cost, 0);
 
+        // Probabilistic Arrival Window (PAW): 85% confidence window
+        const sigma = totalTime * 0.10; // assume 10% variability
+        const z85 = 1.44;
+        const minWindow = Math.max(1, Math.round(totalTime - z85 * sigma));
+        const maxWindow = Math.max(minWindow + 1, Math.round(totalTime + z85 * sigma));
+
         return {
             id: `route-${strategy}-${Date.now()}`,
             segments,
@@ -377,7 +403,10 @@ export class RouteGenerationEngine {
                 balanced: 0
             },
             generatedAt: new Date(),
-            strategy: strategy as any
+            strategy: strategy as any,
+            metadata: {
+                arrivalWindow: { minMinutes: minWindow, maxMinutes: maxWindow, confidence: 0.85 }
+            }
         };
     }
 
@@ -424,18 +453,12 @@ export class RouteGenerationEngine {
 
         // Calculate scores (inverse normalization - lower is better)
         routes.forEach(route => {
-            // Shortest score (based on time + distance)
-            const distanceScore = this.inverseNormalize(
-                route.totalDistance,
-                minDistance,
-                maxDistance
-            );
-            const timeScore = this.inverseNormalize(
+            // Shortest score (based on time)
+            route.rankingScore.shortest = this.inverseNormalize(
                 route.totalTime,
                 minTime,
                 maxTime
             );
-            route.rankingScore.shortest = (distanceScore + timeScore) / 2;
 
             // Cheapest score
             route.rankingScore.cheapest = this.inverseNormalize(
@@ -444,10 +467,11 @@ export class RouteGenerationEngine {
                 maxCost
             );
 
-            // Balanced score (weighted average: 40% time, 60% cost)
+            // Balanced score (weighted average: 60% time, 40% cost)
+            // Matches RouteBuilderService logic
             route.rankingScore.balanced =
-                route.rankingScore.shortest * 0.4 +
-                route.rankingScore.cheapest * 0.6;
+                (route.rankingScore.shortest * 0.6) +
+                (route.rankingScore.cheapest * 0.4);
         });
 
         // Sort by balanced score (highest first)
