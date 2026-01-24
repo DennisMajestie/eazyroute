@@ -36,17 +36,17 @@ export class LocalityCardComponent {
   }
 
   getDensityColor(): string {
-    const density = this.locality?.movementProfile?.informalBoardingDensity;
-    return this.localityService.getDensityColor(density || 'low');
+    return this.localityService.getDensityColor(
+      this.locality.movementProfile.informalBoardingDensity
+    );
   }
 
   getDensityLabel(): string {
-    const labels: { [key: string]: string } = {
+    const labels = {
       'low': 'Low Density',
       'medium': 'Medium Density',
       'high': 'High Density'
     };
-    const density = this.locality?.movementProfile?.informalBoardingDensity;
-    return labels[density || 'low'] || 'Standard Density';
+    return labels[this.locality.movementProfile.informalBoardingDensity];
   }
 }

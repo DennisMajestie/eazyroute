@@ -230,41 +230,45 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         const safeSegments = Array.isArray(sourceSegments) ? sourceSegments : [];
 
         // Map segments (AlongSegment -> RouteSegment)
-        const segments: RouteSegment[] = safeSegments.filter(s => !!s).map((seg: any, index: number) => {
+        const segments: RouteSegment[] = safeSegments.map((seg: any, index: number) => {
+            const modeType = (seg.vehicleType || seg.mode || seg.type || 'walk') as any;
+
             return {
-                id: seg?.id || `seg-${index}-${Date.now()}`,
-                fromStop: {
-                    id: seg?.fromStopId || 'temp-from',
-                    name: seg?.fromStop || seg?.from?.name || 'Start',
-                    latitude: seg?.fromLat || 0,
-                    longitude: seg?.fromLng || 0,
-                    routes: []
+                id: `seg-${index}-${Date.now()}`,
+                fromStop: (typeof seg.fromStop === 'object' && seg.fromStop !== null) ? seg.fromStop : {
+                    id: seg.fromStopId || 'temp-from',
+                    name: seg.fromStop || seg.fromName || seg.from?.name || 'Start',
+                    latitude: seg.from?.lat || 0,
+                    longitude: seg.from?.lng || 0,
+                    type: 'landmark'
                 } as any,
-                toStop: {
-                    id: seg?.toStopId || 'temp-to',
-                    name: seg?.toStop || seg?.to?.name || 'End',
-                    latitude: seg?.toLat || 0,
-                    longitude: seg?.toLng || 0,
-                    routes: []
+                toStop: (typeof seg.toStop === 'object' && seg.toStop !== null) ? seg.toStop : {
+                    id: seg.toStopId || 'temp-to',
+                    name: seg.toStop || seg.toName || seg.to?.name || 'End',
+                    latitude: seg.to?.lat || 0,
+                    longitude: seg.to?.lng || 0,
+                    type: 'landmark'
                 } as any,
-                distance: seg?.distance || 0,
-                estimatedTime: seg?.estimatedTime || 0,
+                vehicleType: modeType, // V4 Key
+                fromStopName: seg.fromStop || seg.fromName, // Helper for UI
+                toStopName: seg.toStop || seg.toName, // Helper for UI
+                distance: seg.distance || 0,
+                estimatedTime: seg.estimatedTime || seg.duration || 0,
                 mode: {
-                    type: (seg?.vehicleType || seg?.mode || 'bus') as any,
-                    name: seg?.vehicleType || seg?.mode || 'Bus',
+                    type: modeType,
+                    name: modeType.toUpperCase(),
                     availabilityFactor: 1,
                     avgSpeedKmh: 0
                 } as any,
-                cost: seg?.cost || 0,
-                instructions: seg?.instruction || seg?.instructions || '',
-                microInstructions: seg?.microInstructions || [],
-                barriers: seg?.barriers || [],
+                cost: seg.cost || 0,
+                instructions: seg.instruction || seg.instructions || '',
+                microInstructions: seg.microInstructions || [],
+                barriers: seg.barriers || [],
                 // V3 Safety Guardrails
-                isBridge: seg?.isBridge || false,
-                isBlocked: seg?.isBlocked || false,
-                backboneName: seg?.backboneName || null,
-                backbonePriority: !!seg?.backbonePriority
-            };
+                isBridge: seg.isBridge || false,
+                isBlocked: seg.isBlocked || false,
+                backboneName: seg.backboneName || null
+            } as RouteSegment;
         });
 
         const route: GeneratedRoute = {
@@ -777,7 +781,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
         // 1. Search Bus Stops (Local Data - High Priority)
         this.busStopService.searchWithLocalNames(query, 10).pipe(
-            catchError((err: any) => of({ success: false, data: [] }))
+            catchError(() => of({ success: false, data: [] }))
         ).subscribe(res => {
             if (this.activeSearchField !== field) return;
 
@@ -803,23 +807,22 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
         // 2. Search General Locations (OSM - Fallback)
         this.geocodingService.search(query).pipe(
-            catchError((err: any) => of([]))
+            catchError(() => of([]))
         ).subscribe(locations => {
             if (this.activeSearchField !== field) return;
 
             // CRITICAL FIX: Ensure locations is an array
-            const mappedLocations = (Array.isArray(locations) ? locations : []).filter(l => !!l).map(l => ({
-                name: l?.name || 'Unknown',
-                displayName: l?.displayName || l?.name || 'Unknown',
-                area: l?.area,
-                latitude: l?.latitude || 0,
-                longitude: l?.longitude || 0,
+            const mappedLocations = (Array.isArray(locations) ? locations : []).map(l => ({
+                name: l.name,
+                displayName: l.displayName,
+                area: l.area,
+                latitude: l.latitude,
+                longitude: l.longitude,
                 type: 'location' as const
             }));
 
             // Append to results if not already there (simple de-dupe by name)
-            const currentResults = Array.isArray(this.searchResults) ? this.searchResults : [];
-            const existingNames = new Set(currentResults.map(r => r.name));
+            const existingNames = new Set(this.searchResults.map(r => r.name));
             const uniqueLocations = mappedLocations.filter(l => !existingNames.has(l.name));
 
             this.searchResults = [...this.searchResults, ...uniqueLocations];
@@ -827,19 +830,19 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
         // 3. Search Behavioral Localities (ALONG - High Priority neighborhoods)
         this.alongService.search(query).pipe(
-            catchError((err: any) => of({ success: false, data: [] }))
+            catchError(() => of({ success: false, data: [] }))
         ).subscribe(res => {
             if (this.activeSearchField !== field) return;
 
-            const localities = (res && res.success && Array.isArray(res.data) ? res.data : []).filter(l => !!l).map((l: any) => ({
-                name: l?.name || 'Unknown',
-                displayName: l?.displayName || l?.name || 'Unknown',
-                area: l?.area || l?.district,
-                latitude: l?.lat || l?.latitude || 0,
-                longitude: l?.lng || l?.longitude || 0,
+            const localities = (res && res.success && Array.isArray(res.data) ? res.data : []).map((l: any) => ({
+                name: l.name,
+                displayName: l.displayName || l.name,
+                area: l.area || l.district,
+                latitude: l.lat || l.latitude,
+                longitude: l.lng || l.longitude,
                 type: 'location' as const,
-                source: l?.source,
-                isVerifiedNeighborhood: l?.source === 'along-locality',
+                source: l.source,
+                isVerifiedNeighborhood: l.source === 'along-locality',
                 tier: 'primary' as const
             }));
 
@@ -848,8 +851,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             const others = localities.filter(l => !l.isVerifiedNeighborhood);
 
             // Logic: [Bus Stops] -> [Verified Neighborhoods] -> [Other Localities] -> [OSM Results]
-            const currentResults = Array.isArray(this.searchResults) ? this.searchResults : [];
-            const existingIds = new Set(currentResults.map(r => r.name));
+            const existingIds = new Set(this.searchResults.map(r => r.name));
             const uniqueVerified = verified.filter(v => !existingIds.has(v.name));
             const uniqueOthers = others.filter(o => !existingIds.has(o.name));
 
@@ -981,17 +983,12 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         }
 
         const segments = this.selectedRoute.legs || this.selectedRoute.segments;
-        // CRITICAL FIX: Ensure segments is an array and elements are not null
-        this.routePolylines = (Array.isArray(segments) ? segments : [])
-            .filter(seg => !!seg)
-            .map(seg => ({
-                path: (seg.fromStop && seg.toStop) ? [
-                    [seg.fromStop.latitude, seg.fromStop.longitude],
-                    [seg.toStop.latitude, seg.toStop.longitude]
-                ] : [],
-                color: this.getSegmentHexColor(seg),
-                isBackbone: !!seg?.backbonePriority
-            }));
+        // CRITICAL FIX: Ensure segments is an array
+        this.routePolylines = (Array.isArray(segments) ? segments : []).map(seg => ({
+            path: [], // Backend needs to provide decoded polyline or we decode here
+            color: this.getSegmentHexColor(seg),
+            isBackbone: seg.backbonePriority
+        }));
     }
 
     private getSegmentHexColor(seg: any): string {
@@ -1112,8 +1109,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
      * Get transport mode icons
      */
     getTransportModeIcons(modes?: TransportMode[]): string[] {
-        const safeModes = Array.isArray(modes) ? modes : [];
-        if (safeModes.length === 0) return [];
+        if (!modes || modes.length === 0) return [];
         const iconMap: { [key in TransportMode]: string } = {
             'keke': 'fas fa-motorcycle',
             'bus': 'fas fa-bus',
@@ -1121,7 +1117,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             'taxi': 'fas fa-taxi',
             'walking': 'fas fa-walking'
         };
-        return safeModes.map(mode => iconMap[mode] || 'fas fa-shuttle-van');
+        return modes.map(mode => iconMap[mode]);
     }
 
     /**

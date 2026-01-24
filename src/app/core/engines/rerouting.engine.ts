@@ -385,34 +385,33 @@ export class ReroutingEngine {
     }
 
     // Map segments (AlongSegment -> RouteSegment)
-    const safeSegments = Array.isArray(alongRoute.segments) ? alongRoute.segments : [];
-    const segments: RouteSegment[] = safeSegments.filter((seg: any) => !!seg).map((seg: any, index: number) => {
+    const segments: RouteSegment[] = alongRoute.segments.map((seg: any, index: number) => {
       return {
         id: `seg-${index}-${Date.now()}`,
         fromStop: {
           id: 'reroute-from',
-          name: seg?.fromStop || 'Current Location',
+          name: seg.fromStop || 'Current Location',
           latitude: 0,
           longitude: 0,
           type: 'landmark'
         } as any,
         toStop: {
           id: 'reroute-to',
-          name: seg?.toStop || 'Waypoint',
+          name: seg.toStop || 'Waypoint',
           latitude: 0,
           longitude: 0,
           type: 'landmark'
         } as any,
-        distance: seg?.distance || 0,
-        estimatedTime: seg?.estimatedTime || 0,
+        distance: seg.distance,
+        estimatedTime: seg.estimatedTime,
         mode: {
-          type: (seg?.type || seg?.vehicleType || 'walk') as any,
-          name: (seg?.type || 'walk').toUpperCase(),
+          type: seg.type || seg.vehicleType || 'walk',
+          name: (seg.type || 'walk').toUpperCase(),
           availabilityFactor: 1,
           avgSpeedKmh: 0
         } as any,
-        cost: seg?.cost || 0,
-        instructions: seg?.instruction || ''
+        cost: seg.cost || 0,
+        instructions: seg.instruction
       };
     });
 

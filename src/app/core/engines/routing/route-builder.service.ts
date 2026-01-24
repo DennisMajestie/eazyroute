@@ -80,15 +80,14 @@ export class RouteBuilderService {
      * Rank multiple routes and assign normalized scores
      */
     rankRoutes(routes: GeneratedRoute[]): GeneratedRoute[] {
-        const safeRoutes = Array.isArray(routes) ? routes.filter(r => !!r) : [];
-        if (safeRoutes.length === 0) return [];
-        if (safeRoutes.length === 1) {
-            this.calculateRankingScores(safeRoutes[0]);
-            return safeRoutes;
+        if (routes.length === 0) return [];
+        if (routes.length === 1) {
+            this.calculateRankingScores(routes[0]);
+            return routes;
         }
 
-        const times = safeRoutes.map(r => r.totalTime || 0);
-        const costs = safeRoutes.map(r => r.totalCost || 0);
+        const times = routes.map(r => r.totalTime);
+        const costs = routes.map(r => r.totalCost);
 
         const minTime = Math.min(...times);
         const maxTime = Math.max(...times);
@@ -165,18 +164,16 @@ export class RouteBuilderService {
      * Get route summary string
      */
     formatRouteSummary(route: GeneratedRoute): string {
-        const segments = Array.isArray(route?.segments) ? route.segments : [];
-        const stops = segments.length + 1;
-        return `${route.totalTime || 0}min | ₦${route.totalCost || 0} | ${stops} stops`;
+        const stops = route.segments.length + 1;
+        return `${route.totalTime}min | ₦${route.totalCost} | ${stops} stops`;
     }
 
     /**
      * Get detailed route description
      */
     formatRouteDescription(route: GeneratedRoute): string[] {
-        const segments = Array.isArray(route?.segments) ? route.segments : [];
-        return segments.map((s, i) =>
-            `${i + 1}. ${(s.mode?.name || 'Ride').toUpperCase()}: ${s.fromStop?.name || 'Start'} → ${s.toStop?.name || 'End'} (${s.estimatedTime || 0}min, ₦${s.cost || 0})`
+        return route.segments.map((s, i) =>
+            `${i + 1}. ${s.mode.name}: ${s.fromStop.name} → ${s.toStop.name} (${s.estimatedTime}min, ₦${s.cost})`
         );
     }
 }

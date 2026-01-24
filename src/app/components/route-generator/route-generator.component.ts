@@ -76,14 +76,14 @@ export class RouteGeneratorComponent {
             this.busStopService.getNearbyStops(position.latitude, position.longitude, 1000, 5)
                 .subscribe({
                     next: (response: any) => {
-                        const rawStops = (response && Array.isArray(response)) ? response : (response && Array.isArray(response.data) ? response.data : []);
+                        const stops = Array.isArray(response) ? response : (response.data || []);
 
-                        this.nearbyStops = rawStops.filter((s: any) => !!s).map((stop: any) => ({
-                            name: stop.name || 'Unknown Stop',
-                            lat: stop.location?.coordinates?.[1] ?? stop.latitude ?? 0,
-                            lng: stop.location?.coordinates?.[0] ?? stop.longitude ?? 0,
-                            distance: stop.dist?.calculated ?? stop.distance ?? 9999,
-                            verified: !!stop.verified || stop.verificationStatus === 'verified'
+                        this.nearbyStops = stops.map((stop: any) => ({
+                            name: stop.name,
+                            lat: stop.location?.coordinates?.[1] || 0,
+                            lng: stop.location?.coordinates?.[0] || 0,
+                            distance: stop.dist?.calculated || 9999, // default to high if missing
+                            verified: stop.verified
                         }));
 
                         this.handleAbujaLogic(position, this.nearbyStops);

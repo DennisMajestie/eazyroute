@@ -5,8 +5,8 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { BusStop, CreateBusStopRequest, TransportMode, SearchBusStopParams, FuzzySearchResult } from '../../models/bus-stop.model';
 import { EnhancedBusStop, BusStopSearchResponse } from '../../models/enhanced-bus-stop.model';
@@ -72,22 +72,7 @@ export interface PaginatedResponse<T> {
   providedIn: 'root'
 })
 export class BusStopService {
-  private apiUrl = this.getUnifiedApiUrl();
-
-  /**
-   * Defensive URL Hardening
-   */
-  private getUnifiedApiUrl(): string {
-    const prodUrl = 'https://along-backend-lo8n.onrender.com/api/v1';
-    const baseUrl = environment.apiUrl;
-
-    if (typeof window !== 'undefined' &&
-      window.location.hostname !== 'localhost' &&
-      window.location.hostname !== '127.0.0.1') {
-      return `${prodUrl}/bus-stops`;
-    }
-    return `${baseUrl}/bus-stops`;
-  }
+  private apiUrl = `${environment.apiUrl}/bus-stops`;
 
   constructor(private http: HttpClient) { }
 
@@ -112,11 +97,7 @@ export class BusStopService {
     }
 
     return this.http.get<{ success: boolean; data: BusStop[] }>(this.apiUrl, { params: httpParams }).pipe(
-      map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
-      catchError((err: any) => {
-        console.error('[BusStopService] getAllStops failed:', err);
-        return of([]);
-      })
+      map(response => response.data || [])
     );
   }
 
@@ -147,11 +128,7 @@ export class BusStopService {
     if (params.sort) httpParams = httpParams.set('sort', params.sort);
 
     return this.http.get<{ success: boolean; data: BusStop[] }>(this.apiUrl, { params: httpParams }).pipe(
-      map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
-      catchError((err: any) => {
-        console.error('[BusStopService] searchStops failed:', err);
-        return of([]);
-      })
+      map(response => response.data || [])
     );
   }
 
@@ -160,12 +137,7 @@ export class BusStopService {
    */
   searchBusStops(query: string): Observable<ApiResponse<BusStopResponse[]>> {
     const params = new HttpParams().set('search', query);
-    return this.http.get<ApiResponse<BusStopResponse[]>>(`${this.apiUrl}/search`, { params }).pipe(
-      catchError((err: any) => {
-        console.error('[BusStopService] searchBusStops failed:', err);
-        return of({ success: false, data: [] });
-      })
-    );
+    return this.http.get<ApiResponse<BusStopResponse[]>>(`${this.apiUrl}/search`, { params });
   }
 
   /**
@@ -201,11 +173,7 @@ export class BusStopService {
       `${this.apiUrl}/fuzzy-search`,
       { params }
     ).pipe(
-      map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
-      catchError((err: any) => {
-        console.error('[BusStopService] fuzzySearch failed:', err);
-        return of([]);
-      })
+      map(response => response.data || [])
     );
   }
 
@@ -348,11 +316,7 @@ export class BusStopService {
    */
   getPendingStops(): Observable<BusStop[]> {
     return this.http.get<{ success: boolean; data: BusStop[] }>(`${this.apiUrl}/pending`).pipe(
-      map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
-      catchError((err: any) => {
-        console.error('[BusStopService] getPendingStops failed:', err);
-        return of([]);
-      })
+      map(response => response.data || [])
     );
   }
 

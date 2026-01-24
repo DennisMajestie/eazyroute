@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 
 import { HierarchyBreadcrumbComponent } from '../../../shared/components/hierarchy-breadcrumb/hierarchy-breadcrumb.component';
@@ -99,37 +97,28 @@ export class BoardingInferenceComponent implements OnInit {
             maxWalkingDistance: '500' // 500 meters
         };
 
-        this.http.get<{ success: boolean; data: BoardingPoint[] }>(url, { params }).pipe(
-            catchError((error: any) => {
-                console.error('Boarding inference error:', error);
-                this.error = 'Could not find boarding points. Please try again.';
-                this.isLoading = false;
-                return of({ success: false, data: [] });
-            })
-        ).subscribe({
-            next: (response) => {
-                if (response?.success && Array.isArray(response.data)) {
-                    this.boardingPoints = response.data.filter(bp => !!bp).map(bp => ({
-                        ...bp,
-                        anchor: {
-                            ...bp?.anchor,
-                            name: bp?.anchor?.name || 'Unknown Hub',
-                            latitude: bp?.anchor?.latitude || 0,
-                            longitude: bp?.anchor?.longitude || 0
+        this.http.get<{ success: boolean; data: BoardingPoint[] }>(url, { params })
+            .subscribe({
+                next: (response) => {
+                    if (response.success && Array.isArray(response.data)) {
+                        this.boardingPoints = response.data;
+
+                        // Sort by boarding probability (highest first)
+                        this.boardingPoints.sort((a, b) => b.boardingProbability - a.boardingProbability);
+
+                        // Set best option (highest probability)
+                        if (this.boardingPoints.length > 0) {
+                            this.bestOption = this.boardingPoints[0];
                         }
-                    }));
-
-                    // Sort by boarding probability (highest first)
-                    this.boardingPoints.sort((a, b) => (b?.boardingProbability || 0) - (a?.boardingProbability || 0));
-
-                    // Set best option (highest probability)
-                    if (this.boardingPoints.length > 0) {
-                        this.bestOption = this.boardingPoints[0];
                     }
+                    this.isLoading = false;
+                },
+                error: (error) => {
+                    console.error('Boarding inference error:', error);
+                    this.error = 'Could not find boarding points. Please try again.';
+                    this.isLoading = false;
                 }
-                this.isLoading = false;
-            }
-        });
+            });
     }
 
     /**

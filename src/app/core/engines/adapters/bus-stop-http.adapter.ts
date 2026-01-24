@@ -150,8 +150,10 @@ export class BusStopHttpAdapter implements IBusStopRepository {
    * Helper: Map API response to BusStop array
    */
   private mapResponseToBusStops(data: any): BusStop[] {
-    const safeData = Array.isArray(data) ? data : [];
-    return safeData.map(item => this.mapSingleBusStop(item));
+    if (Array.isArray(data)) {
+      return data.map(item => this.mapSingleBusStop(item));
+    }
+    return [];
   }
 
   /**

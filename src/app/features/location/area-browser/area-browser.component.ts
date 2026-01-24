@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { AreaService } from '../../../core/services/area.service';
 import { Area } from '../../../models/area.model';
 import { AreaCardComponent } from '../../../shared/components/area-card/area-card.component';
@@ -41,17 +39,15 @@ export class AreaBrowserComponent implements OnInit {
   loadAreas() {
     this.isLoading = true;
 
-    this.areaService.getAreasByTerritory(this.territory).pipe(
-      catchError(error => {
-        console.error('Error loading areas:', error);
-        this.isLoading = false;
-        return of([]);
-      })
-    ).subscribe({
+    this.areaService.getAreasByTerritory(this.territory).subscribe({
       next: (areas) => {
-        this.areas = (Array.isArray(areas) ? areas : []).filter(a => !!a);
-        this.filteredAreas = [...this.areas];
+        this.areas = areas;
+        this.filteredAreas = areas;
         this.groupAreas();
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading areas:', error);
         this.isLoading = false;
       }
     });
@@ -68,9 +64,9 @@ export class AreaBrowserComponent implements OnInit {
       groups.get(type)!.push(area);
     });
 
-    this.groupedAreas = Array.from(groups.entries()).filter(([type, areas]) => !!areas).map(([type, areas]) => ({
-      type: type || 'mixed',
-      areas: (Array.isArray(areas) ? areas : []).filter(a => !!a)
+    this.groupedAreas = Array.from(groups.entries()).map(([type, areas]) => ({
+      type,
+      areas
     }));
   }
 

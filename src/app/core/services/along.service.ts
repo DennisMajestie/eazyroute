@@ -16,27 +16,9 @@ import { RouteResponse } from '../../models/route.model';
     providedIn: 'root'
 })
 export class AlongService {
-    private apiUrl = this.getUnifiedApiUrl();
+    private apiUrl = `${environment.apiUrl}/along`;
 
     constructor(private http: HttpClient) { }
-
-    /**
-     * Defensive URL Hardening
-     * Ensures we NEVER call localhost if we're on a hosted domain
-     */
-    private getUnifiedApiUrl(): string {
-        const prodUrl = 'https://along-backend-lo8n.onrender.com/api/v1';
-        const baseUrl = environment.apiUrl;
-
-        // If explicitly forced in environment or running on a hosted domain (not localhost/127.0.0.1)
-        if (typeof window !== 'undefined' &&
-            window.location.hostname !== 'localhost' &&
-            window.location.hostname !== '127.0.0.1') {
-            return `${prodUrl}/along`;
-        }
-
-        return `${baseUrl}/along`;
-    }
 
     /**
      * Infer Boarding (Live)
@@ -112,83 +94,25 @@ export class AlongService {
 
         return this.http.post<any>(url, payload).pipe(
             map(response => {
-                console.log('[AlongService] Raw API Response:', response);
+                console.log('[AlongService] V4 API Response:', response);
 
-                // Apply Robust Alignment Extraction
+                // Apply Robust Extraction
                 const routes = this.extractRoutes(response);
-                console.log('[AlongService] Extracted Routes:', routes ? routes.length : 'null/undefined');
 
-                if (!Array.isArray(routes)) {
-                    console.warn('[AlongService] extractRoutes did not return an array:', routes);
-                    return {
-                        success: response?.success === true,
-                        data: [],
-                        message: response?.message || 'No routes available'
-                    } as ApiResponse<AlongRoute[]>;
-                }
-
-                // CRITICAL FIX: Ensure routes is an array before processing
                 if (!Array.isArray(routes) || routes.length === 0) {
-                    console.warn('[AlongService] No valid routes array to process:', routes);
                     return {
-                        success: response?.success === true,
+                        success: response?.success !== false,
                         data: [],
-                        message: response?.message || 'No routes available'
+                        message: response?.message || 'No routes available',
+                        errorType: response?.errorType,
+                        nearbyHubs: response?.nearbyHubs,
+                        suggestion: response?.suggestion
                     } as ApiResponse<AlongRoute[]>;
                 }
-
-                // Post-process to ensure From/To names match search names if they look like IDs
-                const rawRoutes = Array.isArray(routes) ? routes : [];
-                const processedRoutes = rawRoutes.filter(r => !!r).map(route => {
-                    const searchFrom = (typeof from === 'string' ? from : (from?.name || 'Start'));
-                    const searchTo = (typeof to === 'string' ? to : (to?.name || 'Destination'));
-
-                    // Normalize Route-level names
-                    const normalizedFrom = (route?.from && typeof route.from === 'string' && (route.from.includes('landmark') || route.from.includes('node')))
-                        ? searchFrom
-                        : (route?.from || searchFrom);
-
-                    const normalizedTo = (route?.to && typeof route.to === 'string' && (route.to.includes('landmark') || route.to.includes('node')))
-                        ? searchTo
-                        : (route?.to || searchTo);
-
-                    // Create normalized route object
-                    const newRoute = {
-                        ...route,
-                        from: normalizedFrom,
-                        to: normalizedTo
-                    };
-
-                    // Also normalize the very first and very last segment names if they match
-                    const segments = Array.isArray(newRoute.segments) ? newRoute.segments : [];
-                    if (segments.length > 0) {
-                        const first = segments[0];
-                        const last = segments[segments.length - 1];
-
-                        if (first?.fromStop && typeof first.fromStop === 'string' && (first.fromStop.includes('landmark') || first.fromStop.includes('node'))) {
-                            first.fromStop = normalizedFrom;
-                        }
-                        if (last?.toStop && typeof last.toStop === 'string' && (last.toStop.includes('landmark') || last.toStop.includes('node'))) {
-                            last.toStop = normalizedTo;
-                        }
-
-                        // Re-generate instructions if they were ID-based
-                        segments.forEach((s: any) => {
-                            if (s?.instruction && typeof s.instruction === 'string' && (s.instruction.includes('landmark') || s.instruction.includes('node'))) {
-                                // Simple replacement 
-                                s.instruction = s.instruction.split('landmark')[0].split('node')[0].trim();
-                                if (s === last) s.instruction += ` to ${normalizedTo}`;
-                                else if (s === first) s.instruction = `From ${normalizedFrom} take ${s.vehicleType}...`;
-                            }
-                        });
-                    }
-
-                    return newRoute;
-                });
 
                 return {
                     success: response.success !== false,
-                    data: processedRoutes,
+                    data: routes,
                     message: response.message || response.error || '',
                     errorType: response.errorType,
                     nearbyHubs: response.nearbyHubs,
@@ -222,23 +146,7 @@ export class AlongService {
         }
         // 1. Check for standard data wrapper
         else if (response.data && Array.isArray(response.data)) {
-            // Check if it's an array of routes or an array of segments
-            if (response.data.length > 0 && (response.data[0]?.mode || response.data[0]?.instruction)) {
-                // It's an array of segments - wrap it
-                routes = [{
-                    from: 'Unknown',
-                    to: 'Unknown',
-                    segments: response.data,
-                    totalDistance: 0,
-                    totalTime: 0,
-                    totalCost: 0,
-                    instructions: [],
-                    metadata: { strategy: 'standard', alternativeRoutes: false }
-                }];
-            } else {
-                // It's an array of routes
-                routes = response.data;
-            }
+            routes = response.data;
         }
         // 2. Check for "route" object containing "legs"
         else if (response.route && typeof response.route === 'object') {
@@ -246,11 +154,11 @@ export class AlongService {
             routes = [{
                 from: route.from || 'Unknown',
                 to: route.to || 'Unknown',
-                segments: (Array.isArray(route.legs) ? route.legs : (Array.isArray(route.segments) ? route.segments : [])),
+                segments: route.legs || route.segments || [],
                 totalDistance: route.totalDistance || 0,
                 totalTime: route.totalDuration || route.totalTime || 0,
                 totalCost: route.totalCost || 0,
-                instructions: (Array.isArray(route.instructions) ? route.instructions : []) as string[],
+                instructions: (route.instructions || []) as string[],
                 metadata: { strategy: 'standard', alternativeRoutes: false, ...(route.metadata || {}) }
             }];
         }
@@ -263,13 +171,13 @@ export class AlongService {
                 totalDistance: response.totalDistance || 0,
                 totalTime: response.totalDuration || response.totalTime || 0,
                 totalCost: response.totalCost || 0,
-                instructions: (Array.isArray(response.instructions) ? response.instructions : []) as string[],
+                instructions: (response.instructions || []) as string[],
                 metadata: { strategy: 'standard', alternativeRoutes: false, ...(response.metadata || {}) }
             }];
         }
         // 4. Check if response IS the array of routes/legs
         else if (Array.isArray(response)) {
-            if (response.length > 0 && (response[0]?.mode || response[0]?.instruction)) {
+            if (response.length > 0 && (response[0].mode || response[0].instruction)) {
                 routes = [{
                     from: 'Unknown',
                     to: 'Unknown',
@@ -289,47 +197,38 @@ export class AlongService {
         }
 
         // CRITICAL FIX: Final safety check before normalizing segments
-        const safeRoutesFinal = Array.isArray(routes) ? routes : [];
+        if (!Array.isArray(routes)) {
+            console.warn('[AlongService] routes is not an array in extractRoutes final step:', routes);
+            return [];
+        }
 
         // Normalize all segments in all routes
-        return safeRoutesFinal.filter(r => !!r).map(r => ({
+        return routes.map(r => ({
             ...r,
-            segments: this.normalizeSegments(Array.isArray(r?.segments) ? r.segments : [])
+            segments: this.normalizeSegments(r?.segments || [])
         }));
     }
 
     /**
-     * Normalize segment keys to match AlongSegment interface
+     * Normalize segment keys to match AlongSegment interface (Synchronized V4)
+     * Relying on backend for human-readable names and clean mode keys.
      */
     private normalizeSegments(segments: any[]): any[] {
-        // CRITICAL FIX: Ensure segments is actually an array
-        if (!Array.isArray(segments)) {
-            console.warn('[AlongService] normalizeSegments called with non-array:', segments);
-            return [];
-        }
+        if (!Array.isArray(segments)) return [];
 
-        return segments.filter(s => !!s).map(s => ({
+        return segments.map(s => ({
             ...s,
-            // Mode Normalization
-            vehicleType: s?.vehicleType || s?.mode || (s?.type === 'ride' ? 'taxi' : (s?.type || '')),
-            type: s?.type || (s?.mode === 'walking' ? 'walk' : 'ride'),
+            // V4 Aligned Keys (Backend provides these clean now)
+            vehicleType: s.vehicleType || s.mode,
+            fromStop: s.fromStop || s.fromName || 'Unknown Start',
+            toStop: s.toStop || s.toName || 'Unknown End',
 
-            // Stop Normalization
-            fromStop: s?.fromStop || s?.fromName || (s?.start_address ? s?.start_address : ''),
-            toStop: s?.toStop || s?.toName || (s?.end_address ? s?.end_address : ''),
+            // Structural Normalization
+            distance: s.distance?.value || s.distance || 0,
+            estimatedTime: s.duration?.value ? Math.round(s.duration.value / 60) : (s.estimatedTime || 0),
 
-            // Coordinate Propagation
-            fromLat: s?.fromLat || s?.latitude || s?.from?.lat || 0,
-            fromLng: s?.fromLng || s?.longitude || s?.from?.lng || 0,
-            toLat: s?.toLat || s?.toAddressLat || s?.to?.lat || 0,
-            toLng: s?.toLng || s?.toAddressLng || s?.to?.lng || 0,
-
-            // Distance/Time Normalization
-            distance: s?.distance?.value || s?.distance || 0,
-            estimatedTime: s?.duration?.value ? Math.round(s?.duration.value / 60) : (s?.estimatedTime || 0),
-
-            // Instruction Fallback
-            instruction: s?.instruction || s?.instructions || `Take ${s?.mode || s?.vehicleType || 'transport'} to ${s?.toName || s?.toStop || 'next stop'}`
+            // Instruction (Backend provides human-readable instructions)
+            instruction: s.instruction || s.instructions || `Take ${s.vehicleType || 'transport'} to ${s.toStop}`
         }));
     }
 

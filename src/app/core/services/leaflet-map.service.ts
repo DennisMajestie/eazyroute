@@ -12,14 +12,8 @@ export class LeafletMapService {
     constructor(@Inject(PLATFORM_ID) private platformId: Object) { }
 
     async loadLeaflet(): Promise<any> {
-        if (!isPlatformBrowser(this.platformId)) return null;
-
-        if (this.L) return this.L;
-
-        try {
-            console.log('[LeafletMapService] Dynamically importing Leaflet...');
+        if (isPlatformBrowser(this.platformId) && !this.L) {
             this.L = await import('leaflet');
-            console.log('[LeafletMapService] Leaflet imported successfully');
 
             // Fix marker icon issues - use CDN instead of local assets
             const iconRetinaUrl = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png';
@@ -37,11 +31,8 @@ export class LeafletMapService {
             });
 
             this.L.Marker.prototype.options.icon = defaultIcon;
-            return this.L;
-        } catch (error) {
-            console.error('[LeafletMapService] CRITICAL: Failed to load Leaflet:', error);
-            throw error;
         }
+        return this.L;
     }
 
     isBrowser(): boolean {

@@ -437,13 +437,12 @@ export class RouteGenerationEngine {
      * ═══════════════════════════════════════════════════════════════
      */
     private rankRoutes(routes: GeneratedRoute[]): GeneratedRoute[] {
-        const safeRoutes = Array.isArray(routes) ? routes.filter(r => !!r) : [];
-        if (safeRoutes.length === 0) return [];
+        if (routes.length === 0) return routes;
 
         // Find min/max for normalization
-        const distances = safeRoutes.map(r => r.totalDistance || 0);
-        const costs = safeRoutes.map(r => r.totalCost || 0);
-        const times = safeRoutes.map(r => r.totalTime || 0);
+        const distances = routes.map(r => r.totalDistance);
+        const costs = routes.map(r => r.totalCost);
+        const times = routes.map(r => r.totalTime);
 
         const minDistance = Math.min(...distances);
         const maxDistance = Math.max(...distances);
@@ -453,12 +452,10 @@ export class RouteGenerationEngine {
         const maxTime = Math.max(...times);
 
         // Calculate scores (inverse normalization - lower is better)
-        safeRoutes.forEach(route => {
-            if (!route.rankingScore) route.rankingScore = { shortest: 0, cheapest: 0, balanced: 100 };
-
+        routes.forEach(route => {
             // Shortest score (based on time)
             route.rankingScore.shortest = this.inverseNormalize(
-                route.totalTime || 0,
+                route.totalTime,
                 minTime,
                 maxTime
             );
@@ -501,11 +498,9 @@ export class RouteGenerationEngine {
         const seenSignatures = new Set<string>();
 
         for (const route of routes) {
-            if (!route || !Array.isArray(route.segments)) continue;
-
             // Create signature based on stops and modes
             const signature = route.segments
-                .map(seg => `${seg.fromStop?.id || '?'}-${seg.toStop?.id || '?'}-${seg.mode?.type || '?'}`)
+                .map(seg => `${seg.fromStop.id}-${seg.toStop.id}-${seg.mode.type}`)
                 .join('|');
 
             if (!seenSignatures.has(signature)) {

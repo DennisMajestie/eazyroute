@@ -47,8 +47,7 @@ export class NotificationHttpService {
         const url = `${this.urls.markAsRead}${notificationId}/read`;
         return this.http.patch(url, {}).pipe(
             tap(() => {
-                const current = Array.isArray(this.notificationsSubject.value) ? this.notificationsSubject.value : [];
-                const updated = current.map(n =>
+                const updated = this.notificationsSubject.value.map(n =>
                     (n._id === notificationId || n.id === notificationId) ? { ...n, isRead: true } : n
                 );
                 this.notificationsSubject.next(updated);
@@ -63,8 +62,7 @@ export class NotificationHttpService {
     markAllAsRead(): Observable<any> {
         return this.http.post(this.urls.markAllAsRead, {}).pipe(
             tap(() => {
-                const current = Array.isArray(this.notificationsSubject.value) ? this.notificationsSubject.value : [];
-                const updated = current.map(n => ({ ...n, isRead: true }));
+                const updated = this.notificationsSubject.value.map(n => ({ ...n, isRead: true }));
                 this.notificationsSubject.next(updated);
                 this.unreadCountSubject.next(0);
             })

@@ -2,8 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { of, interval, Subscription, firstValueFrom } from 'rxjs';
-import { switchMap, filter, catchError } from 'rxjs/operators';
 import { GeocodingService } from '../../../core/services/geocoding.service';
 import { BusStopService } from '../../../core/services/bus-stop.service';
 import { LocalityService } from '../../../core/services/locality.service';
@@ -16,6 +14,8 @@ import { LoadingProgressComponent } from '../../../shared/components/loading-pro
 import { NIGERIAN_COPY } from '../../../shared/constants/nigerian-copy.constants';
 import { AlongService } from '../../../core/services/along.service';
 import { BoardingInference } from '../../../models/transport.types';
+import { Subscription, interval } from 'rxjs';
+import { switchMap, filter, firstValueFrom } from 'rxjs';
 import { GeolocationService } from '../../../core/services/geolocation.service';
 
 interface PopularRoute {
@@ -114,35 +114,33 @@ export class HomeAlongComponent implements OnInit {
     // Poll every 15 seconds
     this.pollingSubscription = interval(15000)
       .pipe(
-        filter(() => !!this.fromLocation && !this.isSearching),
+        filter(() => !!this.fromLocation && !this.isSearching), // Only poll if we have a location and not searching
         switchMap(() => {
-          if (this.fromLocation?.coords?.lat && this.fromLocation?.coords?.lng) {
+          if (this.fromLocation && this.fromLocation.coords &&
+            typeof this.fromLocation.coords.lat === 'number' &&
+            typeof this.fromLocation.coords.lng === 'number') {
             return this.alongService.inferBoarding(
               this.fromLocation.coords.lat,
               this.fromLocation.coords.lng
             );
           }
-          return of({ success: false, data: [] });
-        }),
-        catchError((err: any) => {
-          console.error('Smart Boarding Error:', err);
-          return of({ success: false, data: [] });
+          return [];
         })
       )
       .subscribe({
         next: (response: any) => {
-          if (response?.success && Array.isArray(response.data) && response.data.length > 0) {
-            this.boardingInferences = response.data.filter((bi: any) => !!bi);
-            if (this.boardingInferences.length > 0) {
-              this.updateSmartBoardingUI(this.boardingInferences[0]);
-              this.showSmartBoarding = true;
-            }
+          // response matches ApiResponse<BoardingInference[]>
+          if (response.success && Array.isArray(response.data) && response.data.length > 0) {
+            this.boardingInferences = response.data;
+            this.updateSmartBoardingUI(response.data[0]);
+            this.showSmartBoarding = true;
           } else {
             this.showSmartBoarding = false;
           }
         },
         error: (err) => {
-          const errorMsg = err?.error?.message || '';
+          console.error('Smart Boarding Error:', err);
+          const errorMsg = err.error?.message || '';
           if (errorMsg.includes('Detected Lagos ISP leak')) {
             this.handleISPLeak();
           }
@@ -307,22 +305,18 @@ export class HomeAlongComponent implements OnInit {
     this.loadingState.setInitialLoading(NIGERIAN_COPY.LOADING.SEARCHING);
 
     // Hybrid Search (ALONG Framework)
-    this.alongService.search(query).pipe(
-      catchError((err: any) => {
-        console.error('Hybrid search error:', err);
-        return of({ success: false, data: [] });
-      })
-    ).subscribe({
+    this.alongService.search(query).subscribe({
       next: (response) => {
-        if (response?.success && Array.isArray(response.data)) {
-          this.searchResults = response.data.filter((item: any) => !!item).map((item: any) => ({
-            type: item?.type || 'locality',
-            name: item?.name || 'Unknown',
-            hierarchy: item?.hierarchy || (item?.source === 'osm' ? 'External' : 'Local'),
-            latitude: item?.location?.lat ?? item?.location?.coordinates?.[1] ?? 0,
-            longitude: item?.location?.lng ?? item?.location?.coordinates?.[0] ?? 0,
-            source: item?.source
-          } as any));
+        if (response && response.success && Array.isArray(response.data)) {
+          // Map to LocalitySearchResult format for compatibility or use new format
+          this.searchResults = response.data.map((item: any) => ({
+            type: item.type,
+            name: item.name,
+            hierarchy: item.hierarchy || (item.source === 'osm' ? 'External' : 'Local'),
+            latitude: item.location?.lat ?? item.location?.coordinates?.[1],
+            longitude: item.location?.lng ?? item.location?.coordinates?.[0],
+            source: item.source
+          } as any)); // Using any to bypass strict type check for now if LocalitySearchResult is strict
 
           this.showSearchResults = true;
           this.loadingState.setSuccess(NIGERIAN_COPY.SUCCESS.READY);
@@ -330,6 +324,12 @@ export class HomeAlongComponent implements OnInit {
           this.searchResults = [];
           this.loadingState.setHardFailure('data_unavailable', NIGERIAN_COPY.HARD_FAILURE.NO_ROUTE_YET);
         }
+        this.isSearching = false;
+      },
+      error: (error) => {
+        console.error('Hybrid search error:', error);
+        this.searchResults = [];
+        this.loadingState.setHardFailure('network_failure', 'Could not search properly. Try again?');
         this.isSearching = false;
       }
     });

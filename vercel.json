@@ -25,6 +25,10 @@
                 {
                     "key": "X-XSS-Protection",
                     "value": "1; mode=block"
+                },
+                {
+                    "key": "X-Forwarded-Proto",
+                    "value": "https"
                 }
             ]
         }
