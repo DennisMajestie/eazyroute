@@ -97,7 +97,11 @@ export class BusStopService {
     }
 
     return this.http.get<{ success: boolean; data: BusStop[] }>(this.apiUrl, { params: httpParams }).pipe(
-      map(response => response.data || [])
+      map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
+      catchError(err => {
+        console.error('[BusStopService] getAllStops failed:', err);
+        return of([]);
+      })
     );
   }
 
@@ -128,7 +132,11 @@ export class BusStopService {
     if (params.sort) httpParams = httpParams.set('sort', params.sort);
 
     return this.http.get<{ success: boolean; data: BusStop[] }>(this.apiUrl, { params: httpParams }).pipe(
-      map(response => response.data || [])
+      map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
+      catchError(err => {
+        console.error('[BusStopService] searchStops failed:', err);
+        return of([]);
+      })
     );
   }
 
@@ -173,7 +181,11 @@ export class BusStopService {
       `${this.apiUrl}/fuzzy-search`,
       { params }
     ).pipe(
-      map(response => response.data || [])
+      map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
+      catchError(err => {
+        console.error('[BusStopService] fuzzySearch failed:', err);
+        return of([]);
+      })
     );
   }
 
@@ -316,7 +328,11 @@ export class BusStopService {
    */
   getPendingStops(): Observable<BusStop[]> {
     return this.http.get<{ success: boolean; data: BusStop[] }>(`${this.apiUrl}/pending`).pipe(
-      map(response => response.data || [])
+      map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
+      catchError(err => {
+        console.error('[BusStopService] getPendingStops failed:', err);
+        return of([]);
+      })
     );
   }
 
