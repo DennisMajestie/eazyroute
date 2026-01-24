@@ -812,52 +812,56 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 displayName: l.displayName,
                 area: l.area,
                 latitude: l.latitude,
-                // Append to results if not already there (simple de-dupe by name)
-                const currentResults = Array.isArray(this.searchResults) ? this.searchResults : [];
-                const existingNames = new Set(currentResults.map(r => r.name));
-                const uniqueLocations = mappedLocations.filter(l => !existingNames.has(l.name));
+                longitude: l.longitude,
+                type: 'location' as const
+            }));
 
-                this.searchResults = [...this.searchResults, ...uniqueLocations];
-            });
+            // Append to results if not already there (simple de-dupe by name)
+            const currentResults = Array.isArray(this.searchResults) ? this.searchResults : [];
+            const existingNames = new Set(currentResults.map(r => r.name));
+            const uniqueLocations = mappedLocations.filter(l => !existingNames.has(l.name));
 
-            // 3. Search Behavioral Localities (ALONG - High Priority neighborhoods)
-            this.alongService.search(query).pipe(
-                catchError(() => of({ success: false, data: [] }))
-            ).subscribe(res => {
-                if (this.activeSearchField !== field) return;
+            this.searchResults = [...this.searchResults, ...uniqueLocations];
+        });
 
-                const localities = (res && res.success && Array.isArray(res.data) ? res.data : []).map((l: any) => ({
-                    name: l.name,
-                    displayName: l.displayName || l.name,
-                    area: l.area || l.district,
-                    latitude: l.lat || l.latitude,
-                    longitude: l.lng || l.longitude,
-                    type: 'location' as const,
-                    source: l.source,
-                    isVerifiedNeighborhood: l.source === 'along-locality',
-                    tier: 'primary' as const
-                }));
+        // 3. Search Behavioral Localities (ALONG - High Priority neighborhoods)
+        this.alongService.search(query).pipe(
+            catchError(() => of({ success: false, data: [] }))
+        ).subscribe(res => {
+            if (this.activeSearchField !== field) return;
 
-                // Merge and prioritize: verified neighborhoods should be at the top of 'location' type results
-                const verified = localities.filter(l => l.isVerifiedNeighborhood);
-                const others = localities.filter(l => !l.isVerifiedNeighborhood);
+            const localities = (res && res.success && Array.isArray(res.data) ? res.data : []).map((l: any) => ({
+                name: l.name,
+                displayName: l.displayName || l.name,
+                area: l.area || l.district,
+                latitude: l.lat || l.latitude,
+                longitude: l.lng || l.longitude,
+                type: 'location' as const,
+                source: l.source,
+                isVerifiedNeighborhood: l.source === 'along-locality',
+                tier: 'primary' as const
+            }));
 
-                // Logic: [Bus Stops] -> [Verified Neighborhoods] -> [Other Localities] -> [OSM Results]
-                const currentResults = Array.isArray(this.searchResults) ? this.searchResults : [];
-                const existingIds = new Set(currentResults.map(r => r.name));
-                const uniqueVerified = verified.filter(v => !existingIds.has(v.name));
-                const uniqueOthers = others.filter(o => !existingIds.has(o.name));
+            // Merge and prioritize: verified neighborhoods should be at the top of 'location' type results
+            const verified = localities.filter(l => l.isVerifiedNeighborhood);
+            const others = localities.filter(l => !l.isVerifiedNeighborhood);
 
-                // Insert verified neighborhoods after bus stops
-                const busStops = this.searchResults.filter(r => r.type === 'bus_stop');
-                const everythingElse = this.searchResults.filter(r => r.type !== 'bus_stop');
+            // Logic: [Bus Stops] -> [Verified Neighborhoods] -> [Other Localities] -> [OSM Results]
+            const currentResults = Array.isArray(this.searchResults) ? this.searchResults : [];
+            const existingIds = new Set(currentResults.map(r => r.name));
+            const uniqueVerified = verified.filter(v => !existingIds.has(v.name));
+            const uniqueOthers = others.filter(o => !existingIds.has(o.name));
 
-                this.searchResults = [...busStops, ...uniqueVerified, ...uniqueOthers, ...everythingElse];
-            });
-        }
+            // Insert verified neighborhoods after bus stops
+            const busStops = this.searchResults.filter(r => r.type === 'bus_stop');
+            const everythingElse = this.searchResults.filter(r => r.type !== 'bus_stop');
+
+            this.searchResults = [...busStops, ...uniqueVerified, ...uniqueOthers, ...everythingElse];
+        });
+    }
 
     selectResult(result: SearchResult) {
-            if(this.activeSearchField === 'from') {
+        if (this.activeSearchField === 'from') {
             this.fromQuery = result.name;
             if (result.latitude && result.longitude) {
                 this.fromLocation = {
