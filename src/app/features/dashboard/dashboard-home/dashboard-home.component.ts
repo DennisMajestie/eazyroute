@@ -679,11 +679,16 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   performSearch(query: string): void {
     this.busStopService.searchBusStops(query).subscribe({
       next: (res) => {
-        if (res.success && res.data) {
-          this.searchResults = res.data;
+        if (res && res.success && Array.isArray(res.data)) {
+          this.searchResults = res.data.filter((s: any) => !!s);
+        } else {
+          this.searchResults = [];
         }
       },
-      error: (err) => console.error('Search failed', err)
+      error: (err) => {
+        console.error('Search failed', err);
+        this.searchResults = [];
+      }
     });
   }
 
