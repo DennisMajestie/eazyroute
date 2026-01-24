@@ -12,7 +12,7 @@
         <div class="vehicles-section">
             <div class="section-label">Typical Vehicles</div>
             <div class="vehicles-list">
-                <span *ngFor="let vehicle of locality.movementProfile.typicalVehicles" class="vehicle-badge">
+                <span *ngFor="let vehicle of (locality?.movementProfile?.typicalVehicles || [])" class="vehicle-badge">
                     {{ getVehicleEmoji(vehicle) }} {{ vehicle | titlecase }}
                 </span>
             </div>
@@ -21,7 +21,7 @@
         <!-- Walking Range -->
         <div class="info-row">
             <span class="info-icon">🚶</span>
-            <span class="info-text">
+            <span class="info-text" *ngIf="locality?.movementProfile?.walkingTolerance">
                 {{ locality.movementProfile.walkingTolerance[0] }}-{{ locality.movementProfile.walkingTolerance[1] }}m
                 typical walk
             </span>
@@ -35,10 +35,11 @@
         </div>
 
         <!-- Peak Hours -->
-        <div class="peak-hours" *ngIf="locality.movementProfile.peakHours.length > 0">
+        <div class="peak-hours"
+            *ngIf="locality?.movementProfile?.peakHours && locality.movementProfile.peakHours.length > 0">
             <div class="section-label">Peak Hours</div>
             <div class="peak-hours-list">
-                <span *ngFor="let hours of locality.movementProfile.peakHours" class="peak-badge">
+                <span *ngFor="let hours of (locality?.movementProfile?.peakHours || [])" class="peak-badge">
                     ⏰ {{ hours }}
                 </span>
             </div>
