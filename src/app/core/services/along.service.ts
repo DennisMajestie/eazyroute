@@ -109,6 +109,16 @@ export class AlongService {
                     } as ApiResponse<AlongRoute[]>;
                 }
 
+                // CRITICAL FIX: Ensure routes is an array before processing
+                if (!Array.isArray(routes) || routes.length === 0) {
+                    console.warn('[AlongService] No valid routes array to process:', routes);
+                    return {
+                        success: response?.success === true,
+                        data: [],
+                        message: response?.message || 'No routes available'
+                    } as ApiResponse<AlongRoute[]>;
+                }
+
                 // Post-process to ensure From/To names match search names if they look like IDs
                 const processedRoutes = routes.filter(r => !!r).map(route => {
                     const searchFrom = (typeof from === 'string' ? from : from.name);
