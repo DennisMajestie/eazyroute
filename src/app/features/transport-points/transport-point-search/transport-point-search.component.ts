@@ -1,7 +1,8 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { debounceTime, Subject } from 'rxjs';
+import { debounceTime, Subject, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { BusStopService } from '../../../core/services/bus-stop.service';
 import { BusStop, SearchBusStopParams, TransportMode, VerificationStatus } from '../../../models/bus-stop.model';
 import { TransportPointType, TRANSPORT_POINT_TYPES, TRANSPORT_MODES, getAllTransportPointTypes, getAllTransportModes } from '../../../models/transport-point.constants';
@@ -106,15 +107,17 @@ export class TransportPointSearchComponent implements OnInit {
 
     // Note: Backend might not support filtering by multiple types/modes
     // If it doesn't, we'll filter client-side
-    this.busStopService.searchStops(params).subscribe({
+    this.busStopService.searchStops(params).pipe(
+      catchError(error => {
+        console.error('Search error:', error);
+        this.isLoading = false;
+        return of([]);
+      })
+    ).subscribe({
       next: (results) => {
         // Client-side filtering if needed
-        this.searchResults = this.filterResults(results);
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Search error:', error);
-        this.searchResults = [];
+        const safeResults = (Array.isArray(results) ? results : []).filter(r => !!r);
+        this.searchResults = this.filterResults(safeResults);
         this.isLoading = false;
       }
     });
