@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { of, interval, Subscription } from 'rxjs';
+import { of, interval, Subscription, firstValueFrom } from 'rxjs';
 import { switchMap, filter, catchError } from 'rxjs/operators';
 import { GeocodingService } from '../../../core/services/geocoding.service';
 import { BusStopService } from '../../../core/services/bus-stop.service';
@@ -16,7 +16,6 @@ import { LoadingProgressComponent } from '../../../shared/components/loading-pro
 import { NIGERIAN_COPY } from '../../../shared/constants/nigerian-copy.constants';
 import { AlongService } from '../../../core/services/along.service';
 import { BoardingInference } from '../../../models/transport.types';
-import { firstValueFrom } from 'rxjs';
 import { GeolocationService } from '../../../core/services/geolocation.service';
 
 interface PopularRoute {

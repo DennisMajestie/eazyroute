@@ -145,7 +145,12 @@ export class BusStopService {
    */
   searchBusStops(query: string): Observable<ApiResponse<BusStopResponse[]>> {
     const params = new HttpParams().set('search', query);
-    return this.http.get<ApiResponse<BusStopResponse[]>>(`${this.apiUrl}/search`, { params });
+    return this.http.get<ApiResponse<BusStopResponse[]>>(`${this.apiUrl}/search`, { params }).pipe(
+      catchError((err: any) => {
+        console.error('[BusStopService] searchBusStops failed:', err);
+        return of({ success: false, data: [] });
+      })
+    );
   }
 
   /**

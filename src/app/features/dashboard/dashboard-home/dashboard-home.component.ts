@@ -320,7 +320,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
       if (response?.success && Array.isArray(response.data)) {
         // ⭐ ONLY TAKE FIRST 5 FOR DASHBOARD
-        const allNearbyStops = response.data.filter((s: any) => !!s).map((stop: any) => ({
+        const allNearbyStops: DashboardBusStop[] = response.data.filter((s: any) => !!s).map((stop: any) => ({
           name: stop?.name || 'Unknown Stop',
           area: stop?.area || stop?.district || 'Unknown Area',
           distance: stop?.dist?.calculated ? `${Math.round(stop.dist.calculated)}m` : '0m',
@@ -337,7 +337,6 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
         // Limit to 5 stops for dashboard
         this.nearbyStops = allNearbyStops.slice(0, 5);
-
       }
     } catch (error) {
       console.error('[Dashboard] Error loading nearby stops:', error);
@@ -380,9 +379,9 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         return of({ success: false, data: [] });
       })
     ).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res?.success && Array.isArray(res.data)) {
-          this.tagAlongRides = res.data.filter(ride => !!ride).map(ride => ({
+          this.tagAlongRides = res.data.filter((ride: any) => !!ride).map((ride: any) => ({
             id: ride?._id,
             driver: `${ride?.createdBy?.firstName || 'User'} ${ride?.createdBy?.lastName || ''}`,
             avatar: ride?.createdBy?.profilePicture || 'assets/default-avatar.png',

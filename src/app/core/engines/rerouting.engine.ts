@@ -386,7 +386,7 @@ export class ReroutingEngine {
 
     // Map segments (AlongSegment -> RouteSegment)
     const safeSegments = Array.isArray(alongRoute.segments) ? alongRoute.segments : [];
-    const segments: RouteSegment[] = safeSegments.filter(seg => !!seg).map((seg: any, index: number) => {
+    const segments: RouteSegment[] = safeSegments.filter((seg: any) => !!seg).map((seg: any, index: number) => {
       return {
         id: `seg-${index}-${Date.now()}`,
         fromStop: {
