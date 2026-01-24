@@ -501,9 +501,10 @@ export class RouteGenerationEngine {
         const seenSignatures = new Set<string>();
 
         for (const route of routes) {
-            // Create signature based on stops and modes
-            const signature = route.segments
-                .map(seg => `${seg.fromStop.id}-${seg.toStop.id}-${seg.mode.type}`)
+            // CRITICAL FIX: Ensure route.segments is an array
+            const safeSegments = Array.isArray(route.segments) ? route.segments : [];
+            const signature = safeSegments
+                .map(seg => `${seg?.fromStop?.id || '?'}-${seg?.toStop?.id || '?'}-${seg?.mode?.type || '?'}`)
                 .join('|');
 
             if (!seenSignatures.has(signature)) {
