@@ -80,14 +80,15 @@ export class RouteBuilderService {
      * Rank multiple routes and assign normalized scores
      */
     rankRoutes(routes: GeneratedRoute[]): GeneratedRoute[] {
-        if (routes.length === 0) return [];
-        if (routes.length === 1) {
-            this.calculateRankingScores(routes[0]);
-            return routes;
+        const safeRoutes = Array.isArray(routes) ? routes : [];
+        if (safeRoutes.length === 0) return [];
+        if (safeRoutes.length === 1) {
+            this.calculateRankingScores(safeRoutes[0]);
+            return safeRoutes;
         }
 
-        const times = routes.map(r => r.totalTime);
-        const costs = routes.map(r => r.totalCost);
+        const times = safeRoutes.map(r => r?.totalTime || 0);
+        const costs = safeRoutes.map(r => r?.totalCost || 0);
 
         const minTime = Math.min(...times);
         const maxTime = Math.max(...times);
@@ -95,7 +96,7 @@ export class RouteBuilderService {
         const maxCost = Math.max(...costs);
 
         // Calculate normalized scores
-        for (const route of routes) {
+        for (const route of safeRoutes) {
             route.rankingScore = {
                 shortest: this.inverseNormalize(route.totalTime, minTime, maxTime),
                 cheapest: this.inverseNormalize(route.totalCost, minCost, maxCost),
@@ -108,7 +109,7 @@ export class RouteBuilderService {
         }
 
         // Sort by balanced score (highest first)
-        return routes.sort((a, b) => b.rankingScore.balanced - a.rankingScore.balanced);
+        return safeRoutes.sort((a, b) => b.rankingScore.balanced - a.rankingScore.balanced);
     }
 
     /**
@@ -172,8 +173,9 @@ export class RouteBuilderService {
      * Get detailed route description
      */
     formatRouteDescription(route: GeneratedRoute): string[] {
+        if (!route || !Array.isArray(route.segments)) return [];
         return route.segments.map((s, i) =>
-            `${i + 1}. ${s.mode.name}: ${s.fromStop.name} → ${s.toStop.name} (${s.estimatedTime}min, ₦${s.cost})`
+            `${i + 1}. ${s?.mode?.name || 'Transport'}: ${s?.fromStop?.name || 'Start'} → ${s?.toStop?.name || 'End'} (${s?.estimatedTime || 0}min, ₦${s?.cost || 0})`
         );
     }
 }
