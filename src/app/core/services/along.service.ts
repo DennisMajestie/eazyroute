@@ -120,7 +120,8 @@ export class AlongService {
                 }
 
                 // Post-process to ensure From/To names match search names if they look like IDs
-                const processedRoutes = routes.filter(r => !!r).map(route => {
+                const rawRoutes = Array.isArray(routes) ? routes : [];
+                const processedRoutes = rawRoutes.filter(r => !!r).map(route => {
                     const searchFrom = (typeof from === 'string' ? from : (from?.name || 'Start'));
                     const searchTo = (typeof to === 'string' ? to : (to?.name || 'Destination'));
 
@@ -141,9 +142,10 @@ export class AlongService {
                     };
 
                     // Also normalize the very first and very last segment names if they match
-                    if (newRoute.segments && Array.isArray(newRoute.segments) && newRoute.segments.length > 0) {
-                        const first = newRoute.segments[0];
-                        const last = newRoute.segments[newRoute.segments.length - 1];
+                    const segments = Array.isArray(newRoute.segments) ? newRoute.segments : [];
+                    if (segments.length > 0) {
+                        const first = segments[0];
+                        const last = segments[segments.length - 1];
 
                         if (first?.fromStop && typeof first.fromStop === 'string' && (first.fromStop.includes('landmark') || first.fromStop.includes('node'))) {
                             first.fromStop = normalizedFrom;
@@ -153,7 +155,7 @@ export class AlongService {
                         }
 
                         // Re-generate instructions if they were ID-based
-                        newRoute.segments.forEach((s: any) => {
+                        segments.forEach((s: any) => {
                             if (s?.instruction && typeof s.instruction === 'string' && (s.instruction.includes('landmark') || s.instruction.includes('node'))) {
                                 // Simple replacement 
                                 s.instruction = s.instruction.split('landmark')[0].split('node')[0].trim();
@@ -226,11 +228,11 @@ export class AlongService {
             routes = [{
                 from: route.from || 'Unknown',
                 to: route.to || 'Unknown',
-                segments: route.legs || route.segments || [],
+                segments: (Array.isArray(route.legs) ? route.legs : (Array.isArray(route.segments) ? route.segments : [])),
                 totalDistance: route.totalDistance || 0,
                 totalTime: route.totalDuration || route.totalTime || 0,
                 totalCost: route.totalCost || 0,
-                instructions: (route.instructions || []) as string[],
+                instructions: (Array.isArray(route.instructions) ? route.instructions : []) as string[],
                 metadata: { strategy: 'standard', alternativeRoutes: false, ...(route.metadata || {}) }
             }];
         }
@@ -243,7 +245,7 @@ export class AlongService {
                 totalDistance: response.totalDistance || 0,
                 totalTime: response.totalDuration || response.totalTime || 0,
                 totalCost: response.totalCost || 0,
-                instructions: (response.instructions || []) as string[],
+                instructions: (Array.isArray(response.instructions) ? response.instructions : []) as string[],
                 metadata: { strategy: 'standard', alternativeRoutes: false, ...(response.metadata || {}) }
             }];
         }
@@ -269,15 +271,12 @@ export class AlongService {
         }
 
         // CRITICAL FIX: Final safety check before normalizing segments
-        if (!Array.isArray(routes)) {
-            console.warn('[AlongService] routes is not an array in extractRoutes final step:', routes);
-            return [];
-        }
+        const safeRoutesFinal = Array.isArray(routes) ? routes : [];
 
         // Normalize all segments in all routes
-        return routes.filter(r => !!r).map(r => ({
+        return safeRoutesFinal.filter(r => !!r).map(r => ({
             ...r,
-            segments: this.normalizeSegments(r?.segments || [])
+            segments: this.normalizeSegments(Array.isArray(r?.segments) ? r.segments : [])
         }));
     }
 
