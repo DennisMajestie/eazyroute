@@ -165,16 +165,18 @@ export class RouteBuilderService {
      * Get route summary string
      */
     formatRouteSummary(route: GeneratedRoute): string {
-        const stops = route.segments.length + 1;
-        return `${route.totalTime}min | ₦${route.totalCost} | ${stops} stops`;
+        const segments = Array.isArray(route?.segments) ? route.segments : [];
+        const stops = segments.length + 1;
+        return `${route.totalTime || 0}min | ₦${route.totalCost || 0} | ${stops} stops`;
     }
 
     /**
      * Get detailed route description
      */
     formatRouteDescription(route: GeneratedRoute): string[] {
-        return route.segments.map((s, i) =>
-            `${i + 1}. ${s.mode.name}: ${s.fromStop.name} → ${s.toStop.name} (${s.estimatedTime}min, ₦${s.cost})`
+        const segments = Array.isArray(route?.segments) ? route.segments : [];
+        return segments.map((s, i) =>
+            `${i + 1}. ${(s.mode?.name || 'Ride').toUpperCase()}: ${s.fromStop?.name || 'Start'} → ${s.toStop?.name || 'End'} (${s.estimatedTime || 0}min, ₦${s.cost || 0})`
         );
     }
 }
