@@ -160,6 +160,7 @@ export class RouteDisplayComponent implements OnInit {
 
                             if (r.instructions.length === 0) {
                                 r.instructions = (r.segments || [])
+                                    .filter((s: any) => !!s)
                                     .map((s: any) => s?.instruction || s?.instructions || '')
                                     .filter((i: any) => !!i);
                             }

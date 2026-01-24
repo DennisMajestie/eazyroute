@@ -320,16 +320,19 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
       if (response?.success && Array.isArray(response.data)) {
         // ⭐ ONLY TAKE FIRST 5 FOR DASHBOARD
-        const allNearbyStops = response.data.map((stop: any) => ({
-          id: stop._id || stop.id,
-          name: stop.name,
-          distance: stop.dist?.calculated ? `${stop.dist.calculated}m` : this.calculateDistance(stop.location),
-          routes: stop.routes || [],
-          travelTime: this.calculateTravelTime(stop.dist?.calculated || this.calculateDistanceMeters(stop.location)),
+        const allNearbyStops = response.data.filter((s: any) => !!s).map((stop: any) => ({
+          name: stop?.name || 'Unknown Stop',
+          area: stop?.area || stop?.district || 'Unknown Area',
+          distance: stop?.dist?.calculated ? Math.round(stop.dist.calculated) : 0,
+          lat: stop?.location?.coordinates?.[1] || 0,
+          lng: stop?.location?.coordinates?.[0] || 0,
+          id: stop?._id || stop?.id,
+          routes: stop?.routes || [],
+          travelTime: this.calculateTravelTime(stop?.dist?.calculated || this.calculateDistanceMeters(stop?.location)),
           status: this.determineStopStatus(stop),
-          type: stop.type || 'bus_stop',
-          latitude: stop.location?.coordinates?.[1] || stop.latitude,
-          longitude: stop.location?.coordinates?.[0] || stop.longitude
+          type: stop?.type || 'bus_stop',
+          latitude: stop?.location?.coordinates?.[1] || stop?.latitude,
+          longitude: stop?.location?.coordinates?.[0] || stop?.longitude
         }));
 
         // Limit to 5 stops for dashboard
@@ -350,13 +353,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       const response = await this.routeHttpService.getPopularRoutes().toPromise();
 
       if (response?.success && Array.isArray(response.data)) {
-        this.popularRoutes = response.data.map((route: any) => ({
-          id: route._id || route.id,
-          name: route.name,
-          from: route.origin?.name || 'Unknown',
-          to: route.destination?.name || 'Unknown',
-          duration: this.formatDuration(route.estimatedDuration || 0),
-          fare: this.formatFare(route.fare || 0),
+        this.popularRoutes = response.data.filter((r: any) => !!r).map((route: any) => ({
+          id: route?._id || route?.id,
+          name: route?.name || 'Unknown Route',
+          from: route?.origin?.name || 'Unknown',
+          to: route?.destination?.name || 'Unknown',
+          duration: this.formatDuration(route?.estimatedDuration || 0),
+          fare: this.formatFare(route?.fare || 0),
           buses: 0,
           trending: false,
         }));

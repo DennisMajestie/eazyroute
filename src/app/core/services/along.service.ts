@@ -121,17 +121,17 @@ export class AlongService {
 
                 // Post-process to ensure From/To names match search names if they look like IDs
                 const processedRoutes = routes.filter(r => !!r).map(route => {
-                    const searchFrom = (typeof from === 'string' ? from : from.name);
-                    const searchTo = (typeof to === 'string' ? to : to.name);
+                    const searchFrom = (typeof from === 'string' ? from : (from?.name || 'Start'));
+                    const searchTo = (typeof to === 'string' ? to : (to?.name || 'Destination'));
 
                     // Normalize Route-level names
-                    const normalizedFrom = (route.from && typeof route.from === 'string' && (route.from.includes('landmark') || route.from.includes('node')))
+                    const normalizedFrom = (route?.from && typeof route.from === 'string' && (route.from.includes('landmark') || route.from.includes('node')))
                         ? searchFrom
-                        : (route.from || searchFrom);
+                        : (route?.from || searchFrom);
 
-                    const normalizedTo = (route.to && typeof route.to === 'string' && (route.to.includes('landmark') || route.to.includes('node')))
+                    const normalizedTo = (route?.to && typeof route.to === 'string' && (route.to.includes('landmark') || route.to.includes('node')))
                         ? searchTo
-                        : (route.to || searchTo);
+                        : (route?.to || searchTo);
 
                     // Create normalized route object
                     const newRoute = {
@@ -275,7 +275,7 @@ export class AlongService {
         }
 
         // Normalize all segments in all routes
-        return routes.map(r => ({
+        return routes.filter(r => !!r).map(r => ({
             ...r,
             segments: this.normalizeSegments(r?.segments || [])
         }));
@@ -291,22 +291,22 @@ export class AlongService {
             return [];
         }
 
-        return segments.map(s => ({
+        return segments.filter(s => !!s).map(s => ({
             ...s,
             // Mode Normalization
-            vehicleType: s.vehicleType || s.mode || (s.type === 'ride' ? 'taxi' : s.type),
-            type: s.type || (s.mode === 'walking' ? 'walk' : 'ride'),
+            vehicleType: s?.vehicleType || s?.mode || (s?.type === 'ride' ? 'taxi' : (s?.type || '')),
+            type: s?.type || (s?.mode === 'walking' ? 'walk' : 'ride'),
 
             // Stop Normalization
-            fromStop: s.fromStop || s.fromName || (s.start_address ? s.start_address : ''),
-            toStop: s.toStop || s.toName || (s.end_address ? s.end_address : ''),
+            fromStop: s?.fromStop || s?.fromName || (s?.start_address ? s?.start_address : ''),
+            toStop: s?.toStop || s?.toName || (s?.end_address ? s?.end_address : ''),
 
             // Distance/Time Normalization
-            distance: s.distance?.value || s.distance || 0,
-            estimatedTime: s.duration?.value ? Math.round(s.duration.value / 60) : (s.estimatedTime || 0),
+            distance: s?.distance?.value || s?.distance || 0,
+            estimatedTime: s?.duration?.value ? Math.round(s?.duration.value / 60) : (s?.estimatedTime || 0),
 
             // Instruction Fallback
-            instruction: s.instruction || s.instructions || `Take ${s.mode || s.vehicleType || 'transport'} to ${s.toName || s.toStop || 'next stop'}`
+            instruction: s?.instruction || s?.instructions || `Take ${s?.mode || s?.vehicleType || 'transport'} to ${s?.toName || s?.toStop || 'next stop'}`
         }));
     }
 

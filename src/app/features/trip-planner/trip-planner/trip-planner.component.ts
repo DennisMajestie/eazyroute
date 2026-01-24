@@ -230,28 +230,28 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         const safeSegments = Array.isArray(sourceSegments) ? sourceSegments : [];
 
         // Map segments (AlongSegment -> RouteSegment)
-        const segments: RouteSegment[] = safeSegments.map((seg: any, index: number) => {
+        const segments: RouteSegment[] = safeSegments.filter(s => !!s).map((seg: any, index: number) => {
             return {
-                id: `seg-${index}-${Date.now()}`,
+                id: seg?.id || `seg-${index}-${Date.now()}`,
                 fromStop: {
                     id: seg?.fromStopId || 'temp-from',
                     name: seg?.fromStop || seg?.from?.name || 'Start',
-                    latitude: seg?.from?.lat || 0,
-                    longitude: seg?.from?.lng || 0,
-                    type: 'landmark'
+                    latitude: seg?.fromLat || 0,
+                    longitude: seg?.fromLng || 0,
+                    routes: []
                 } as any,
                 toStop: {
                     id: seg?.toStopId || 'temp-to',
                     name: seg?.toStop || seg?.to?.name || 'End',
-                    latitude: seg?.to?.lat || 0,
-                    longitude: seg?.to?.lng || 0,
-                    type: 'landmark'
+                    latitude: seg?.toLat || 0,
+                    longitude: seg?.toLng || 0,
+                    routes: []
                 } as any,
                 distance: seg?.distance || 0,
-                estimatedTime: seg?.estimatedTime || seg?.duration || 0,
+                estimatedTime: seg?.estimatedTime || 0,
                 mode: {
-                    type: seg?.type || seg?.vehicleType || 'walk',
-                    name: (seg?.type || seg?.vehicleType || 'walk').toUpperCase(),
+                    type: (seg?.vehicleType || seg?.mode || 'bus') as any,
+                    name: seg?.vehicleType || seg?.mode || 'Bus',
                     availabilityFactor: 1,
                     avgSpeedKmh: 0
                 } as any,
@@ -262,7 +262,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 // V3 Safety Guardrails
                 isBridge: seg?.isBridge || false,
                 isBlocked: seg?.isBlocked || false,
-                backboneName: seg?.backboneName || null
+                backboneName: seg?.backboneName || null,
+                backbonePriority: !!seg?.backbonePriority
             };
         });
 
@@ -807,12 +808,12 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             if (this.activeSearchField !== field) return;
 
             // CRITICAL FIX: Ensure locations is an array
-            const mappedLocations = (Array.isArray(locations) ? locations : []).map(l => ({
-                name: l.name,
-                displayName: l.displayName,
-                area: l.area,
-                latitude: l.latitude,
-                longitude: l.longitude,
+            const mappedLocations = (Array.isArray(locations) ? locations : []).filter(l => !!l).map(l => ({
+                name: l?.name || 'Unknown',
+                displayName: l?.displayName || l?.name || 'Unknown',
+                area: l?.area,
+                latitude: l?.latitude || 0,
+                longitude: l?.longitude || 0,
                 type: 'location' as const
             }));
 
@@ -830,15 +831,15 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         ).subscribe(res => {
             if (this.activeSearchField !== field) return;
 
-            const localities = (res && res.success && Array.isArray(res.data) ? res.data : []).map((l: any) => ({
-                name: l.name,
-                displayName: l.displayName || l.name,
-                area: l.area || l.district,
-                latitude: l.lat || l.latitude,
-                longitude: l.lng || l.longitude,
+            const localities = (res && res.success && Array.isArray(res.data) ? res.data : []).filter(l => !!l).map((l: any) => ({
+                name: l?.name || 'Unknown',
+                displayName: l?.displayName || l?.name || 'Unknown',
+                area: l?.area || l?.district,
+                latitude: l?.lat || l?.latitude || 0,
+                longitude: l?.lng || l?.longitude || 0,
                 type: 'location' as const,
-                source: l.source,
-                isVerifiedNeighborhood: l.source === 'along-locality',
+                source: l?.source,
+                isVerifiedNeighborhood: l?.source === 'along-locality',
                 tier: 'primary' as const
             }));
 
