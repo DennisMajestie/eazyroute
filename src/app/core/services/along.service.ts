@@ -16,9 +16,27 @@ import { RouteResponse } from '../../models/route.model';
     providedIn: 'root'
 })
 export class AlongService {
-    private apiUrl = `${environment.apiUrl}/along`;
+    private apiUrl = this.getUnifiedApiUrl();
 
     constructor(private http: HttpClient) { }
+
+    /**
+     * Defensive URL Hardening
+     * Ensures we NEVER call localhost if we're on a hosted domain
+     */
+    private getUnifiedApiUrl(): string {
+        const prodUrl = 'https://along-backend-lo8n.onrender.com/api/v1';
+        const baseUrl = environment.apiUrl;
+
+        // If explicitly forced in environment or running on a hosted domain (not localhost/127.0.0.1)
+        if (typeof window !== 'undefined' &&
+            window.location.hostname !== 'localhost' &&
+            window.location.hostname !== '127.0.0.1') {
+            return `${prodUrl}/along`;
+        }
+
+        return `${baseUrl}/along`;
+    }
 
     /**
      * Infer Boarding (Live)

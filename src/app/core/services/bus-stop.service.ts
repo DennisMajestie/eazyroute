@@ -72,7 +72,22 @@ export interface PaginatedResponse<T> {
   providedIn: 'root'
 })
 export class BusStopService {
-  private apiUrl = `${environment.apiUrl}/bus-stops`;
+  private apiUrl = this.getUnifiedApiUrl();
+
+  /**
+   * Defensive URL Hardening
+   */
+  private getUnifiedApiUrl(): string {
+    const prodUrl = 'https://along-backend-lo8n.onrender.com/api/v1';
+    const baseUrl = environment.apiUrl;
+
+    if (typeof window !== 'undefined' &&
+      window.location.hostname !== 'localhost' &&
+      window.location.hostname !== '127.0.0.1') {
+      return `${prodUrl}/bus-stops`;
+    }
+    return `${baseUrl}/bus-stops`;
+  }
 
   constructor(private http: HttpClient) { }
 

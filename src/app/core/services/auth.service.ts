@@ -26,7 +26,22 @@ declare var google: any;
     providedIn: 'root'
 })
 export class AuthService {
-    private readonly API_URL = `${environment.apiUrl}/auth`;
+    private readonly API_URL = this.getUnifiedApiUrl();
+
+    /**
+     * Defensive URL Hardening
+     */
+    private getUnifiedApiUrl(): string {
+        const prodUrl = 'https://along-backend-lo8n.onrender.com/api/v1';
+        const baseUrl = environment.apiUrl;
+
+        if (typeof window !== 'undefined' &&
+            window.location.hostname !== 'localhost' &&
+            window.location.hostname !== '127.0.0.1') {
+            return `${prodUrl}/auth`;
+        }
+        return `${baseUrl}/auth`;
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // STATE - Angular Signals (Single Source of Truth)

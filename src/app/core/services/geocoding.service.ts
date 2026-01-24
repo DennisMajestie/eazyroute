@@ -86,8 +86,11 @@ export class GeocodingService {
         };
 
         // Note: Nominatim requires a User-Agent, but browsers won't let us set it for CORS.
-        // We handle errors gracefully to prevent app crashes.
-        return this.http.get<any>(`https://nominatim.openstreetmap.org/reverse`, { params }).pipe(
+        // We handle errors gracefully and provide a reliable fallback for production.
+        return this.http.get<any>(`https://nominatim.openstreetmap.org/reverse`, {
+            params,
+            headers: { 'Accept': 'application/json' }
+        }).pipe(
             map(r => ({
                 name: r.name || r.display_name?.split(',')[0] || fallback.name,
                 displayName: r.display_name || fallback.displayName,
@@ -98,8 +101,9 @@ export class GeocodingService {
             })),
             catchError(error => {
                 // Silently log and return fallback for "Status 0" (CORS/Rate limit)
-                if (error.status === 0) {
-                    console.warn('[GeocodingService] Nominatim is unreachable or rate-limited. Using coordinate fallback.');
+                if (error.status === 0 || error.status === 403) {
+                    console.warn('[GeocodingService] Nominatim unreachable/blocked (Status 0/403). Using coordinate fallback.');
+                    // In a real prod app, we'd proxy this through our own backend
                 } else {
                     console.error('[GeocodingService] Reverse geocode error:', error);
                 }
