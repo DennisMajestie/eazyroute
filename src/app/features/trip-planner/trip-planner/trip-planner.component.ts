@@ -226,8 +226,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         const useLegs = alongRoute.legs && Array.isArray(alongRoute.legs) && alongRoute.legs.length > 0;
         const sourceSegments = useLegs ? alongRoute.legs : (alongRoute.segments || []);
 
+        // CRITICAL FIX: Ensure sourceSegments is always an array
+        const safeSegments = Array.isArray(sourceSegments) ? sourceSegments : [];
+
         // Map segments (AlongSegment -> RouteSegment)
-        const segments: RouteSegment[] = (sourceSegments || []).map((seg: any, index: number) => {
+        const segments: RouteSegment[] = safeSegments.map((seg: any, index: number) => {
             return {
                 id: `seg-${index}-${Date.now()}`,
                 fromStop: {

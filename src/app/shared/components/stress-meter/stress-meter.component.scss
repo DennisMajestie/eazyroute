@@ -1,0 +1,136 @@
+.stress-meter {
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--bg-secondary, #f5f7fa);
+  transition: all 0.3s ease;
+
+  &.compact {
+    padding: 8px;
+
+    .meter-bar {
+      height: 6px;
+    }
+
+    .label {
+      margin-top: 6px;
+
+      .icon {
+        font-size: 16px;
+      }
+
+      .text {
+        font-size: 12px;
+      }
+    }
+  }
+}
+
+.meter-bar {
+  position: relative;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: visible;
+}
+
+.fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease, background 0.3s ease;
+}
+
+.score-indicator {
+  position: absolute;
+  top: -24px;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+
+  .score-value {
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--text-primary, #1a1a1a);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+}
+
+.stress-meter:hover .score-indicator {
+  opacity: 1;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.icon {
+  font-size: 20px;
+}
+
+.text-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+}
+
+.description {
+  font-size: 12px;
+  color: var(--text-secondary, #6b7280);
+}
+
+// Cool state (0-30)
+.cool {
+  .fill {
+    background: linear-gradient(90deg, #22C55E, #4ADE80);
+  }
+
+  .text {
+    color: #16A34A;
+  }
+}
+
+// Hustle state (31-70)
+.hustle {
+  .fill {
+    background: linear-gradient(90deg, #F59E0B, #FBBF24);
+  }
+
+  .text {
+    color: #D97706;
+  }
+}
+
+// Extreme state (71-100)
+.extreme {
+  .fill {
+    background: linear-gradient(90deg, #EF4444, #F87171);
+  }
+
+  .text {
+    color: #DC2626;
+  }
+
+  // Pulsing animation for extreme stress
+  .icon {
+    animation: pulse-extreme 1s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse-extreme {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}

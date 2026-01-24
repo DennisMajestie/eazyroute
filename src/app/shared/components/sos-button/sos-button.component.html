@@ -1,0 +1,32 @@
+<button class="sos-fab" [class.pressed]="isPressing()" [class.triggered]="isTriggered()" (mousedown)="startHold()"
+    (mouseup)="endHold()" (mouseleave)="endHold()" (touchstart)="startHold()" (touchend)="endHold()"
+    [attr.aria-label]="isTriggered() ? 'SOS Alert Sent' : 'Hold for 3 seconds to send SOS'">
+
+    <!-- Pulse ring animation -->
+    <div class="pulse-ring"></div>
+    <div class="pulse-ring delay"></div>
+
+    <!-- Main icon -->
+    <span class="icon">
+        @if (isTriggered()) {
+        ✓
+        } @else {
+        🆘
+        }
+    </span>
+
+    <!-- Hold progress indicator -->
+    @if (isPressing()) {
+    <svg class="progress-ring" viewBox="0 0 72 72">
+        <circle class="progress-circle" cx="36" cy="36" r="32"
+            [style.stroke-dashoffset]="201 - (holdProgress() / 100) * 201">
+        </circle>
+    </svg>
+    <span class="hold-text">{{ remainingSeconds }}s</span>
+    }
+
+    <!-- Triggered confirmation -->
+    @if (isTriggered()) {
+    <span class="triggered-text">Alert Sent!</span>
+    }
+</button>

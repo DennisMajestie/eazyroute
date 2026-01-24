@@ -1,0 +1,55 @@
+<div class="route-card" [class.selected]="selected" (click)="onSelect()">
+    <!-- Classification Badge -->
+    <div class="badge" [class]="getBadgeClass()">
+        {{ getBadgeLabel() }}
+    </div>
+
+    <!-- Summary Row -->
+    <div class="summary">
+        <div class="cost">
+            <span class="cost-range">
+                {{ route.totalCost.min | naira }} - {{ route.totalCost.max | naira }}
+            </span>
+        </div>
+        <div class="time">
+            <span class="time-icon">⏱️</span>
+            <span class="time-value">{{ route.totalTime | duration }}</span>
+        </div>
+    </div>
+
+    <!-- Transport Mode Icons -->
+    <div class="modes">
+        @for (leg of route.legs; track leg.fromId; let isLast = $last) {
+        <span class="mode-icon" [title]="leg.mode">{{ getIcon(leg.mode) }}</span>
+        @if (!isLast) {
+        <span class="arrow">→</span>
+        }
+        }
+    </div>
+
+    <!-- Stress Meter -->
+    <app-stress-meter [stressScore]="route.metadata.stressScore" [compact]="true">
+    </app-stress-meter>
+
+    <!-- Rationale -->
+    <p class="rationale">{{ route.rationale }}</p>
+
+    <!-- Warnings -->
+    @if (route.warnings && route.warnings.length > 0) {
+    <div class="warnings">
+        @for (warning of route.warnings; track warning) {
+        <span class="warning">⚠️ {{ warning }}</span>
+        }
+    </div>
+    }
+
+    <!-- Actions -->
+    <div class="actions">
+        <button class="btn-details" (click)="onViewDetails(); $event.stopPropagation()">
+            View Details
+        </button>
+        <button class="btn-select" (click)="onSelect(); $event.stopPropagation()">
+            Select Route
+        </button>
+    </div>
+</div>

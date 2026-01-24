@@ -1,0 +1,158 @@
+.sos-fab {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #EF4444;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 1100;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  touch-action: manipulation;
+
+  &:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.5);
+  }
+
+  &:active,
+  &.pressed {
+    transform: scale(0.95);
+  }
+
+  &.triggered {
+    background: #10B981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  }
+}
+
+.pulse-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid #EF4444;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  pointer-events: none;
+
+  &.delay {
+    animation-delay: 1s;
+  }
+}
+
+.triggered .pulse-ring {
+  border-color: #10B981;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.icon {
+  font-size: 24px;
+  z-index: 1;
+  transition: transform 0.3s ease;
+}
+
+.pressed .icon {
+  transform: scale(0.8);
+}
+
+.progress-ring {
+  position: absolute;
+  width: 72px;
+  height: 72px;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+
+.progress-circle {
+  fill: none;
+  stroke: white;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 201;
+  stroke-dashoffset: 201;
+  transition: stroke-dashoffset 0.05s linear;
+}
+
+.hold-text {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: #EF4444;
+  white-space: nowrap;
+  background: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.triggered-text {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: #10B981;
+  white-space: nowrap;
+  background: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+// Mobile adjustments
+@media (max-width: 768px) {
+  .sos-fab {
+    bottom: 90px;
+    right: 16px;
+    width: 56px;
+    height: 56px;
+  }
+
+  .icon {
+    font-size: 20px;
+  }
+
+  .progress-ring {
+    width: 64px;
+    height: 64px;
+  }
+
+  .progress-circle {
+    stroke-dasharray: 176;
+  }
+}

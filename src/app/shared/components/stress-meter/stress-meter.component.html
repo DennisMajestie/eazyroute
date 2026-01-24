@@ -1,0 +1,20 @@
+<div class="stress-meter" [class]="stressClass()" [class.compact]="compact">
+    <div class="meter-bar">
+        <div class="fill" [style.width.%]="score()"></div>
+        <div class="score-indicator" [style.left.%]="score()">
+            <span class="score-value">{{ score() }}</span>
+        </div>
+    </div>
+
+    @if (showLabel) {
+    <div class="label">
+        <span class="icon">{{ stressIcon() }}</span>
+        <div class="text-content">
+            <span class="text">{{ stressLabel() }}</span>
+            @if (!compact) {
+            <span class="description">{{ stressDescription() }}</span>
+            }
+        </div>
+    </div>
+    }
+</div>
