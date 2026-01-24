@@ -335,7 +335,7 @@
         </div>
 
         <!-- Segment Timeline Breakdown -->
-        <div class="timeline-container" *ngIf="route?.segments?.length > 0; else noSegments">
+        <div class="timeline-container" *ngIf="route && route.segments && route.segments.length > 0; else noSegments">
           <div *ngFor="let segment of route.segments; let j = index" class="timeline-item"
             [class.walk]="segment.mode.type === 'walk'">
             <div class="timeline-marker">
