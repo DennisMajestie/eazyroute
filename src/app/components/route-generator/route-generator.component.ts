@@ -78,16 +78,13 @@ export class RouteGeneratorComponent {
                     next: (response: any) => {
                         const stops = Array.isArray(response) ? response : (response.data || []);
 
-                        // CRITICAL FIX: Guard mapping
-                        if (Array.isArray(stops)) {
-                            this.nearbyStops = stops.map((stop: any) => ({
-                                name: stop.name,
-                                lat: stop.location?.coordinates?.[1] || 0,
-                                lng: stop.location?.coordinates?.[0] || 0,
-                                distance: stop.dist?.calculated || 9999,
-                                verified: stop.verified
-                            }));
-                        }
+                        this.nearbyStops = stops.map((stop: any) => ({
+                            name: stop.name,
+                            lat: stop.location?.coordinates?.[1] || 0,
+                            lng: stop.location?.coordinates?.[0] || 0,
+                            distance: stop.dist?.calculated || 9999, // default to high if missing
+                            verified: stop.verified
+                        }));
 
                         this.handleAbujaLogic(position, this.nearbyStops);
                         this.isLocating = false;

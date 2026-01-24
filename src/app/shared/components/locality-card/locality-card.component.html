@@ -12,7 +12,7 @@
         <div class="vehicles-section">
             <div class="section-label">Typical Vehicles</div>
             <div class="vehicles-list">
-                <span *ngFor="let vehicle of locality?.movementProfile?.typicalVehicles" class="vehicle-badge">
+                <span *ngFor="let vehicle of locality.movementProfile.typicalVehicles" class="vehicle-badge">
                     {{ getVehicleEmoji(vehicle) }} {{ vehicle | titlecase }}
                 </span>
             </div>
@@ -38,7 +38,7 @@
         <div class="peak-hours" *ngIf="locality.movementProfile.peakHours.length > 0">
             <div class="section-label">Peak Hours</div>
             <div class="peak-hours-list">
-                <span *ngFor="let hours of locality?.movementProfile?.peakHours" class="peak-badge">
+                <span *ngFor="let hours of locality.movementProfile.peakHours" class="peak-badge">
                     ⏰ {{ hours }}
                 </span>
             </div>

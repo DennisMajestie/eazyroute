@@ -816,9 +816,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 type: 'location' as const
             }));
 
-            // Append to results if not already            // CRITICAL FIX: Ensure searchResults is an array
-            const currentResults = Array.isArray(this.searchResults) ? this.searchResults : [];
-            const existingNames = new Set(currentResults.map(r => r.name));
+            // Append to results if not already there (simple de-dupe by name)
+            const existingNames = new Set(this.searchResults.map(r => r.name));
             const uniqueLocations = mappedLocations.filter(l => !existingNames.has(l.name));
 
             this.searchResults = [...this.searchResults, ...uniqueLocations];
@@ -846,9 +845,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             const verified = localities.filter(l => l.isVerifiedNeighborhood);
             const others = localities.filter(l => !l.isVerifiedNeighborhood);
 
-            // Logic: [Bus Stops] -> [Verified Neighborhoods] -> [Other Localities]            // CRITICAL FIX: Ensure searchResults is an array
-            const currentResults = Array.isArray(this.searchResults) ? this.searchResults : [];
-            const existingIds = new Set(currentResults.map(r => r.name));
+            // Logic: [Bus Stops] -> [Verified Neighborhoods] -> [Other Localities] -> [OSM Results]
+            const existingIds = new Set(this.searchResults.map(r => r.name));
             const uniqueVerified = verified.filter(v => !existingIds.has(v.name));
             const uniqueOthers = others.filter(o => !existingIds.has(o.name));
 

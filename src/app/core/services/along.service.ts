@@ -269,6 +269,12 @@ export class AlongService {
      * Normalize segment keys to match AlongSegment interface
      */
     private normalizeSegments(segments: any[]): any[] {
+        // CRITICAL FIX: Ensure segments is actually an array
+        if (!Array.isArray(segments)) {
+            console.warn('[AlongService] normalizeSegments called with non-array:', segments);
+            return [];
+        }
+
         return segments.map(s => ({
             ...s,
             // Mode Normalization
