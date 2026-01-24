@@ -806,7 +806,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         ).subscribe(locations => {
             if (this.activeSearchField !== field) return;
 
-            const mappedLocations = locations.map(l => ({
+            // CRITICAL FIX: Ensure locations is an array
+            const mappedLocations = (Array.isArray(locations) ? locations : []).map(l => ({
                 name: l.name,
                 displayName: l.displayName,
                 area: l.area,
@@ -977,7 +978,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         }
 
         const segments = this.selectedRoute.legs || this.selectedRoute.segments;
-        this.routePolylines = segments.map(seg => ({
+        // CRITICAL FIX: Ensure segments is an array
+        this.routePolylines = (Array.isArray(segments) ? segments : []).map(seg => ({
             path: [], // Backend needs to provide decoded polyline or we decode here
             color: this.getSegmentHexColor(seg),
             isBackbone: seg.backbonePriority

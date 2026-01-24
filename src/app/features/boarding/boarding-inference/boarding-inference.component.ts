@@ -100,7 +100,7 @@ export class BoardingInferenceComponent implements OnInit {
         this.http.get<{ success: boolean; data: BoardingPoint[] }>(url, { params })
             .subscribe({
                 next: (response) => {
-                    if (response.success && response.data) {
+                    if (response.success && Array.isArray(response.data)) {
                         this.boardingPoints = response.data;
 
                         // Sort by boarding probability (highest first)

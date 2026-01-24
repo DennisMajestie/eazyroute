@@ -369,6 +369,21 @@ export class ReroutingEngine {
   }
 
   private mapAlongRouteToGeneratedRoute(alongRoute: any): GeneratedRoute {
+    // CRITICAL FIX: Ensure alongRoute and segments exist before mapping
+    if (!alongRoute || !Array.isArray(alongRoute.segments)) {
+      console.warn('[Rerouting] Invalid alongRoute or missing segments array:', alongRoute);
+      return {
+        id: `route-reroute-failed-${Date.now()}`,
+        segments: [],
+        totalDistance: 0,
+        totalTime: 0,
+        totalCost: 0,
+        rankingScore: { shortest: 0, cheapest: 0, balanced: 100 },
+        generatedAt: new Date(),
+        strategy: 'balanced'
+      };
+    }
+
     // Map segments (AlongSegment -> RouteSegment)
     const segments: RouteSegment[] = alongRoute.segments.map((seg: any, index: number) => {
       return {

@@ -318,7 +318,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         2000 // 2km radius as per integration guide
       ).toPromise();
 
-      if (response?.success && response.data) {
+      if (response?.success && Array.isArray(response.data)) {
         // ⭐ ONLY TAKE FIRST 5 FOR DASHBOARD
         const allNearbyStops = response.data.map((stop: any) => ({
           id: stop._id || stop.id,
@@ -349,7 +349,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     try {
       const response = await this.routeHttpService.getPopularRoutes().toPromise();
 
-      if (response?.success && response.data) {
+      if (response?.success && Array.isArray(response.data)) {
         this.popularRoutes = response.data.map((route: any) => ({
           id: route._id || route.id,
           name: route.name,
@@ -373,7 +373,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   private loadTagAlongRides(): void {
     this.tagAlongService.getAvailableRides({ limit: 3 }).subscribe({
       next: (res) => {
-        if (res.success) {
+        if (res.success && Array.isArray(res.data)) {
           this.tagAlongRides = res.data.map(ride => ({
             id: ride._id,
             driver: `${ride.createdBy.firstName} ${ride.createdBy.lastName}`,
@@ -394,16 +394,18 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   private loadUpcomingEvents(): void {
     this.eventService.getFeaturedEvents().subscribe({
       next: (events) => {
-        this.upcomingEvents = events.map(evt => ({
-          id: evt.id,
-          title: evt.title,
-          date: new Date(evt.schedule.start).toLocaleDateString(),
-          time: new Date(evt.schedule.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          location: evt.venue.name,
-          category: evt.eventType,
-          image: 'assets/event-placeholder.jpg', // Placeholder
-          attending: evt.stats.registeredGuests
-        }));
+        if (Array.isArray(events)) {
+          this.upcomingEvents = events.map(evt => ({
+            id: evt.id,
+            title: evt.title,
+            date: new Date(evt.schedule.start).toLocaleDateString(),
+            time: new Date(evt.schedule.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            location: evt.venue.name,
+            category: evt.eventType,
+            image: 'assets/event-placeholder.jpg', // Placeholder
+            attending: evt.stats.registeredGuests
+          }));
+        }
       },
       error: (err) => console.error('Failed to load events', err)
     });

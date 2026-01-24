@@ -130,7 +130,7 @@ export class HomeAlongComponent implements OnInit {
       .subscribe({
         next: (response: any) => {
           // response matches ApiResponse<BoardingInference[]>
-          if (response.success && response.data && response.data.length > 0) {
+          if (response.success && Array.isArray(response.data) && response.data.length > 0) {
             this.boardingInferences = response.data;
             this.updateSmartBoardingUI(response.data[0]);
             this.showSmartBoarding = true;
