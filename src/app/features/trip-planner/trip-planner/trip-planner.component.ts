@@ -985,7 +985,10 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.routePolylines = (Array.isArray(segments) ? segments : [])
             .filter(seg => !!seg)
             .map(seg => ({
-                path: [], // Backend needs to provide decoded polyline or we decode here
+                path: (seg.fromStop && seg.toStop) ? [
+                    [seg.fromStop.latitude, seg.fromStop.longitude],
+                    [seg.toStop.latitude, seg.toStop.longitude]
+                ] : [],
                 color: this.getSegmentHexColor(seg),
                 isBackbone: !!seg?.backbonePriority
             }));

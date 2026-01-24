@@ -300,6 +300,12 @@ export class AlongService {
             fromStop: s?.fromStop || s?.fromName || (s?.start_address ? s?.start_address : ''),
             toStop: s?.toStop || s?.toName || (s?.end_address ? s?.end_address : ''),
 
+            // Coordinate Propagation
+            fromLat: s?.fromLat || s?.latitude || s?.from?.lat || 0,
+            fromLng: s?.fromLng || s?.longitude || s?.from?.lng || 0,
+            toLat: s?.toLat || s?.toAddressLat || s?.to?.lat || 0,
+            toLng: s?.toLng || s?.toAddressLng || s?.to?.lng || 0,
+
             // Distance/Time Normalization
             distance: s?.distance?.value || s?.distance || 0,
             estimatedTime: s?.duration?.value ? Math.round(s?.duration.value / 60) : (s?.estimatedTime || 0),

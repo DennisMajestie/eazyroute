@@ -7,11 +7,12 @@ import { SafetyService, SafetyTip } from '../../../core/services/safety.service'
 import { CommuterProtocolService, BoardingProtocol } from '../../../core/services/commuter-protocol.service';
 import { AlongRoute, AlongSegment } from '../../../models/transport.types';
 import { SubmitPriceComponent } from '../../community/submit-price/submit-price.component';
+import { MapComponent } from '../../../shared/components/map/map.component';
 
 @Component({
     selector: 'app-route-display',
     standalone: true,
-    imports: [CommonModule, SubmitPriceComponent],
+    imports: [CommonModule, SubmitPriceComponent, MapComponent],
     templateUrl: './route-display.component.html',
     styleUrls: ['./route-display.component.scss']
 })
@@ -36,6 +37,12 @@ export class RouteDisplayComponent implements OnInit {
 
     fromLocation: { lat: number; lng: number; name: string } | null = null;
     toLocation: { lat: number; lng: number; name: string } | null = null;
+
+    // Map properties
+    mapCenter = { lat: 9.0765, lng: 7.3986 };
+    mapZoom = 12;
+    mapMarkers: any[] = [];
+    mapPolylines: any[] = [];
 
     get route(): AlongRoute | null {
         return this.routes[this.selectedRouteIndex] || null;
@@ -72,6 +79,7 @@ export class RouteDisplayComponent implements OnInit {
         this.selectedRouteIndex = index;
         this.expandedSegments.clear();
         this.showStops = {};
+        this.updateMapData();
     }
 
     /**
@@ -170,6 +178,7 @@ export class RouteDisplayComponent implements OnInit {
 
                     if (response?.success && this.routes.length > 0) {
                         // Success path
+                        this.updateMapData();
                     } else if (response?.errorType === 'LOCATION_NOT_COVERED') {
                         this.error = response.suggestion || 'This area is not yet covered by ALONG.';
                     } else {
@@ -414,8 +423,71 @@ export class RouteDisplayComponent implements OnInit {
     }
 
     /**
-     * Get Boarding Protocol for a segment
+     * Update map markers and polylines based on selected route
      */
+    updateMapData() {
+        if (!this.route) return;
+
+        // Reset
+        this.mapMarkers = [];
+        this.mapPolylines = [];
+
+        const segments = Array.isArray(this.route.segments) ? this.route.segments : [];
+        if (segments.length === 0) return;
+
+        // Add Markers for Start and End
+        if (this.fromLocation && (this.fromLocation.lat !== 0 || this.fromLocation.lng !== 0)) {
+            this.mapMarkers.push({
+                lat: this.fromLocation.lat,
+                lng: this.fromLocation.lng,
+                title: 'Start: ' + this.fromLocation.name,
+                tier: 'primary'
+            });
+            this.mapCenter = { lat: this.fromLocation.lat, lng: this.fromLocation.lng };
+        }
+
+        if (this.toLocation && (this.toLocation.lat !== 0 || this.toLocation.lng !== 0)) {
+            this.mapMarkers.push({
+                lat: this.toLocation.lat,
+                lng: this.toLocation.lng,
+                title: 'End: ' + this.toLocation.name,
+                tier: 'primary'
+            });
+        }
+
+        // Map Polylines - Use segment data if available
+        this.mapPolylines = segments.map((seg: any) => {
+            const path: any[] = [];
+
+            // If segment has coordinates (v4 format), use them
+            if (seg.fromLat && seg.fromLng) {
+                path.push([seg.fromLat, seg.fromLng]);
+            }
+            if (seg.toLat && seg.toLng) {
+                path.push([seg.toLat, seg.toLng]);
+            }
+
+            return {
+                path: path,
+                color: this.getSegmentColor(seg),
+                isBackbone: !!seg.backbonePriority
+            };
+        }).filter(p => p.path.length > 0);
+
+        // If no segment coordinates, fallback to showing only markers or a direct line if possible
+        if (this.mapPolylines.length === 0 && this.mapMarkers.length >= 2) {
+            this.mapPolylines = [{
+                path: [[this.mapMarkers[0].lat, this.mapMarkers[0].lng], [this.mapMarkers[1].lat, this.mapMarkers[1].lng]],
+                color: 'var(--primary)',
+                isBackbone: false
+            }];
+        }
+    }
+
+    onMapClick(event: any) {
+        console.log('[RouteDisplay] Map clicked:', event);
+    }
+
     getHubProtocol(segment: AlongSegment): BoardingProtocol | null {
         if (!segment.fromStop) return null;
 
