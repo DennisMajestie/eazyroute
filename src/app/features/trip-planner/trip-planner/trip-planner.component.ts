@@ -309,7 +309,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     private async resolveLocation(query: string): Promise<{ lat: number, lng: number } | null> {
         try {
             // Try Geocoding Service First
-            const results = await firstValueFrom(this.geocodingService.search(query));
+            const results = await firstValueFrom(this.geocodingService.search(query)) as any[];
             if (results && results.length > 0) {
                 return { lat: results[0].latitude, lng: results[0].longitude };
             }
@@ -631,7 +631,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
             // Try to get address using reverse geocoding (will replace coordinates with name)
             this.geocodingService.reverseGeocode(lat, lng).subscribe({
-                next: (result) => {
+                next: (result: any) => {
                     if (result && (result.name || result.area)) {
                         // Replace coordinates with human-readable name
                         this.fromQuery = `📍 ${result.name || result.area}`;
@@ -808,7 +808,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         // 2. Search General Locations (OSM - Fallback)
         this.geocodingService.search(query).pipe(
             catchError(() => of([]))
-        ).subscribe(locations => {
+        ).subscribe((locations: any) => {
             if (this.activeSearchField !== field) return;
 
             // CRITICAL FIX: Ensure locations is an array

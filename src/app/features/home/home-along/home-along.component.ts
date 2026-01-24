@@ -238,7 +238,7 @@ export class HomeAlongComponent implements OnInit {
 
       // Try to get address name
       this.geocodingService.reverseGeocode(lat, lng).subscribe({
-        next: (result) => {
+        next: (result: any) => {
           if (result && (result.name || result.area)) {
             const locationName = `📍 ${result.name || result.area}`;
             this.fromLocation = {
