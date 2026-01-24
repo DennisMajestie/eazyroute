@@ -80,14 +80,15 @@ export class RouteBuilderService {
      * Rank multiple routes and assign normalized scores
      */
     rankRoutes(routes: GeneratedRoute[]): GeneratedRoute[] {
-        if (routes.length === 0) return [];
-        if (routes.length === 1) {
-            this.calculateRankingScores(routes[0]);
-            return routes;
+        const safeRoutes = Array.isArray(routes) ? routes.filter(r => !!r) : [];
+        if (safeRoutes.length === 0) return [];
+        if (safeRoutes.length === 1) {
+            this.calculateRankingScores(safeRoutes[0]);
+            return safeRoutes;
         }
 
-        const times = routes.map(r => r.totalTime);
-        const costs = routes.map(r => r.totalCost);
+        const times = safeRoutes.map(r => r.totalTime || 0);
+        const costs = safeRoutes.map(r => r.totalCost || 0);
 
         const minTime = Math.min(...times);
         const maxTime = Math.max(...times);
