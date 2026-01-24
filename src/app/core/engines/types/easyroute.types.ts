@@ -104,8 +104,6 @@ export const DEFAULT_TRANSPORT_MODES: TransportMode[] = [
 
 export interface RouteSegment {
     id: string;
-    fromStop: BusStop;
-    toStop: BusStop;
     distance: number; // meters
     estimatedTime: number; // minutes
     mode: TransportMode;
