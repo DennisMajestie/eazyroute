@@ -981,12 +981,14 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         }
 
         const segments = this.selectedRoute.legs || this.selectedRoute.segments;
-        // CRITICAL FIX: Ensure segments is an array
-        this.routePolylines = (Array.isArray(segments) ? segments : []).map(seg => ({
-            path: [], // Backend needs to provide decoded polyline or we decode here
-            color: this.getSegmentHexColor(seg),
-            isBackbone: seg.backbonePriority
-        }));
+        // CRITICAL FIX: Ensure segments is an array and elements are not null
+        this.routePolylines = (Array.isArray(segments) ? segments : [])
+            .filter(seg => !!seg)
+            .map(seg => ({
+                path: [], // Backend needs to provide decoded polyline or we decode here
+                color: this.getSegmentHexColor(seg),
+                isBackbone: !!seg?.backbonePriority
+            }));
     }
 
     private getSegmentHexColor(seg: any): string {

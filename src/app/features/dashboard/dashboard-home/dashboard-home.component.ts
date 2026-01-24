@@ -374,43 +374,51 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   }
 
   private loadTagAlongRides(): void {
-    this.tagAlongService.getAvailableRides({ limit: 3 }).subscribe({
+    this.tagAlongService.getAvailableRides({ limit: 3 }).pipe(
+      catchError(err => {
+        console.error('Failed to load rides', err);
+        return of({ success: false, data: [] });
+      })
+    ).subscribe({
       next: (res) => {
-        if (res.success && Array.isArray(res.data)) {
-          this.tagAlongRides = res.data.map(ride => ({
-            id: ride._id,
-            driver: `${ride.createdBy.firstName} ${ride.createdBy.lastName}`,
-            avatar: ride.createdBy.profilePicture || 'assets/default-avatar.png',
-            from: ride.origin,
-            to: ride.destination,
-            departureTime: new Date(ride.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            seats: ride.availableSeats,
-            price: `₦${ride.pricePerSeat}`,
-            rating: ride.createdBy.rating || 5.0
+        if (res?.success && Array.isArray(res.data)) {
+          this.tagAlongRides = res.data.filter(ride => !!ride).map(ride => ({
+            id: ride?._id || ride?.id,
+            driver: `${ride?.createdBy?.firstName || 'User'} ${ride?.createdBy?.lastName || ''}`,
+            avatar: ride?.createdBy?.profilePicture || 'assets/default-avatar.png',
+            from: ride?.origin || 'Unknown',
+            to: ride?.destination || 'Unknown',
+            departureTime: ride?.departureTime ? new Date(ride.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'ASAP',
+            seats: ride?.availableSeats || 0,
+            price: `₦${ride?.pricePerSeat || 0}`,
+            rating: ride?.createdBy?.rating || 5.0
           }));
         }
-      },
-      error: (err) => console.error('Failed to load rides', err)
+      }
     });
   }
 
   private loadUpcomingEvents(): void {
-    this.eventService.getFeaturedEvents().subscribe({
+    this.eventService.getFeaturedEvents().pipe(
+      catchError(err => {
+        console.error('Failed to load events', err);
+        return of([]);
+      })
+    ).subscribe({
       next: (events) => {
         if (Array.isArray(events)) {
-          this.upcomingEvents = events.map(evt => ({
-            id: evt.id,
-            title: evt.title,
-            date: new Date(evt.schedule.start).toLocaleDateString(),
-            time: new Date(evt.schedule.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            location: evt.venue.name,
-            category: evt.eventType,
-            image: 'assets/event-placeholder.jpg', // Placeholder
-            attending: evt.stats.registeredGuests
+          this.upcomingEvents = events.filter(evt => !!evt).map(evt => ({
+            id: evt?.id,
+            title: evt?.title || 'Unknown Event',
+            date: evt?.schedule?.start ? new Date(evt.schedule.start).toLocaleDateString() : 'TBD',
+            time: evt?.schedule?.start ? new Date(evt.schedule.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'TBD',
+            location: evt?.venue?.name || 'Abuja',
+            category: evt?.eventType || 'Social',
+            image: 'assets/event-placeholder.jpg',
+            attending: evt?.stats?.registeredGuests || 0
           }));
         }
-      },
-      error: (err) => console.error('Failed to load events', err)
+      }
     });
   }
 
