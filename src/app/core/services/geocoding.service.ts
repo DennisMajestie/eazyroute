@@ -69,6 +69,15 @@ export class GeocodingService {
      * Reverse geocode - get location name from coordinates
      */
     reverseGeocode(latitude: number, longitude: number): Observable<GeocodingResult | null> {
+        // Fallback result in case of failure or timeout
+        const fallback: GeocodingResult = {
+            name: `Location (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`,
+            displayName: `Point near ${latitude}, ${longitude}`,
+            latitude,
+            longitude,
+            type: 'coordinate'
+        };
+
         const params = {
             lat: latitude.toString(),
             lon: longitude.toString(),
@@ -76,18 +85,25 @@ export class GeocodingService {
             addressdetails: '1'
         };
 
+        // Note: Nominatim requires a User-Agent, but browsers won't let us set it for CORS.
+        // We handle errors gracefully to prevent app crashes.
         return this.http.get<any>(`https://nominatim.openstreetmap.org/reverse`, { params }).pipe(
             map(r => ({
-                name: r.name || r.display_name.split(',')[0],
-                displayName: r.display_name,
-                latitude: parseFloat(r.lat),
-                longitude: parseFloat(r.lon),
-                type: r.type,
+                name: r.name || r.display_name?.split(',')[0] || fallback.name,
+                displayName: r.display_name || fallback.displayName,
+                latitude: parseFloat(r.lat) || latitude,
+                longitude: parseFloat(r.lon) || longitude,
+                type: r.type || 'place',
                 area: r.address?.suburb || r.address?.neighbourhood || r.address?.city
             })),
             catchError(error => {
-                console.error('[GeocodingService] Reverse geocode error:', error);
-                return of(null);
+                // Silently log and return fallback for "Status 0" (CORS/Rate limit)
+                if (error.status === 0) {
+                    console.warn('[GeocodingService] Nominatim is unreachable or rate-limited. Using coordinate fallback.');
+                } else {
+                    console.error('[GeocodingService] Reverse geocode error:', error);
+                }
+                return of(fallback);
             })
         );
     }
