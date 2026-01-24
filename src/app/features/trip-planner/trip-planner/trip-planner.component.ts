@@ -812,54 +812,52 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 displayName: l.displayName,
                 area: l.area,
                 latitude: l.latitude,
-                longitude: l.longitude,
-                type: 'location' as const
-            }));
+                // Append to results if not already there (simple de-dupe by name)
+                const currentResults = Array.isArray(this.searchResults) ? this.searchResults : [];
+                const existingNames = new Set(currentResults.map(r => r.name));
+                const uniqueLocations = mappedLocations.filter(l => !existingNames.has(l.name));
 
-            // Append to results if not already there (simple de-dupe by name)
-            const existingNames = new Set(this.searchResults.map(r => r.name));
-            const uniqueLocations = mappedLocations.filter(l => !existingNames.has(l.name));
+                this.searchResults = [...this.searchResults, ...uniqueLocations];
+            });
 
-            this.searchResults = [...this.searchResults, ...uniqueLocations];
-        });
+            // 3. Search Behavioral Localities (ALONG - High Priority neighborhoods)
+            this.alongService.search(query).pipe(
+                catchError(() => of({ success: false, data: [] }))
+            ).subscribe(res => {
+                if (this.activeSearchField !== field) return;
 
-        // 3. Search Behavioral Localities (ALONG - High Priority neighborhoods)
-        this.alongService.search(query).pipe(
-            catchError(() => of({ success: false, data: [] }))
-        ).subscribe(res => {
-            if (this.activeSearchField !== field) return;
+                const localities = (res && res.success && Array.isArray(res.data) ? res.data : []).map((l: any) => ({
+                    name: l.name,
+                    displayName: l.displayName || l.name,
+                    area: l.area || l.district,
+                    latitude: l.lat || l.latitude,
+                    longitude: l.lng || l.longitude,
+                    type: 'location' as const,
+                    source: l.source,
+                    isVerifiedNeighborhood: l.source === 'along-locality',
+                    tier: 'primary' as const
+                }));
 
-            const localities = (res && res.success && Array.isArray(res.data) ? res.data : []).map((l: any) => ({
-                name: l.name,
-                displayName: l.displayName || l.name,
-                area: l.area || l.district,
-                latitude: l.lat || l.latitude,
-                longitude: l.lng || l.longitude,
-                type: 'location' as const,
-                source: l.source,
-                isVerifiedNeighborhood: l.source === 'along-locality',
-                tier: 'primary' as const
-            }));
+                // Merge and prioritize: verified neighborhoods should be at the top of 'location' type results
+                const verified = localities.filter(l => l.isVerifiedNeighborhood);
+                const others = localities.filter(l => !l.isVerifiedNeighborhood);
 
-            // Merge and prioritize: verified neighborhoods should be at the top of 'location' type results
-            const verified = localities.filter(l => l.isVerifiedNeighborhood);
-            const others = localities.filter(l => !l.isVerifiedNeighborhood);
+                // Logic: [Bus Stops] -> [Verified Neighborhoods] -> [Other Localities] -> [OSM Results]
+                const currentResults = Array.isArray(this.searchResults) ? this.searchResults : [];
+                const existingIds = new Set(currentResults.map(r => r.name));
+                const uniqueVerified = verified.filter(v => !existingIds.has(v.name));
+                const uniqueOthers = others.filter(o => !existingIds.has(o.name));
 
-            // Logic: [Bus Stops] -> [Verified Neighborhoods] -> [Other Localities] -> [OSM Results]
-            const existingIds = new Set(this.searchResults.map(r => r.name));
-            const uniqueVerified = verified.filter(v => !existingIds.has(v.name));
-            const uniqueOthers = others.filter(o => !existingIds.has(o.name));
+                // Insert verified neighborhoods after bus stops
+                const busStops = this.searchResults.filter(r => r.type === 'bus_stop');
+                const everythingElse = this.searchResults.filter(r => r.type !== 'bus_stop');
 
-            // Insert verified neighborhoods after bus stops
-            const busStops = this.searchResults.filter(r => r.type === 'bus_stop');
-            const everythingElse = this.searchResults.filter(r => r.type !== 'bus_stop');
-
-            this.searchResults = [...busStops, ...uniqueVerified, ...uniqueOthers, ...everythingElse];
-        });
-    }
+                this.searchResults = [...busStops, ...uniqueVerified, ...uniqueOthers, ...everythingElse];
+            });
+        }
 
     selectResult(result: SearchResult) {
-        if (this.activeSearchField === 'from') {
+            if(this.activeSearchField === 'from') {
             this.fromQuery = result.name;
             if (result.latitude && result.longitude) {
                 this.fromLocation = {
@@ -1104,7 +1102,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
      * Get transport mode icons
      */
     getTransportModeIcons(modes?: TransportMode[]): string[] {
-        if (!modes || modes.length === 0) return [];
+        const safeModes = Array.isArray(modes) ? modes : [];
+        if (safeModes.length === 0) return [];
         const iconMap: { [key in TransportMode]: string } = {
             'keke': 'fas fa-motorcycle',
             'bus': 'fas fa-bus',
@@ -1112,7 +1111,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             'taxi': 'fas fa-taxi',
             'walking': 'fas fa-walking'
         };
-        return modes.map(mode => iconMap[mode]);
+        return safeModes.map(mode => iconMap[mode] || 'fas fa-shuttle-van');
     }
 
     /**

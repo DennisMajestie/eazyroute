@@ -202,7 +202,23 @@ export class AlongService {
         }
         // 1. Check for standard data wrapper
         else if (response.data && Array.isArray(response.data)) {
-            routes = response.data;
+            // Check if it's an array of routes or an array of segments
+            if (response.data.length > 0 && (response.data[0]?.mode || response.data[0]?.instruction)) {
+                // It's an array of segments - wrap it
+                routes = [{
+                    from: 'Unknown',
+                    to: 'Unknown',
+                    segments: response.data,
+                    totalDistance: 0,
+                    totalTime: 0,
+                    totalCost: 0,
+                    instructions: [],
+                    metadata: { strategy: 'standard', alternativeRoutes: false }
+                }];
+            } else {
+                // It's an array of routes
+                routes = response.data;
+            }
         }
         // 2. Check for "route" object containing "legs"
         else if (response.route && typeof response.route === 'object') {
@@ -233,7 +249,7 @@ export class AlongService {
         }
         // 4. Check if response IS the array of routes/legs
         else if (Array.isArray(response)) {
-            if (response.length > 0 && (response[0].mode || response[0].instruction)) {
+            if (response.length > 0 && (response[0]?.mode || response[0]?.instruction)) {
                 routes = [{
                     from: 'Unknown',
                     to: 'Unknown',
