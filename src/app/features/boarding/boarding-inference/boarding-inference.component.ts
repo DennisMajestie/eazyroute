@@ -100,7 +100,7 @@ export class BoardingInferenceComponent implements OnInit {
         };
 
         this.http.get<{ success: boolean; data: BoardingPoint[] }>(url, { params }).pipe(
-            catchError(error => {
+            catchError((error: any) => {
                 console.error('Boarding inference error:', error);
                 this.error = 'Could not find boarding points. Please try again.';
                 this.isLoading = false;

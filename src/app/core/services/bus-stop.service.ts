@@ -5,8 +5,8 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { BusStop, CreateBusStopRequest, TransportMode, SearchBusStopParams, FuzzySearchResult } from '../../models/bus-stop.model';
 import { EnhancedBusStop, BusStopSearchResponse } from '../../models/enhanced-bus-stop.model';
@@ -98,7 +98,7 @@ export class BusStopService {
 
     return this.http.get<{ success: boolean; data: BusStop[] }>(this.apiUrl, { params: httpParams }).pipe(
       map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
-      catchError(err => {
+      catchError((err: any) => {
         console.error('[BusStopService] getAllStops failed:', err);
         return of([]);
       })
@@ -133,7 +133,7 @@ export class BusStopService {
 
     return this.http.get<{ success: boolean; data: BusStop[] }>(this.apiUrl, { params: httpParams }).pipe(
       map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
-      catchError(err => {
+      catchError((err: any) => {
         console.error('[BusStopService] searchStops failed:', err);
         return of([]);
       })
@@ -182,7 +182,7 @@ export class BusStopService {
       { params }
     ).pipe(
       map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
-      catchError(err => {
+      catchError((err: any) => {
         console.error('[BusStopService] fuzzySearch failed:', err);
         return of([]);
       })
@@ -329,7 +329,7 @@ export class BusStopService {
   getPendingStops(): Observable<BusStop[]> {
     return this.http.get<{ success: boolean; data: BusStop[] }>(`${this.apiUrl}/pending`).pipe(
       map(response => (Array.isArray(response?.data) ? response.data : []).filter(s => !!s)),
-      catchError(err => {
+      catchError((err: any) => {
         console.error('[BusStopService] getPendingStops failed:', err);
         return of([]);
       })

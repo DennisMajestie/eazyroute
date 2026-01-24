@@ -10,8 +10,8 @@ import { Component, OnInit, OnDestroy, effect, inject, signal } from '@angular/c
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { Subject, Observable, firstValueFrom } from 'rxjs';
-import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Subject, Observable, firstValueFrom, of } from 'rxjs';
+import { takeUntil, debounceTime, distinctUntilChanged, catchError, map } from 'rxjs/operators';
 
 // Import services
 import { AuthService } from '../../../core/services/auth.service';
@@ -323,7 +323,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         const allNearbyStops = response.data.filter((s: any) => !!s).map((stop: any) => ({
           name: stop?.name || 'Unknown Stop',
           area: stop?.area || stop?.district || 'Unknown Area',
-          distance: stop?.dist?.calculated ? Math.round(stop.dist.calculated) : 0,
+          distance: stop?.dist?.calculated ? `${Math.round(stop.dist.calculated)}m` : '0m',
           lat: stop?.location?.coordinates?.[1] || 0,
           lng: stop?.location?.coordinates?.[0] || 0,
           id: stop?._id || stop?.id,
@@ -375,7 +375,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
   private loadTagAlongRides(): void {
     this.tagAlongService.getAvailableRides({ limit: 3 }).pipe(
-      catchError(err => {
+      catchError((err: any) => {
         console.error('Failed to load rides', err);
         return of({ success: false, data: [] });
       })
@@ -383,7 +383,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       next: (res) => {
         if (res?.success && Array.isArray(res.data)) {
           this.tagAlongRides = res.data.filter(ride => !!ride).map(ride => ({
-            id: ride?._id || ride?.id,
+            id: ride?._id,
             driver: `${ride?.createdBy?.firstName || 'User'} ${ride?.createdBy?.lastName || ''}`,
             avatar: ride?.createdBy?.profilePicture || 'assets/default-avatar.png',
             from: ride?.origin || 'Unknown',
@@ -400,7 +400,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
   private loadUpcomingEvents(): void {
     this.eventService.getFeaturedEvents().pipe(
-      catchError(err => {
+      catchError((err: any) => {
         console.error('Failed to load events', err);
         return of([]);
       })

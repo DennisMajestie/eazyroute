@@ -777,7 +777,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
         // 1. Search Bus Stops (Local Data - High Priority)
         this.busStopService.searchWithLocalNames(query, 10).pipe(
-            catchError(() => of({ success: false, data: [] }))
+            catchError((err: any) => of({ success: false, data: [] }))
         ).subscribe(res => {
             if (this.activeSearchField !== field) return;
 
@@ -803,7 +803,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
         // 2. Search General Locations (OSM - Fallback)
         this.geocodingService.search(query).pipe(
-            catchError(() => of([]))
+            catchError((err: any) => of([]))
         ).subscribe(locations => {
             if (this.activeSearchField !== field) return;
 
@@ -827,7 +827,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
         // 3. Search Behavioral Localities (ALONG - High Priority neighborhoods)
         this.alongService.search(query).pipe(
-            catchError(() => of({ success: false, data: [] }))
+            catchError((err: any) => of({ success: false, data: [] }))
         ).subscribe(res => {
             if (this.activeSearchField !== field) return;
 

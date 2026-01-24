@@ -125,7 +125,7 @@ export class HomeAlongComponent implements OnInit {
           }
           return of({ success: false, data: [] });
         }),
-        catchError(err => {
+        catchError((err: any) => {
           console.error('Smart Boarding Error:', err);
           return of({ success: false, data: [] });
         })
@@ -309,7 +309,7 @@ export class HomeAlongComponent implements OnInit {
 
     // Hybrid Search (ALONG Framework)
     this.alongService.search(query).pipe(
-      catchError(err => {
+      catchError((err: any) => {
         console.error('Hybrid search error:', err);
         return of({ success: false, data: [] });
       })
