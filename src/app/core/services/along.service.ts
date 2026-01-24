@@ -252,10 +252,16 @@ export class AlongService {
             return [];
         }
 
+        // CRITICAL FIX: Final safety check before normalizing segments
+        if (!Array.isArray(routes)) {
+            console.warn('[AlongService] routes is not an array in extractRoutes final step:', routes);
+            return [];
+        }
+
         // Normalize all segments in all routes
         return routes.map(r => ({
             ...r,
-            segments: this.normalizeSegments(r.segments || [])
+            segments: this.normalizeSegments(r?.segments || [])
         }));
     }
 
