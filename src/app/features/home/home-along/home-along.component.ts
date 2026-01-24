@@ -316,7 +316,7 @@ export class HomeAlongComponent implements OnInit {
             latitude: item.location?.lat ?? item.location?.coordinates?.[1],
             longitude: item.location?.lng ?? item.location?.coordinates?.[0],
             source: item.source
-          } as any)); // Using any to bypass strict type check for now if LocalitySearchResult is strict
+          } as any));
 
           this.showSearchResults = true;
           this.loadingState.setSuccess(NIGERIAN_COPY.SUCCESS.READY);
