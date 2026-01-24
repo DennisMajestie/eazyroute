@@ -335,7 +335,7 @@
         </div>
 
         <!-- Segment Timeline Breakdown -->
-        <div class="timeline-container">
+        <div class="timeline-container" *ngIf="route?.segments?.length > 0; else noSegments">
           <div *ngFor="let segment of route.segments; let j = index" class="timeline-item"
             [class.walk]="segment.mode.type === 'walk'">
             <div class="timeline-marker">
@@ -382,6 +382,14 @@
             </div>
           </div>
         </div>
+
+        <!-- Fallback when no segments -->
+        <ng-template #noSegments>
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            Route details unavailable
+          </div>
+        </ng-template>
 
         <!-- Start Trip Button -->
         <!-- Start Trip Button -->
