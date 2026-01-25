@@ -319,7 +319,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     private async resolveLocation(query: string): Promise<{ lat: number, lng: number } | null> {
         try {
             // Try Geocoding Service First
-            const results = await firstValueFrom(this.geocodingService.search(query)) as any[];
+            const results = await firstValueFrom(this.geocodingService.forwardGeocode(query)) as any[];
             if (results && results.length > 0) {
                 return { lat: results[0].latitude, lng: results[0].longitude };
             }
@@ -816,7 +816,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         });
 
         // 2. Search General Locations (OSM - Fallback)
-        this.geocodingService.search(query).pipe(
+        this.geocodingService.forwardGeocode(query).pipe(
             catchError(() => of([]))
         ).subscribe((locations: any) => {
             if (this.activeSearchField !== field) return;
