@@ -203,10 +203,25 @@ export class AlongService {
         }
 
         // Normalize all segments in all routes
-        return routes.map(r => ({
+        return routes.filter(r => !!r).map(r => ({
             ...r,
-            segments: this.normalizeSegments(r?.segments || [])
+            totalCost: this.normalizeCost(r.totalCost),
+            totalTime: r.totalTime || r.totalDuration || r.time || 0,
+            segments: this.normalizeSegments(r?.segments || r?.legs || [])
         }));
+    }
+
+    /**
+     * Safely extract cost value from various possibilities
+     */
+    private normalizeCost(cost: any): number {
+        if (cost === null || cost === undefined) return 0;
+        if (typeof cost === 'number') return cost;
+        if (typeof cost === 'string') return parseFloat(cost) || 0;
+        if (typeof cost === 'object') {
+            return cost.min || cost.value || cost.amount || cost.total || 0;
+        }
+        return 0;
     }
 
     /**
@@ -216,16 +231,17 @@ export class AlongService {
     private normalizeSegments(segments: any[]): any[] {
         if (!Array.isArray(segments)) return [];
 
-        return segments.map(s => ({
+        return segments.filter(s => !!s).map(s => ({
             ...s,
             // V4 Aligned Keys (Backend provides these clean now)
-            vehicleType: s.vehicleType || s.mode,
+            vehicleType: s.vehicleType || s.mode || 'walk',
             fromStop: s.fromStop || s.fromName || 'Unknown Start',
             toStop: s.toStop || s.toName || 'Unknown End',
 
             // Structural Normalization
             distance: s.distance?.value || s.distance || 0,
             estimatedTime: s.duration?.value ? Math.round(s.duration.value / 60) : (s.estimatedTime || 0),
+            cost: this.normalizeCost(s.cost),
 
             // Instruction (Backend provides human-readable instructions)
             instruction: s.instruction || s.instructions || `Take ${s.vehicleType || 'transport'} to ${s.toStop}`

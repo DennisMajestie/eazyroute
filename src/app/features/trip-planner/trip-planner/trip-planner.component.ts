@@ -230,7 +230,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         const safeSegments = Array.isArray(sourceSegments) ? sourceSegments : [];
 
         // Map segments (AlongSegment -> RouteSegment)
-        const segments: RouteSegment[] = safeSegments.map((seg: any, index: number) => {
+        const segments: RouteSegment[] = safeSegments.filter(s => !!s).map((seg: any, index: number) => {
             const modeType = (seg.vehicleType || seg.mode || seg.type || 'walk') as any;
 
             return {
@@ -260,7 +260,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                     availabilityFactor: 1,
                     avgSpeedKmh: 0
                 } as any,
-                cost: seg.cost || 0,
+                cost: this.normalizeCost(seg.cost),
                 instructions: seg.instruction || seg.instructions || '',
                 microInstructions: seg.microInstructions || [],
                 barriers: seg.barriers || [],
@@ -276,7 +276,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             segments: segments,
             totalDistance: alongRoute.totalDistance,
             totalTime: alongRoute.totalTime,
-            totalCost: alongRoute.totalCost,
+            totalCost: this.normalizeCost(alongRoute.totalCost),
             rankingScore: { shortest: 0, cheapest: 0, balanced: 100 },
             generatedAt: new Date(),
             strategy: (alongRoute.classification?.toLowerCase() as any) || 'balanced',
@@ -304,6 +304,16 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         }
 
         return route;
+    }
+
+    private normalizeCost(cost: any): number {
+        if (cost === null || cost === undefined) return 0;
+        if (typeof cost === 'number') return cost;
+        if (typeof cost === 'string') return parseFloat(cost) || 0;
+        if (typeof cost === 'object') {
+            return cost.min || cost.value || cost.amount || cost.total || 0;
+        }
+        return 0;
     }
 
     private async resolveLocation(query: string): Promise<{ lat: number, lng: number } | null> {
