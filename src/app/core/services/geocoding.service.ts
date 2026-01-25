@@ -1,88 +1,89 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError, timeout, retry } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-
-export interface GeocodingResult {
-    name: string;
-    displayName: string;
-    latitude: number;
-    longitude: number;
-    type: string;
-    area?: string;
-}
 
 @Injectable({
     providedIn: 'root'
 })
 export class GeocodingService {
-    private apiUrl = `${environment.apiUrl}/location`;
+    private readonly API_URL = environment.apiUrl;
 
     constructor(private http: HttpClient) { }
 
     /**
-     * Search for locations using Backend Proxy (which calls Nominatim)
-     * Resolve CORS and Rate Limiting issues.
+     * Reverse geocode coordinates to address
+     * Now proxied through backend to avoid CORS issues
      */
-    search(query: string): Observable<GeocodingResult[]> {
-        if (!query || query.trim().length < 3) {
+    reverseGeocode(lat: number, lng: number): Observable<any> {
+        // Validate coordinates
+        if (!lat || !lng || lat === 0 || lng === 0) {
+            console.warn('[GeocodingService] Invalid coordinates:', lat, lng);
+            return of(this.getFallbackAddress(lat, lng));
+        }
+
+        return this.http.get(`${this.API_URL}/api/v1/geocoding/reverse`, {
+            params: {
+                lat: lat.toString(),
+                lon: lng.toString()
+            }
+        }).pipe(
+            timeout(10000),
+            retry(2),
+            map((response: any) => {
+                if (response?.success && response?.data) {
+                    return response.data;
+                }
+                return this.getFallbackAddress(lat, lng);
+            }),
+            catchError(error => {
+                console.error('[GeocodingService] Reverse geocode error:', error);
+                return of(this.getFallbackAddress(lat, lng));
+            })
+        );
+    }
+
+    /**
+     * Forward geocode (search) address to coordinates
+     */
+    forwardGeocode(query: string): Observable<any[]> {
+        if (!query || query.trim().length === 0) {
             return of([]);
         }
 
-        const url = `${this.apiUrl}/geocode`;
-        const payload = { address: query };
-
-        return this.http.post<any>(url, payload).pipe(
-            map(res => {
-                const results = Array.isArray(res.data) ? res.data : (res.data ? [res.data] : []);
-                return results.map((r: any) => ({
-                    name: r.name || r.address?.split(',')[0] || 'Result',
-                    displayName: r.address || r.name,
-                    latitude: r.lat,
-                    longitude: r.lng,
-                    type: r.type || 'landmark',
-                    area: r.area
-                }));
+        return this.http.get<any>(`${this.API_URL}/api/v1/geocoding/search`, {
+            params: { q: query }
+        }).pipe(
+            timeout(10000),
+            retry(2),
+            map((response: any) => {
+                if (response?.success && Array.isArray(response?.results)) {
+                    return response.results;
+                }
+                return [];
             }),
             catchError(error => {
-                console.error('[GeocodingService] Proxy Search error:', error);
+                console.error('[GeocodingService] Forward geocode error:', error);
                 return of([]);
             })
         );
     }
 
     /**
-     * Search Place (Alias for consistency)
+     * Get fallback address when geocoding fails
      */
-    searchPlace(query: string): Observable<GeocodingResult[]> {
-        return this.search(query);
-    }
-
-    /**
-     * Reverse geocode - get location name from coordinates via Backend Proxy
-     */
-    reverseGeocode(latitude: number, longitude: number): Observable<GeocodingResult | null> {
-        const url = `${this.apiUrl}/reverse-geocode`;
-        const payload = { latitude, longitude };
-
-        return this.http.post<any>(url, payload).pipe(
-            map(res => {
-                if (!res.success || !res.data) return null;
-                const data = res.data;
-                return {
-                    name: data.address?.split(',')[0] || 'Location',
-                    displayName: data.address,
-                    latitude: latitude,
-                    longitude: longitude,
-                    type: data.isLocalAnchor ? 'anchor' : 'landmark',
-                    area: ''
-                };
-            }),
-            catchError(error => {
-                console.error('[GeocodingService] Proxy Reverse error:', error);
-                return of(null);
-            })
-        );
+    private getFallbackAddress(lat: number, lng: number): any {
+        return {
+            display_name: `Location (${lat.toFixed(4)}, ${lng.toFixed(4)})`,
+            address: {
+                road: 'Unknown Road',
+                city: 'Abuja',
+                state: 'FCT',
+                country: 'Nigeria'
+            },
+            lat,
+            lon: lng
+        };
     }
 }

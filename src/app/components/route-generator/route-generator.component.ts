@@ -1,194 +1,161 @@
-
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { AlongService } from '../../core/services/along.service';
+import { Component, OnInit } from '@angular/core';
 import { BusStopService } from '../../core/services/bus-stop.service';
 import { GeolocationService } from '../../core/services/geolocation.service';
-import { AlongRoute, AlongSegment } from '../../models/transport.types';
-import { BusStopResponse } from '../../core/services/bus-stop.service';
+import { AlongService } from '../../core/services/along.service'; // Fix path to core/services
 
 @Component({
     selector: 'app-route-generator',
-    standalone: true,
-    imports: [CommonModule, FormsModule, RouterLink],
     templateUrl: './route-generator.component.html',
-    styleUrls: ['./route-generator.component.css']
+    styleUrls: ['./route-generator.component.css'] // Adjusted from .scss to .css to match previous file content
 })
-export class RouteGeneratorComponent {
-    routeLegs: AlongSegment[] = [];
+export class RouteGeneratorComponent implements OnInit {
+    nearbyStops: any[] = [];
+    searchResults: any[] = [];
+    selectedFrom: any = null;
+    selectedTo: any = null;
+    routes: any[] = [];
     loading = false;
-    error: string | null = null;
-    totalDistance = 0;
-    totalDuration = 0;
-    alternativesCount = 0;
-
-    // Location State
-    isLocating = false;
-    nearbyStops: any[] = []; // Using any to match API response structure flexibly
-    showNearbyDropdown = false;
-
-    fromLocation = {
-        name: 'Dogongada Village',
-        lat: 9.0067,
-        lng: 7.3589,
-        isHybrid: false
-    };
-
-    toLocation = {
-        name: 'Lugbe Total',
-        lat: 8.9897,
-        lng: 7.3789,
-        isHybrid: false
-    };
 
     constructor(
-        private alongService: AlongService,
         private busStopService: BusStopService,
-        private geolocationService: GeolocationService
+        private geolocationService: GeolocationService,
+        private alongService: AlongService
     ) { }
 
+    ngOnInit(): void {
+        this.loadNearbyStops();
+    }
+
     /**
-     * Use My Location to find nearest stops
+     * Load nearby stops with comprehensive error handling
      */
-    async useMyLocation() {
-        this.isLocating = true;
-        this.error = null;
-        this.nearbyStops = [];
-        this.fromLocation.isHybrid = false;
+    loadNearbyStops(): void {
+        this.geolocationService.getCurrentPosition().subscribe({
+            next: (position) => {
+                if (!position || !position.latitude || !position.longitude) {
+                    console.warn('[RouteGenerator] Invalid position:', position);
+                    return;
+                }
 
-        try {
-            // 1. Get Coordinates (Smart Strategy)
-            const position = await this.geolocationService.getSmartLocation();
-
-            if (!position) {
-                throw new Error('Could not retrieve location. Please ensure GPS is enabled.');
-            }
-
-            // Check for low accuracy
-            if (position.accuracy && position.accuracy > 100) {
-                // We could show a toast here, but for now we'll just log it or rely on the UI displaying "Unverified" implicit context
-                console.warn(`[RouteGen] Low accuracy detected: ${position.accuracy}m`);
-            }
-
-            // 2. Fetch Nearby Stops with 1000m radius
-            this.busStopService.getNearbyStops(position.latitude, position.longitude, 1000, 5)
-                .subscribe({
+                this.busStopService.getNearbyStops(
+                    position.latitude,
+                    position.longitude,
+                    1000,
+                    5
+                ).subscribe({
                     next: (response: any) => {
-                        const stops = Array.isArray(response) ? response : (response.data || []);
+                        // ✅ Comprehensive null-safety
+                        const rawData = response?.data || response || [];
+                        const stopsArray = Array.isArray(rawData) ? rawData : [];
 
-                        this.nearbyStops = stops.map((stop: any) => ({
-                            name: stop.name,
-                            lat: stop.location?.coordinates?.[1] || 0,
-                            lng: stop.location?.coordinates?.[0] || 0,
-                            distance: stop.dist?.calculated || 9999, // default to high if missing
-                            verified: stop.verified
-                        }));
+                        this.nearbyStops = stopsArray
+                            .filter((stop: any) => stop != null) // Remove null/undefined
+                            .map((stop: any) => ({
+                                name: stop?.name || 'Unknown Stop',
+                                lat: stop?.location?.coordinates?.[1] ?? stop?.latitude ?? 0,
+                                lng: stop?.location?.coordinates?.[0] ?? stop?.longitude ?? 0,
+                                distance: stop?.dist?.calculated ?? stop?.distance ?? 9999,
+                                verified: !!stop?.verified || stop?.verificationStatus === 'verified'
+                            }))
+                            .filter((stop: any) => stop.lat !== 0 && stop.lng !== 0); // Remove invalid coordinates
 
-                        this.handleAbujaLogic(position, this.nearbyStops);
-                        this.isLocating = false;
+                        console.log('[RouteGenerator] Loaded nearby stops:', this.nearbyStops.length);
                     },
-                    error: (err) => {
-                        console.error('Nearby stops error:', err);
-                        // Fallback: Use raw coords even if API fails
-                        this.handleAbujaLogic(position, []);
-                        this.isLocating = false;
+                    error: (err: any) => {
+                        console.error('[RouteGenerator] Failed to load nearby stops:', err);
+                        this.nearbyStops = [];
                     }
                 });
-
-        } catch (err: any) {
-            console.error('Geolocation error:', err);
-            this.error = err.message || 'Location access denied.';
-            this.isLocating = false;
-        }
-    }
-
-    /**
-     * Implement Abuja Entitlement Logic
-     * - < 50m to Node: Snap to Node
-     * - > 800m from Node: Warn "Walking Distance Exceeded"
-     */
-    private handleAbujaLogic(position: any, stops: any[]) {
-        const nearest = stops.length > 0 ? stops[0] : null;
-
-        if (nearest && nearest.distance < 50) {
-            // Snap to Node
-            this.selectNearbyStop(nearest);
-            this.showNearbyDropdown = false; // Auto-selected
-            console.log(`[AbujaLogic] Snapped to ${nearest.name} (< 50m)`);
-        } else {
-            // Use Raw Coords
-            this.fromLocation = {
-                name: `My Location (${position.latitude.toFixed(4)}, ${position.longitude.toFixed(4)})`,
-                lat: position.latitude,
-                lng: position.longitude,
-                isHybrid: true // Flag to show warnings
-            };
-
-            // Check if stranded (Walking Distance Exceeded)
-            if (!nearest || nearest.distance > 800) {
-                this.error = '⚠️ Warning: You are far from verified stops (> 800m). Walking distance may be exceeded.';
-            } else {
-                // Just show dropdown for manual selection if desired
-                this.showNearbyDropdown = true;
-            }
-        }
-    }
-
-    /**
-     * Select a stop from nearby list
-     */
-    selectNearbyStop(stop: any) {
-        this.fromLocation = {
-            name: stop.name,
-            lat: stop.lat,
-            lng: stop.lng,
-            isHybrid: false
-        };
-        this.showNearbyDropdown = false;
-    }
-
-    generateRoute(): void {
-        this.loading = true;
-        this.error = null;
-        this.routeLegs = [];
-        this.alternativesCount = 0;
-
-        // Ensure we pass the right format to AlongService
-        const fromPayload = this.fromLocation.lat ? this.fromLocation : this.fromLocation.name;
-        const toPayload = this.toLocation.lat ? this.toLocation : this.toLocation.name;
-
-        this.alongService.generateRoute(fromPayload, toPayload).subscribe({
-            next: (response) => {
-                console.log('[RouteGenerator] API Response:', response);
-                if (response.success && response.data && response.data.length > 0) {
-                    const route = response.data[0];
-                    console.log('[RouteGenerator] First Route:', route);
-                    this.routeLegs = Array.isArray(route.segments) ? route.segments : [];
-                    this.totalDistance = route.totalDistance;
-                    this.totalDuration = route.totalTime;
-
-                    if (this.routeLegs.length === 0) {
-                        console.warn('[RouteGenerator] Route has no segments!', route);
-                        this.error = 'Route found but has no segments.';
-                    }
-
-                    // K-Best Routing: Check for alternatives
-                    if (route.alternatives && route.alternatives.length > 0) {
-                        this.alternativesCount = route.alternatives.length;
-                        console.log('K-Best Routing: Found', this.alternativesCount, 'alternatives');
-                    }
-                } else {
-                    console.warn('[RouteGenerator] No routes in response data:', response);
-                    this.error = response.message || 'No route found';
-                }
-                this.loading = false;
             },
             error: (err) => {
-                console.error('[RouteGenerator] Error generating route:', err);
-                this.error = err.error?.message || err.message || 'Failed to generate route';
+                console.error('[RouteGenerator] Geolocation error:', err);
+            }
+        });
+    }
+
+    /**
+     * Search for stops with null-safety
+     */
+    searchStops(query: string): void {
+        if (!query || query.trim().length === 0) {
+            this.searchResults = [];
+            return;
+        }
+
+        this.busStopService.searchBusStops(query).subscribe({
+            next: (response: any) => {
+                // ✅ Null-safe array extraction
+                const rawData = response?.data || response?.results || [];
+                const resultsArray = Array.isArray(rawData) ? rawData : [];
+
+                this.searchResults = resultsArray
+                    .filter((stop: any) => stop != null)
+                    .map((stop: any) => ({
+                        name: stop?.name || 'Unknown',
+                        lat: stop?.location?.coordinates?.[1] ?? stop?.latitude ?? 0,
+                        lng: stop?.location?.coordinates?.[0] ?? stop?.longitude ?? 0
+                    }))
+                    .filter((stop: any) => stop.lat !== 0 && stop.lng !== 0);
+
+                console.log('[RouteGenerator] Search results:', this.searchResults.length);
+            },
+            error: (err: any) => {
+                console.error('[RouteGenerator] Search failed:', err);
+                this.searchResults = [];
+            }
+        });
+    }
+
+    /**
+     * Generate route with comprehensive error handling
+     */
+    generateRoute(): void {
+        if (!this.selectedFrom || !this.selectedTo) {
+            console.warn('[RouteGenerator] Missing origin or destination');
+            return;
+        }
+
+        this.loading = true;
+        this.routes = [];
+
+        const routeRequest = {
+            from: this.selectedFrom.name,
+            to: this.selectedTo.name,
+            fromLat: this.selectedFrom.lat,
+            fromLng: this.selectedFrom.lng,
+            toLat: this.selectedTo.lat,
+            toLng: this.selectedTo.lng
+        };
+
+        console.log('[RouteGenerator] Generating route:', routeRequest);
+
+        this.alongService.generateRoute(routeRequest).subscribe({
+            next: (response: any) => {
                 this.loading = false;
+
+                // ✅ Null-safe route extraction
+                const rawRoutes = response?.data?.routes || response?.routes || response?.data || [];
+                const routesArray = Array.isArray(rawRoutes) ? rawRoutes : [];
+
+                this.routes = routesArray
+                    .filter((route: any) => route != null)
+                    .map((route: any) => ({
+                        ...route,
+                        segments: Array.isArray(route?.segments) ? route.segments : [],
+                        legs: Array.isArray(route?.legs) ? route.legs : [],
+                        polyline: Array.isArray(route?.polyline) ? route.polyline : []
+                    }));
+
+                console.log('[RouteGenerator] Routes generated:', this.routes.length);
+
+                if (this.routes.length === 0) {
+                    console.warn('[RouteGenerator] No valid routes found');
+                }
+            },
+            error: (err: any) => {
+                this.loading = false;
+                console.error('[RouteGenerator] Route generation failed:', err);
+                this.routes = [];
             }
         });
     }

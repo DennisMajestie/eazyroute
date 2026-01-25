@@ -666,13 +666,32 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   }
 
   performSearch(query: string): void {
+    if (!query || query.trim().length === 0) {
+      this.searchResults = [];
+      return;
+    }
+
     this.busStopService.searchBusStops(query).subscribe({
-      next: (res) => {
-        if (res.success && res.data) {
-          this.searchResults = res.data;
+      next: (response: any) => {
+        // ✅ Comprehensive null-safety
+        if (response?.success && Array.isArray(response?.data)) {
+          this.searchResults = response.data
+            .filter((stop: any) => stop != null)
+            .map((stop: any) => ({
+              ...stop,
+              name: stop?.name || 'Unknown',
+              location: stop?.location || { coordinates: [0, 0] }
+            }));
+        } else {
+          this.searchResults = [];
         }
+
+        console.log('[Dashboard] Search results:', this.searchResults.length);
       },
-      error: (err) => console.error('Search failed', err)
+      error: (err) => {
+        console.error('[Dashboard] Search failed:', err);
+        this.searchResults = [];
+      }
     });
   }
 
