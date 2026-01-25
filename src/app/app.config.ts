@@ -8,6 +8,7 @@ import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
 import { loggingInterceptor } from './core/interceptors/logging.interceptor';
+import { sanitizerInterceptor } from './core/interceptors/sanitizer.interceptor';
 
 // ✨ NEW: Import engine adapter providers
 import {
@@ -32,9 +33,10 @@ export const appConfig: ApplicationConfig = {
     provideEasyrouteEngines(),
     provideHttpClient(
       withInterceptors([
-        loggingInterceptor,  // Optional: For debugging (runs first)
-        authInterceptor,     // Adds JWT token
-        errorInterceptor     // Handles errors (runs last)
+        loggingInterceptor,   // Optional: For debugging (runs first)
+        sanitizerInterceptor, // Normalizes volatile API data
+        authInterceptor,      // Adds JWT token
+        errorInterceptor      // Handles errors (runs last)
       ])
     ),
 
@@ -54,9 +56,10 @@ export const appConfig: ApplicationConfig = {
     { provide: LOCATION_SERVICE, useClass: LocationServiceAdapter },
     { provide: ROUTING_SERVICE, useClass: RoutingServiceAdapter },
     { provide: FARE_CALCULATOR, useClass: FareCalculatorAdapter },
-    { provide: NOTIFICATION_SERVICE, useClass: NotificationServiceAdapter }, provideServiceWorker('ngsw-worker.js', {
-            enabled: !isDevMode(),
-            registrationStrategy: 'registerWhenStable:30000'
-          })
+    { provide: NOTIFICATION_SERVICE, useClass: NotificationServiceAdapter },
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000'
+    })
   ]
 };

@@ -534,8 +534,8 @@ export class RouteGenerationEngine {
             // If segment is too long (>5km), find intermediate stops
             if (segment.distance > 5000 && segment.mode.type === 'bus') {
                 const intermediateStops = await this.findIntermediateStops(
-                    segment.fromStop,
-                    segment.toStop
+                    segment.fromStop as BusStop,
+                    segment.toStop as BusStop
                 );
 
                 // Break into smaller segments
@@ -544,8 +544,8 @@ export class RouteGenerationEngine {
 
                     for (let i = 0; i < stops.length - 1; i++) {
                         const subSegment = await this.createTransitSegment(
-                            stops[i],
-                            stops[i + 1],
+                            stops[i] as BusStop,
+                            stops[i + 1] as BusStop,
                             segment.mode.type as TransportModeType,
                             `sub-${i}`
                         );

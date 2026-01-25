@@ -538,12 +538,12 @@ export class ReroutingEngine {
   ): number {
     // Calculate distance to the expected path (line between from and to stops)
     const fromStop: Location = {
-      latitude: currentSegment.fromStop.latitude,
-      longitude: currentSegment.fromStop.longitude
+      latitude: currentSegment.fromStop.latitude || 0,
+      longitude: currentSegment.fromStop.longitude || 0
     };
     const toStop: Location = {
-      latitude: currentSegment.toStop.latitude,
-      longitude: currentSegment.toStop.longitude
+      latitude: currentSegment.toStop.latitude || 0,
+      longitude: currentSegment.toStop.longitude || 0
     };
 
     // Simple implementation: distance to nearest endpoint

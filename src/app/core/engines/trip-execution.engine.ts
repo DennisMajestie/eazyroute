@@ -115,8 +115,8 @@ export class TripExecutionEngine {
             startLocation: currentLocation,
             currentLocation,
             destinationLocation: {
-                latitude: selectedRoute.segments[selectedRoute.segments.length - 1].toStop.latitude,
-                longitude: selectedRoute.segments[selectedRoute.segments.length - 1].toStop.longitude
+                latitude: selectedRoute.segments[selectedRoute.segments.length - 1].toStop.latitude || 0,
+                longitude: selectedRoute.segments[selectedRoute.segments.length - 1].toStop.longitude || 0
             },
             startTime: new Date(),
             lastUpdated: new Date(),
@@ -313,8 +313,8 @@ export class TripExecutionEngine {
         if (!nextMilestone) return;
 
         const stopLocation: Location = {
-            latitude: currentSegment.toStop.latitude,
-            longitude: currentSegment.toStop.longitude
+            latitude: currentSegment.toStop.latitude || 0,
+            longitude: currentSegment.toStop.longitude || 0
         };
 
         const distanceToStop = this.locationService.calculateDistance(
@@ -441,13 +441,13 @@ export class TripExecutionEngine {
         const distanceToStart = this.locationService.calculateDistance(
             currentLocation,
             {
-                latitude: startStop.latitude,
-                longitude: startStop.longitude
+                latitude: (startStop.latitude as number) || 0,
+                longitude: (startStop.longitude as number) || 0
             }
         );
 
         if (distanceToStart <= this.config.nearbyStopRadiusMeters) {
-            return startStop;
+            return startStop as BusStop;
         }
 
         // Find nearest stop from all stops in route
@@ -458,8 +458,8 @@ export class TripExecutionEngine {
             const fromStopDistance = this.locationService.calculateDistance(
                 currentLocation,
                 {
-                    latitude: segment.fromStop.latitude,
-                    longitude: segment.fromStop.longitude
+                    latitude: (segment.fromStop.latitude as number) || 0,
+                    longitude: (segment.fromStop.longitude as number) || 0
                 }
             );
 
@@ -469,7 +469,7 @@ export class TripExecutionEngine {
             }
         }
 
-        return nearestStop;
+        return nearestStop as BusStop;
     }
 
     /**
@@ -485,7 +485,7 @@ export class TripExecutionEngine {
             cumulativeTime += segment.estimatedTime;
 
             milestones.push({
-                stopId: typeof segment.toStop.id === 'string' ? parseInt(segment.toStop.id) : segment.toStop.id,
+                stopId: typeof segment.toStop.id === 'string' ? parseInt(segment.toStop.id) || 0 : (segment.toStop.id as number) || 0,
                 stopName: segment.toStop.name,
                 segmentIndex: index,
                 expectedArrivalTime: new Date(Date.now() + cumulativeTime * 60 * 1000),

@@ -121,8 +121,8 @@ export interface RouteSegment {
 
     // V4 Aligned Keys
     vehicleType?: TransportModeType; // Normalized mode key
-    fromStop: any;                  // Normalized source (string or object)
-    toStop: any;                    // Normalized target (string or object)
+    fromStop: { id?: string | number; name: string; latitude?: number; longitude?: number };
+    toStop: { id?: string | number; name: string; latitude?: number; longitude?: number };
 
     // V3 Safety Guardrails
     isBridge?: boolean;       // User must use a pedestrian bridge here

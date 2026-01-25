@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, from, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { DataSanitizer } from '../utils/data-sanitizer';
 import { AlongRoute, ApiResponse, BoardingInference } from '../../models/transport.types';
 import { EnhancedRoute, EnhancedRouteResponse, TransportMode } from '../../models/enhanced-bus-stop.model';
 import { RouteResponse } from '../../models/route.model';
@@ -202,13 +203,8 @@ export class AlongService {
             return [];
         }
 
-        // Normalize all segments in all routes
-        return routes.filter(r => !!r).map(r => ({
-            ...r,
-            totalCost: this.normalizeCost(r.totalCost),
-            totalTime: r.totalTime || r.totalDuration || r.time || 0,
-            segments: this.normalizeSegments(r?.segments || r?.legs || [])
-        }));
+        // Normalize all routes using DataSanitizer
+        return DataSanitizer.sanitize<AlongRoute[]>(routes, 'route');
     }
 
     /**

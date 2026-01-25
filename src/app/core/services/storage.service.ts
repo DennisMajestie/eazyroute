@@ -232,7 +232,7 @@ export class StorageService {
      * Clear all app data
      */
     clearAll(): void {
-        Object.values(environment.storageKeys).forEach(key => {
+        (Object.values(environment.storageKeys) as string[]).forEach(key => {
             localStorage.removeItem(key);
         });
     }
