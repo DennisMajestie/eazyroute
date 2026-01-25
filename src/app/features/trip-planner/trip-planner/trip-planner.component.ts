@@ -822,7 +822,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             }));
 
             // Append to results if not already there (simple de-dupe by name)
-            const existingNames = new Set(this.searchResults.map(r => r.name));
+            const existingNames = new Set((this.searchResults || []).map(r => r?.name).filter(n => !!n));
             const uniqueLocations = mappedLocations.filter(l => !existingNames.has(l.name));
 
             this.searchResults = [...this.searchResults, ...uniqueLocations];
@@ -851,13 +851,14 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             const others = localities.filter(l => !l.isVerifiedNeighborhood);
 
             // Logic: [Bus Stops] -> [Verified Neighborhoods] -> [Other Localities] -> [OSM Results]
-            const existingIds = new Set(this.searchResults.map(r => r.name));
+            const safeResults = Array.isArray(this.searchResults) ? this.searchResults : [];
+            const existingIds = new Set(safeResults.map(r => r?.name).filter(n => !!n));
             const uniqueVerified = verified.filter(v => !existingIds.has(v.name));
             const uniqueOthers = others.filter(o => !existingIds.has(o.name));
 
             // Insert verified neighborhoods after bus stops
-            const busStops = this.searchResults.filter(r => r.type === 'bus_stop');
-            const everythingElse = this.searchResults.filter(r => r.type !== 'bus_stop');
+            const busStops = safeResults.filter(r => r?.type === 'bus_stop');
+            const everythingElse = safeResults.filter(r => r?.type !== 'bus_stop');
 
             this.searchResults = [...busStops, ...uniqueVerified, ...uniqueOthers, ...everythingElse];
         });

@@ -86,8 +86,9 @@ export class RouteBuilderService {
             return routes;
         }
 
-        const times = routes.map(r => r.totalTime);
-        const costs = routes.map(r => r.totalCost);
+        const safeRoutes = Array.isArray(routes) ? routes : [];
+        const times = safeRoutes.map(r => r?.totalTime || 0);
+        const costs = safeRoutes.map(r => r?.totalCost || 0);
 
         const minTime = Math.min(...times);
         const maxTime = Math.max(...times);
