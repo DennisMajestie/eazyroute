@@ -159,7 +159,9 @@ export class RouteDisplayComponent implements OnInit {
                                 .filter(i => !!i);
 
                             if (r.instructions.length === 0) {
-                                r.instructions = (r.segments || [])
+                                // CRITICAL FIX: Ensure segments is an array
+                                const segments = Array.isArray(r.segments) ? r.segments : [];
+                                r.instructions = segments
                                     .map((s: any) => s?.instruction || s?.instructions || '')
                                     .filter((i: any) => !!i);
                             }

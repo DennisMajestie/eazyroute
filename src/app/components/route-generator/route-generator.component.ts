@@ -165,7 +165,7 @@ export class RouteGeneratorComponent {
                 if (response.success && response.data && response.data.length > 0) {
                     const route = response.data[0];
                     console.log('[RouteGenerator] First Route:', route);
-                    this.routeLegs = route.segments || [];
+                    this.routeLegs = Array.isArray(route.segments) ? route.segments : [];
                     this.totalDistance = route.totalDistance;
                     this.totalDuration = route.totalTime;
 

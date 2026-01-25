@@ -498,6 +498,12 @@ export class RouteGenerationEngine {
         const seenSignatures = new Set<string>();
 
         for (const route of routes) {
+            // CRITICAL FIX: Ensure segments exist and is an array
+            if (!route.segments || !Array.isArray(route.segments)) {
+                console.warn('[RouteGen] Skipping malformed route without segments:', route);
+                continue;
+            }
+
             // Create signature based on stops and modes
             const signature = route.segments
                 .map(seg => `${seg.fromStop.id}-${seg.toStop.id}-${seg.mode.type}`)
