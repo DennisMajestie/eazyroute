@@ -320,7 +320,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
       if (response?.success && Array.isArray(response.data)) {
         // ⭐ ONLY TAKE FIRST 5 FOR DASHBOARD
-        const allNearbyStops = response.data.map((stop: any) => ({
+        const allNearbyStops = (response.data as any[]).map((stop: any) => ({
           id: stop._id || stop.id,
           name: stop.name,
           distance: stop.dist?.calculated ? `${stop.dist.calculated}m` : this.calculateDistance(stop.location),
@@ -350,7 +350,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       const response = await this.routeHttpService.getPopularRoutes().toPromise();
 
       if (response?.success && Array.isArray(response.data)) {
-        this.popularRoutes = response.data.map((route: any) => ({
+        this.popularRoutes = (response.data as any[]).map((route: any) => ({
           id: route._id || route.id,
           name: route.name,
           from: route.origin?.name || 'Unknown',
@@ -374,7 +374,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     this.tagAlongService.getAvailableRides({ limit: 3 }).subscribe({
       next: (res) => {
         if (res.success && Array.isArray(res.data)) {
-          this.tagAlongRides = res.data.map(ride => ({
+          this.tagAlongRides = (res.data as any[]).map(ride => ({
             id: ride._id,
             driver: `${ride.createdBy.firstName} ${ride.createdBy.lastName}`,
             avatar: ride.createdBy.profilePicture || 'assets/default-avatar.png',
@@ -395,7 +395,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     this.eventService.getFeaturedEvents().subscribe({
       next: (events) => {
         if (Array.isArray(events)) {
-          this.upcomingEvents = events.map(evt => ({
+          this.upcomingEvents = (events as any[]).map(evt => ({
             id: evt.id,
             title: evt.title,
             date: new Date(evt.schedule.start).toLocaleDateString(),

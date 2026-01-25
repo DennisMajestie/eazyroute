@@ -73,7 +73,7 @@ export class AreaService {
             .pipe(
                 map(response => {
                     const areas = response.data || [];
-                    return areas.map(area => ({
+                    return (areas || []).filter(a => !!a).map(area => ({
                         area,
                         matchType: this.getMatchType(area, query),
                         relevanceScore: this.calculateRelevance(area, query)

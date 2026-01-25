@@ -440,9 +440,12 @@ export class RouteGenerationEngine {
         if (routes.length === 0) return routes;
 
         // Find min/max for normalization
-        const distances = routes.map(r => r.totalDistance);
-        const costs = routes.map(r => r.totalCost);
-        const times = routes.map(r => r.totalTime);
+        const safeRoutes = Array.isArray(routes) ? routes.filter(r => !!r) : [];
+        if (safeRoutes.length === 0) return [];
+
+        const distances = safeRoutes.map(r => r.totalDistance || 0);
+        const costs = safeRoutes.map(r => r.totalCost || 0);
+        const times = safeRoutes.map(r => r.totalTime || 0);
 
         const minDistance = Math.min(...distances);
         const maxDistance = Math.max(...distances);
@@ -505,7 +508,8 @@ export class RouteGenerationEngine {
             }
 
             // Create signature based on stops and modes
-            const signature = route.segments
+            const signature = (route.segments || [])
+                .filter(seg => !!seg && !!seg.fromStop && !!seg.toStop && !!seg.mode)
                 .map(seg => `${seg.fromStop.id}-${seg.toStop.id}-${seg.mode.type}`)
                 .join('|');
 
