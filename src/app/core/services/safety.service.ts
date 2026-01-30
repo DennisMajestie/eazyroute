@@ -5,6 +5,7 @@ import { switchMap, tap, catchError, filter } from 'rxjs/operators';
 import { GeolocationService } from './geolocation.service';
 import { AllUrlService } from '../../services/allUrl.service';
 import { WebSocketService } from './websocket.service';
+import { environment } from '../../../environments/environment';
 
 export type SafetyLevel = 'yellow' | 'orange' | 'red';
 
@@ -97,7 +98,7 @@ export class SafetyService {
                 };
                 // Use AllUrlService to find endpoint if needed, or hardcode API structure
                 // Ideally this endpoint should be in AllUrlService
-                return this.http.post('/api/v1/location/update', payload).pipe(
+                return this.http.post(`${environment.apiUrl}/location/update`, payload).pipe(
                     catchError(err => of(null)) // Ignore network errors for safety updates
                 );
             })
@@ -122,7 +123,7 @@ export class SafetyService {
                     longitude: coords.longitude,
                     description: description || 'User triggered SOS'
                 };
-                return this.http.post('/api/v1/sos/alert', payload);
+                return this.http.post(`${environment.apiUrl}/sos/alert`, payload);
             })
         );
     }

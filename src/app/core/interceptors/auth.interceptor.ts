@@ -34,7 +34,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
                 if (isAuthCritical) {
                     console.warn('[AuthInterceptor] Critical auth failure - logging out', req.url);
-                    localStorage.removeItem('auth_token');
+                    localStorage.removeItem(environment.storageKeys.token);
                     router.navigate(['/login']);
                 } else {
                     console.log('[AuthInterceptor] 401 on optional endpoint (OK):', req.url);

@@ -23,7 +23,7 @@ export class GeocodingService {
             return of(this.getFallbackAddress(lat, lng));
         }
 
-        return this.http.get(`${this.API_URL}/api/v1/geocoding/reverse`, {
+        return this.http.get(`${this.API_URL}/geocoding/reverse`, {
             params: {
                 lat: lat.toString(),
                 lon: lng.toString()
@@ -52,7 +52,7 @@ export class GeocodingService {
             return of([]);
         }
 
-        return this.http.get<any>(`${this.API_URL}/api/v1/geocoding/search`, {
+        return this.http.get<any>(`${this.API_URL}/geocoding/search`, {
             params: { q: query }
         }).pipe(
             timeout(10000),
