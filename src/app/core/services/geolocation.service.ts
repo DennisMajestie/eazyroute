@@ -86,26 +86,26 @@ export class GeolocationService {
      * 3. Retry 2: Accept Coarse (IP-based)
      */
     async getSmartLocation(): Promise<Coordinates | null> {
-        // Attempt 1: High Accuracy (GPS) - Reduced to 5s timeout
+        // Attempt 1: High Accuracy (GPS) - Increased to 15s timeout
         try {
             console.log('[Geolocation] Attempt 1: High Accuracy (GPS)');
-            return await this.getPositionWithTimeout(50, 5000, true);
+            return await this.getPositionWithTimeout(50, 15000, true);
         } catch (e) {
             console.warn("[Geolocation] GPS failed, falling back to Tower/WiFi...");
         }
 
-        // Attempt 2: Low Accuracy (Fast) - Reduced to 3s timeout
+        // Attempt 2: Low Accuracy (Fast) - Increased to 10s timeout
         try {
             console.log('[Geolocation] Attempt 2: Low Accuracy (Cell/WiFi)');
-            return await this.getPositionWithTimeout(100, 3000, false);
+            return await this.getPositionWithTimeout(100, 10000, false);
         } catch (e) {
             console.warn('[Geolocation] Attempt 2 failed:', e);
         }
 
-        // Attempt 3: Coarse Location (Accept anything) - Reduced to 3s timeout
+        // Attempt 3: Coarse Location (Accept anything) - Increased to 10s timeout
         try {
             console.log('[Geolocation] Attempt 3: Coarse Location');
-            const pos = await this.getPositionWithTimeout(Infinity, 3000, false);
+            const pos = await this.getPositionWithTimeout(Infinity, 10000, false);
             // Mark as coarse/low accuracy for UI warnings
             pos.accuracy = pos.accuracy || 5000;
             return pos;
@@ -136,7 +136,7 @@ export class GeolocationService {
 
             const tid = setTimeout(() => {
                 reject(new Error('Timeout'));
-            }, timeoutMs);
+            }, timeoutMs + 1000); // Give native timeout 1s head start
 
             navigator.geolocation.getCurrentPosition(
                 (position) => {
@@ -151,7 +151,7 @@ export class GeolocationService {
                 {
                     enableHighAccuracy: highAccuracy,
                     timeout: timeoutMs,
-                    maximumAge: 0
+                    maximumAge: 60000 // 🇳🇬 Optimized: Use cached position if < 1 min old
                 }
             );
         });
@@ -191,6 +191,13 @@ export class GeolocationService {
 
         this.currentLocation.set(coords);
         this.locationError.set(null);
+
+        // 🇳🇬 Persistent Fallback: Save to localStorage for thick-building scenarios
+        localStorage.setItem('lastKnownLocation', JSON.stringify({
+            lat: coords.latitude,
+            lng: coords.longitude,
+            timestamp: Date.now()
+        }));
 
         return coords;
     }

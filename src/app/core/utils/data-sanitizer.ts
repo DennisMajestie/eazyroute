@@ -41,6 +41,11 @@ export class DataSanitizer {
                 sanitized.toStop = this.sanitize(data.toStop, 'stop');
             }
 
+            if (schemaIdentifier === 'stop') {
+                sanitized.latitude = data.lat ?? data.latitude ?? data.location?.lat ?? data.location?.coordinates?.[1] ?? 0;
+                sanitized.longitude = data.lng ?? data.longitude ?? data.location?.lng ?? data.location?.coordinates?.[0] ?? 0;
+            }
+
             return sanitized as T;
         }
 

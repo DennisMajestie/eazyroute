@@ -337,13 +337,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         const allNearbyStops = (response.data as any[]).map((stop: any) => ({
           id: stop._id || stop.id,
           name: stop.name,
-          distance: stop.dist?.calculated ? `${stop.dist.calculated}m` : this.calculateDistance(stop.location),
+          distance: stop.dist?.calculated ? `${stop.dist.calculated}m` : this.calculateDistance(stop),
           routes: stop.routes || [],
-          travelTime: this.calculateTravelTime(stop.dist?.calculated || this.calculateDistanceMeters(stop.location)),
+          travelTime: this.calculateTravelTime(stop.dist?.calculated || this.calculateDistanceMeters(stop)),
           status: this.determineStopStatus(stop),
           type: stop.type || 'bus_stop',
-          latitude: stop.location?.coordinates?.[1] || stop.latitude,
-          longitude: stop.location?.coordinates?.[0] || stop.longitude
+          latitude: stop.lat ?? stop.location?.coordinates?.[1] ?? stop.latitude,
+          longitude: stop.lng ?? stop.location?.coordinates?.[0] ?? stop.longitude
         }));
 
         // Limit to 5 stops for dashboard
@@ -545,13 +545,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  private calculateDistance(stopLocation: any): string {
-    if (!this.currentUserLocation || !stopLocation) return 'N/A';
+  private calculateDistance(stop: any): string {
+    if (!this.currentUserLocation || !stop) return 'N/A';
 
     const lat1 = this.currentUserLocation.lat;
     const lon1 = this.currentUserLocation.lng;
-    const lat2 = stopLocation.coordinates?.[1] || stopLocation.lat || stopLocation.latitude;
-    const lon2 = stopLocation.coordinates?.[0] || stopLocation.lng || stopLocation.longitude;
+    const lat2 = stop.lat ?? stop.location?.coordinates?.[1] ?? stop.latitude;
+    const lon2 = stop.lng ?? stop.location?.coordinates?.[0] ?? stop.longitude;
 
     if (!lat2 || !lon2) return 'N/A';
 
@@ -571,13 +571,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     return `${distance.toFixed(1)} km`;
   }
 
-  private calculateDistanceMeters(stopLocation: any): number {
-    if (!this.currentUserLocation || !stopLocation) return 0;
+  private calculateDistanceMeters(stop: any): number {
+    if (!this.currentUserLocation || !stop) return 0;
 
     const lat1 = this.currentUserLocation.lat;
     const lon1 = this.currentUserLocation.lng;
-    const lat2 = stopLocation.coordinates?.[1] || stopLocation.lat || stopLocation.latitude;
-    const lon2 = stopLocation.coordinates?.[0] || stopLocation.lng || stopLocation.longitude;
+    const lat2 = stop.lat ?? stop.location?.coordinates?.[1] ?? stop.latitude;
+    const lon2 = stop.lng ?? stop.location?.coordinates?.[0] ?? stop.longitude;
 
     if (!lat2 || !lon2) return 0;
 
@@ -729,13 +729,16 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   }
 
   selectResult(result: any): void {
+    const lat = result.lat ?? result.location?.lat ?? result.location?.coordinates?.[1];
+    const lng = result.lng ?? result.location?.lng ?? result.location?.coordinates?.[0];
+
     this.searchQuery = result.name;
     this.searchResults = [];
     this.router.navigate(['/trip-planner'], {
       queryParams: {
         to: result.name,
-        lat: result.location.coordinates[1],
-        lng: result.location.coordinates[0]
+        lat: lat,
+        lng: lng
       }
     });
   }
