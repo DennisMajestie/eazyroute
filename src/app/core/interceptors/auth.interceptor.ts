@@ -10,7 +10,20 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const token = localStorage.getItem(environment.storageKeys.token);
     const isInternalApi = req.url.startsWith(environment.apiUrl);
 
-    if (token && isInternalApi) {
+    // List of endpoints that should NOT receive the Authorization header
+    const publicEndpoints = [
+        '/auth/login',
+        '/auth/register',
+        '/auth/verify-otp',
+        '/auth/resend-otp',
+        '/auth/forgot-password',
+        '/auth/reset-password',
+        '/auth/social'
+    ];
+
+    const isPublicEndpoint = publicEndpoints.some(path => req.url.includes(path));
+
+    if (token && isInternalApi && !isPublicEndpoint) {
         req = req.clone({
             setHeaders: {
                 Authorization: `Bearer ${token}`
