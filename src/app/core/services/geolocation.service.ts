@@ -86,32 +86,37 @@ export class GeolocationService {
      * 3. Retry 2: Accept Coarse (IP-based)
      */
     async getSmartLocation(): Promise<Coordinates | null> {
-        // Attempt 1: High Accuracy (GPS) - 7s timeout
+        // Attempt 1: High Accuracy (GPS) - Reduced to 5s timeout
         try {
             console.log('[Geolocation] Attempt 1: High Accuracy (GPS)');
-            return await this.getPositionWithTimeout(50, 7000, true);
+            return await this.getPositionWithTimeout(50, 5000, true);
         } catch (e) {
             console.warn("[Geolocation] GPS failed, falling back to Tower/WiFi...");
         }
 
-        // Attempt 2: Low Accuracy (Fast) - 5s timeout
+        // Attempt 2: Low Accuracy (Fast) - Reduced to 3s timeout
         try {
             console.log('[Geolocation] Attempt 2: Low Accuracy (Cell/WiFi)');
-            return await this.getPositionWithTimeout(100, 5000, false);
+            return await this.getPositionWithTimeout(100, 3000, false);
         } catch (e) {
             console.warn('[Geolocation] Attempt 2 failed:', e);
         }
 
-        // Attempt 3: Coarse Location (Accept anything)
+        // Attempt 3: Coarse Location (Accept anything) - Reduced to 3s timeout
         try {
             console.log('[Geolocation] Attempt 3: Coarse Location');
-            const pos = await this.getPositionWithTimeout(Infinity, 5000, false);
+            const pos = await this.getPositionWithTimeout(Infinity, 3000, false);
             // Mark as coarse/low accuracy for UI warnings
             pos.accuracy = pos.accuracy || 5000;
             return pos;
         } catch (e) {
-            console.error('[Geolocation] All attempts failed:', e);
-            return null;
+            console.error('[Geolocation] All attempts failed, using fallback from environment');
+            const fallback = this.getDefaultLocation();
+            if (fallback) {
+                fallback.accuracy = 10000; // Indicate low accuracy/fallback
+                this.currentLocation.set(fallback);
+            }
+            return fallback;
         }
     }
 
