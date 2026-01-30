@@ -8,11 +8,11 @@ export const environment = {
   appName: 'EazyRoute',
   useMockSockets: true,
   storageKeys: {
-    token: 'auth_token',
-    user: 'auth_user',
-    hasSeenOnboarding: 'onboarding_completed',
-    favoriteRoutes: 'favorite_routes',
-    recentSearches: 'recent_searches'
+    token: 'eazyroute_token',
+    user: 'eazyroute_user',
+    hasSeenOnboarding: 'eazyroute_onboarding_complete',
+    favoriteRoutes: 'eazyroute_favorite_routes',
+    recentSearches: 'eazyroute_recent_searches'
   },
   geolocation: {
     enabled: true,

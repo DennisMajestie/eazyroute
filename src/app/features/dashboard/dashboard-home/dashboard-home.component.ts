@@ -12,6 +12,9 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject, Observable, firstValueFrom } from 'rxjs';
 import { takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { HttpErrorResponse } from '@angular/common/http';
+import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 // Import services
 import { AuthService } from '../../../core/services/auth.service';
@@ -164,7 +167,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.updateGreeting();
-    this.loadUserInfo();  // ✅ Load user info first
+
+    const token = localStorage.getItem(environment.storageKeys.token);
+    if (token) {
+      this.loadUserInfo();  // ✅ Load user info only if token present
+    } else {
+      this.resetUserInfo();
+    }
 
     // Get user location
     await this.getCurrentLocation();
@@ -176,8 +185,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     this.loadTagAlongRides();
     this.loadUpcomingEvents();
 
-    // Check for active trip
-    await this.checkActiveTrip();
+    // Only check active trip if user is authenticated
+    if (token) {
+      await this.checkActiveTrip();
+    } else {
+      console.log('[Dashboard] User not authenticated - skipping active trip check');
+      this.hasActiveTrip = false;
+    }
   }
 
   /**
@@ -418,8 +432,25 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
    */
 
   private async checkActiveTrip(): Promise<void> {
+    const token = localStorage.getItem(environment.storageKeys.token);
+    if (!token) {
+      this.hasActiveTrip = false;
+      return;
+    }
+
     try {
-      const response = await this.tripHttpService.getActiveTrip().toPromise();
+      const response = await firstValueFrom(
+        this.tripHttpService.getActiveTrip().pipe(
+          catchError((error: HttpErrorResponse) => {
+            if (error.status === 401) {
+              console.log('[Dashboard] Not authenticated/Session expired - no active trip');
+              return of({ success: false, data: null });
+            }
+            console.error('[Dashboard] Active trip check failed:', error);
+            return of({ success: false, data: null });
+          })
+        )
+      );
 
       if (response?.success && response.data) {
         const activeTrip = response.data;
@@ -438,7 +469,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         this.hasActiveTrip = false;
       }
     } catch (error) {
-      console.error('[Dashboard] Error checking active trip:', error);
+      console.error('[Dashboard] Error checking active trip (handled):', error);
       this.hasActiveTrip = false;
     }
 
@@ -645,8 +676,10 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     ];
   }
 
-  // Notification Center
   toggleNotifications(): void {
+    const token = localStorage.getItem(environment.storageKeys.token);
+    if (!token) return;
+
     this.isNotificationCenterOpen = !this.isNotificationCenterOpen;
     if (this.isNotificationCenterOpen) {
       this.notificationService.loadNotifications().subscribe();

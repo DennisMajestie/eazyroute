@@ -1,10 +1,15 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { BusStopService } from '../../core/services/bus-stop.service';
 import { GeolocationService } from '../../core/services/geolocation.service';
 import { AlongService } from '../../core/services/along.service'; // Fix path to core/services
 
 @Component({
     selector: 'app-route-generator',
+    standalone: true,
+    imports: [CommonModule, FormsModule, RouterModule],
     templateUrl: './route-generator.component.html',
     styleUrls: ['./route-generator.component.css'] // Adjusted from .scss to .css to match previous file content
 })
@@ -14,7 +19,15 @@ export class RouteGeneratorComponent implements OnInit {
     selectedFrom: any = null;
     selectedTo: any = null;
     routes: any[] = [];
+    routeLegs: any[] = [];
+    totalDistance: number = 0;
+    totalDuration: number = 0;
     loading = false;
+    isLocating = false;
+    error: string | null = null;
+    showNearbyDropdown = false;
+    fromLocation = { name: '', lat: 0, lng: 0 };
+    toLocation = { name: '', lat: 0, lng: 0 };
 
     constructor(
         private busStopService: BusStopService,
@@ -24,6 +37,43 @@ export class RouteGeneratorComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadNearbyStops();
+    }
+
+    /**
+     * Use user's current location
+     */
+    useMyLocation(): void {
+        this.isLocating = true;
+        this.geolocationService.getCurrentPosition().subscribe({
+            next: (pos) => {
+                this.isLocating = false;
+                this.fromLocation = {
+                    name: 'Current Location',
+                    lat: pos.latitude,
+                    lng: pos.longitude
+                };
+                this.selectedFrom = this.fromLocation;
+                this.loadNearbyStops();
+            },
+            error: (err) => {
+                this.isLocating = false;
+                console.error('[RouteGenerator] Could not get location:', err);
+                this.error = 'Could not get your location. Please check permissions.';
+            }
+        });
+    }
+
+    /**
+     * Select a stop from nearby list
+     */
+    selectNearbyStop(stop: any): void {
+        this.fromLocation = {
+            name: stop.name,
+            lat: stop.lat,
+            lng: stop.lng
+        };
+        this.selectedFrom = this.fromLocation;
+        // this.showNearbyDropdown = false;
     }
 
     /**
@@ -118,44 +168,53 @@ export class RouteGeneratorComponent implements OnInit {
         this.loading = true;
         this.routes = [];
 
-        const routeRequest = {
-            from: this.selectedFrom.name,
-            to: this.selectedTo.name,
-            fromLat: this.selectedFrom.lat,
-            fromLng: this.selectedFrom.lng,
-            toLat: this.selectedTo.lat,
-            toLng: this.selectedTo.lng
+        const fromLocation = {
+            name: this.selectedFrom.name,
+            lat: this.selectedFrom.lat,
+            lng: this.selectedFrom.lng
         };
 
-        console.log('[RouteGenerator] Generating route:', routeRequest);
+        const toLocation = {
+            name: this.selectedTo.name,
+            lat: this.selectedTo.lat,
+            lng: this.selectedTo.lng
+        };
 
-        this.alongService.generateRoute(routeRequest).subscribe({
+        console.log('[RouteGenerator] Generating route from:', fromLocation, 'to:', toLocation);
+
+        this.alongService.generateRoute(fromLocation, toLocation).subscribe({
             next: (response: any) => {
                 this.loading = false;
+                this.error = null;
 
-                // ✅ Null-safe route extraction
-                const rawRoutes = response?.data?.routes || response?.routes || response?.data || [];
-                const routesArray = Array.isArray(rawRoutes) ? rawRoutes : [];
+                // ✅ Sync with template: routeLegs, totalDistance, totalDuration
+                const routeData = response?.data || response;
 
-                this.routes = routesArray
-                    .filter((route: any) => route != null)
-                    .map((route: any) => ({
-                        ...route,
-                        segments: Array.isArray(route?.segments) ? route.segments : [],
-                        legs: Array.isArray(route?.legs) ? route.legs : [],
-                        polyline: Array.isArray(route?.polyline) ? route.polyline : []
-                    }));
+                if (routeData && Array.isArray(routeData.legs)) {
+                    this.routeLegs = routeData.legs;
+                    this.totalDistance = routeData.totalDistance || 0;
+                    this.totalDuration = routeData.totalDuration || 0;
+                } else if (routeData && Array.isArray(routeData.routes) && routeData.routes[0]?.legs) {
+                    const bestRoute = routeData.routes[0];
+                    this.routeLegs = bestRoute.legs;
+                    this.totalDistance = bestRoute.totalDistance || 0;
+                    this.totalDuration = bestRoute.totalDuration || 0;
+                }
 
-                console.log('[RouteGenerator] Routes generated:', this.routes.length);
+                console.log('[RouteGenerator] Route summary:', {
+                    legs: this.routeLegs.length,
+                    dist: this.totalDistance
+                });
 
-                if (this.routes.length === 0) {
-                    console.warn('[RouteGenerator] No valid routes found');
+                if (this.routeLegs.length === 0) {
+                    this.error = 'No valid routes found between these locations.';
                 }
             },
             error: (err: any) => {
                 this.loading = false;
                 console.error('[RouteGenerator] Route generation failed:', err);
-                this.routes = [];
+                this.error = err?.error?.message || 'Failed to generate route. Please try different locations.';
+                this.routeLegs = [];
             }
         });
     }
