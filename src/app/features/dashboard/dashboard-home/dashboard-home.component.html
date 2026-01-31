@@ -221,6 +221,10 @@
                             <div class="stop-status" [style.background]="getStatusColor(stop.status)">
                                 {{ getStatusLabel(stop.status) }}
                             </div>
+                            <span *ngIf="stop.zone" class="badge classification-badge bg-info ms-2"
+                                style="font-size: 0.7rem;">
+                                {{ stop.zone }}
+                            </span>
                         </div>
                     </div>
                     <div class="stop-routes">

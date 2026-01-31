@@ -280,6 +280,7 @@
     <!-- Submit Price Modal -->
     <app-submit-price *ngIf="showSubmitPriceModal" [fromStopName]="submitData.from" [toStopName]="submitData.to"
         [transportMode]="submitData.mode" [fromStopId]="submitData.fromId" [toStopId]="submitData.toId"
+        [distance]="submitData.distance" [estimatedTime]="submitData.estimatedTime"
         (close)="showSubmitPriceModal = false" (submitted)="onPriceSubmitted()">
     </app-submit-price>
 </div>

@@ -32,7 +32,7 @@ export class RouteDisplayComponent implements OnInit {
 
     // Crowdsourcing (Price Submission)
     showSubmitPriceModal = false;
-    submitData = { from: '', to: '', mode: '', fromId: '', toId: '' };
+    submitData = { from: '', to: '', mode: '', fromId: '', toId: '', distance: 0, estimatedTime: 0 };
 
     fromLocation: { lat: number; lng: number; name: string } | null = null;
     toLocation: { lat: number; lng: number; name: string } | null = null;
@@ -395,13 +395,17 @@ export class RouteDisplayComponent implements OnInit {
      * Open Price Submission Modal for a specific segment
      */
     openSubmitPrice(segment: AlongSegment) {
+        console.log('[RouteDisplay] Opening Submit Price for segment:', segment);
         this.submitData = {
             from: segment.fromStop || segment.instruction.split(' from ')[1]?.split(' to ')[0] || 'Unknown Origin',
             to: segment.toStop || segment.instruction.split(' to ')[1] || 'Unknown Dest',
             mode: (segment.vehicleType || 'keke').toLowerCase(),
-            fromId: 'UNKNOWN', // MVP: Backend handles name resolution or accepts names
-            toId: 'UNKNOWN'
+            fromId: segment.fromStopId || (segment as any).fromId || 'UNKNOWN_STOP',
+            toId: segment.toStopId || (segment as any).toId || 'UNKNOWN_STOP',
+            distance: segment.distance || 0,
+            estimatedTime: segment.estimatedTime || 0
         };
+        console.log('[RouteDisplay] Prepared submitData:', this.submitData);
         this.showSubmitPriceModal = true;
     }
 

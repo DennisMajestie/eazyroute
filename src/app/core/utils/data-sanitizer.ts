@@ -39,11 +39,33 @@ export class DataSanitizer {
                 sanitized.instructions = data.instruction || data.instructions || '';
                 sanitized.fromStop = this.sanitize(data.fromStop, 'stop');
                 sanitized.toStop = this.sanitize(data.toStop, 'stop');
+                sanitized.fromStopId = data.fromStopId || data.fromId || data.fromStop?._id || data.fromStop?.id;
+                sanitized.toStopId = data.toStopId || data.toId || data.toStop?._id || data.toStop?.id;
+                sanitized.zone = data.zone;
+                sanitized.safetyData = data.safetyData || {
+                    riskAlerts: data.riskAlerts || [],
+                    isSafeZone: data.isSafeZone || false,
+                    riskLevel: data.riskLevel || 'safe',
+                    threats: data.threats || []
+                };
             }
 
             if (schemaIdentifier === 'stop') {
+                sanitized.id = data.id || data._id;
                 sanitized.latitude = data.lat ?? data.latitude ?? data.location?.lat ?? data.location?.coordinates?.[1] ?? 0;
                 sanitized.longitude = data.lng ?? data.longitude ?? data.location?.lng ?? data.location?.coordinates?.[0] ?? 0;
+                sanitized.zone = data.zone;
+                sanitized.securityProfile = data.securityProfile || {
+                    level: data.riskLevel || 'safe',
+                    riskLevel: data.riskLevel || 'safe',
+                    threats: data.threats || [],
+                    safeZones: [],
+                    riskAlerts: [],
+                    lastVerifiedAt: new Date()
+                };
+                if (data.riskLevel) {
+                    sanitized.securityProfile.level = data.riskLevel;
+                }
             }
 
             return sanitized as T;

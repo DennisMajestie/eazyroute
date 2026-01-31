@@ -82,6 +82,7 @@ export class RouteSegmentService {
         transportMode: string;
         priceRange: { min: number; max: number };
         estimatedTime: number;
+        distance: number;
     }): Observable<any> {
         return this.http.post(`${this.apiUrl}/community-submit`, data);
     }

@@ -54,6 +54,7 @@ export interface BusStop {
 
     // V3/V4 Safety Hardening
     securityProfile?: SecurityProfile;
+    zone?: string; // ZONE_VILLAGE, ZONE_HUB, ZONE_RESTRICTED, etc.
 
     // Legacy fields (keep for backward compatibility)
     verified: boolean;
@@ -63,6 +64,8 @@ export interface BusStop {
 
 export interface SecurityProfile {
     level: 'safe' | 'caution' | 'high_risk';
+    riskLevel?: 'safe' | 'caution' | 'high_risk'; // V4 alignment
+    threats?: string[]; // V4 alignment
     safeZones: string[];
     riskAlerts: string[];
     lastVerifiedAt: Date;

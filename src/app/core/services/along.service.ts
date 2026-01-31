@@ -233,6 +233,8 @@ export class AlongService {
             vehicleType: s.vehicleType || s.mode || 'walk',
             fromStop: s.fromStop || s.fromName || 'Unknown Start',
             toStop: s.toStop || s.toName || 'Unknown End',
+            fromStopId: s.fromStopId || s.fromId || s.fromStop?._id || s.fromStop?.id,
+            toStopId: s.toStopId || s.toId || s.toStop?._id || s.toStop?.id,
 
             // Structural Normalization
             distance: s.distance?.value || s.distance || 0,
@@ -240,7 +242,16 @@ export class AlongService {
             cost: this.normalizeCost(s.cost),
 
             // Instruction (Backend provides human-readable instructions)
-            instruction: s.instruction || s.instructions || `Take ${s.vehicleType || 'transport'} to ${s.toStop}`
+            instruction: s.instruction || s.instructions || `Take ${s.vehicleType || 'transport'} to ${s.toStop}`,
+
+            // V4 Safety & Zones
+            safetyData: s.safetyData || {
+                riskAlerts: s.riskAlerts || [],
+                isSafeZone: s.isSafeZone || false,
+                riskLevel: s.riskLevel || 'safe',
+                threats: s.threats || []
+            },
+            zone: s.zone
         }));
     }
 

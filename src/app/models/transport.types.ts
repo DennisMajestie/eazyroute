@@ -32,6 +32,8 @@ export interface AlongSegment {
     toStop?: string;
     vehicleType?: TransportMode | string;
     dropInstruction?: string;
+    fromStopId?: string;
+    toStopId?: string;
     // V2 Routing Fields
     intermediateStops?: { id: string; name: string }[];
     bridgeEnabled?: boolean;

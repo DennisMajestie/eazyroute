@@ -133,7 +133,10 @@ export interface RouteSegment {
     safetyData?: {
         riskAlerts: string[];
         isSafeZone: boolean;
+        riskLevel?: string;
+        threats?: string[];
     };
+    zone?: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════

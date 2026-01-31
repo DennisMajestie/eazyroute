@@ -41,9 +41,7 @@ export class AuthService {
     /** Computed: Check if user is admin */
     readonly isAdmin = computed(() => {
         const user = this.currentUser();
-        return user?.role === 'admin' ||
-            user?.userType === 'admin' ||
-            (user as any)?.isAdmin === true;
+        return user?.role === 'admin';
     });
 
     /** Computed: User's full name */
@@ -235,7 +233,7 @@ export class AuthService {
                                 ...(userFromResponse || current!),
                                 onboardingComplete: true,
                                 userType: data.userType,
-                                role: data.userType === 'admin' ? 'admin' : (userFromResponse?.role || current?.role || 'user')
+                                role: userFromResponse?.role || current?.role || 'user'
                             };
 
                             localStorage.setItem(environment.storageKeys.user, JSON.stringify(updatedUser));

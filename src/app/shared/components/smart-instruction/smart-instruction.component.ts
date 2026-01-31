@@ -8,6 +8,8 @@ export interface SmartStep {
     riskAlerts?: string[];
     isSafeZone?: boolean;
     isBoarding?: boolean;
+    riskLevel?: string;
+    threats?: string[];
 }
 
 @Component({
@@ -20,13 +22,24 @@ export interface SmartStep {
                 <i [class]="step.isBoarding ? 'fas fa-door-open text-success' : 'fas fa-directions text-primary'"></i>
                 <span class="ms-2">{{ step.instruction }}</span>
                 <span *ngIf="step.isSafeZone" class="badge bg-success ms-2 small">🛡️ Safe Zone</span>
+                <span *ngIf="step.riskLevel" class="badge ms-2 small" [ngClass]="{
+                    'bg-success': step.riskLevel === 'safe',
+                    'bg-warning text-dark': step.riskLevel === 'caution',
+                    'bg-danger': step.riskLevel === 'high_risk'
+                }">
+                    {{ step.riskLevel === 'safe' ? '🛡️ Safe' : (step.riskLevel === 'caution' ? '⚠️ Caution' : '🚨 High Risk') }}
+                </span>
             </div>
 
-            <!-- Risk Alerts -->
-            <div *ngIf="step.riskAlerts && step.riskAlerts.length > 0" class="risk-alerts mt-2">
+            <!-- Risk Alerts & Threats -->
+            <div *ngIf="(step.riskAlerts && step.riskAlerts.length > 0) || (step.threats && step.threats.length > 0)" class="risk-alerts mt-2">
                 <div *ngFor="let alert of step.riskAlerts" class="alert-item text-danger">
                     <i class="fas fa-shield-alt me-1"></i>
                     <strong>Risk:</strong> {{ alert }}
+                </div>
+                <div *ngFor="let threat of step.threats" class="alert-item text-danger">
+                    <i class="fas fa-exclamation-circle me-1"></i>
+                    <strong>Threat:</strong> {{ threat }}
                 </div>
             </div>
 

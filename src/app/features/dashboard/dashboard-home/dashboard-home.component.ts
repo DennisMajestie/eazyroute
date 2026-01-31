@@ -43,6 +43,7 @@ export interface DashboardBusStop {
   latitude: number;
   longitude: number;
   source?: string;
+  zone?: string;
 }
 
 interface Route {
@@ -338,7 +339,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
           type: stop.type || 'bus_stop',
           latitude: stop.lat ?? stop.location?.coordinates?.[1] ?? stop.latitude,
           longitude: stop.lng ?? stop.location?.coordinates?.[0] ?? stop.longitude,
-          source: stop.source || this.searchSource
+          source: stop.source || this.searchSource,
+          zone: stop.zone
         }));
 
         this.nearbyStops = allNearbyStops.slice(0, 5);
