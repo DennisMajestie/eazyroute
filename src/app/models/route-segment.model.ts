@@ -22,12 +22,14 @@ export interface RouteSegment {
         name: string;
         localNames?: string[];
         area: string;
+        type?: string;
     };
     toStop?: {
         id: string;
         name: string;
         localNames?: string[];
         area: string;
+        type?: string;
     };
 }
 

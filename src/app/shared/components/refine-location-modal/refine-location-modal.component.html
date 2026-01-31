@@ -1,0 +1,43 @@
+<div class="modal-backdrop" *ngIf="isOpen" (click)="onBackdropClick($event)" @fadeIn>
+    <div class="modal-container" @slideUp>
+        <!-- Header -->
+        <div class="modal-header">
+            <div class="header-icon">✏️</div>
+            <h2 class="modal-title">Refine Location Name</h2>
+            <button class="close-btn" (click)="onCancel()" type="button" aria-label="Close">×</button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body">
+            <p class="modal-hint">
+                Help us learn your area better! Enter a more specific name for this location.
+            </p>
+
+            <div class="input-group">
+                <label class="input-label">Location Name</label>
+                <input type="text" class="refine-input" [(ngModel)]="refinedName"
+                    placeholder="e.g., Phil Cruz Estate, Yellow Gate" autofocus />
+            </div>
+
+            <div class="example-box">
+                <span class="example-label">💡 Examples:</span>
+                <ul class="example-list">
+                    <li>"Phil Cruz Estate" instead of "AMAC"</li>
+                    <li>"Yellow House Junction" instead of coordinates</li>
+                    <li>"After Total Filling Station" for landmarks</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="onCancel()" type="button">
+                Cancel
+            </button>
+            <button class="btn btn-primary" (click)="onConfirm()" type="button"
+                [disabled]="!refinedName.trim() || refinedName.trim() === currentName">
+                Save Name
+            </button>
+        </div>
+    </div>
+</div>

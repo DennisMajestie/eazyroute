@@ -378,12 +378,14 @@ export class ApiService {
         return this.getData(this.urls.allUrl.busStops.getByCity + city);
     }
 
-    searchNearbyBusStops(latitude: number, longitude: number, maxDistance?: number): Observable<any> {
-        const params = {
-            latitude,
-            longitude,
+    searchNearbyBusStops(latitude?: number, longitude?: number, maxDistance?: number): Observable<any> {
+        const params: any = {
             maxDistance: maxDistance || 10
         };
+
+        if (latitude !== undefined) params.latitude = latitude;
+        if (longitude !== undefined) params.longitude = longitude;
+
         return this.getData(this.urls.allUrl.busStops.searchNearby, params);
     }
 

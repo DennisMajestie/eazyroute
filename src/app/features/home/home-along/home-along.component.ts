@@ -11,6 +11,7 @@ import { Area } from '../../../models/area.model';
 
 import { SkeletonLandmarkComponent } from '../../../shared/components/skeleton-landmark/skeleton-landmark.component';
 import { LoadingProgressComponent } from '../../../shared/components/loading-progress/loading-progress.component';
+import { RefineLocationModalComponent, RefineLocationResult } from '../../../shared/components/refine-location-modal/refine-location-modal.component';
 import { NIGERIAN_COPY } from '../../../shared/constants/nigerian-copy.constants';
 import { AlongService } from '../../../core/services/along.service';
 import { BoardingInference } from '../../../models/transport.types';
@@ -40,7 +41,8 @@ interface SelectedLocation {
     CommonModule,
     FormsModule,
     SkeletonLandmarkComponent,
-    LoadingProgressComponent
+    LoadingProgressComponent,
+    RefineLocationModalComponent
   ],
   templateUrl: './home-along.component.html',
   styleUrls: ['./home-along.component.scss']
@@ -68,6 +70,7 @@ export class HomeAlongComponent implements OnInit {
   pollingSubscription: Subscription | null = null;
   smartBoardingMessage: string = '';
   showSmartBoarding: boolean = false;
+  isNightMode: boolean = false;
 
   // Popular routes
   popularRoutes: PopularRoute[] = [
@@ -94,6 +97,7 @@ export class HomeAlongComponent implements OnInit {
   ngOnInit() {
     // Load selected area from localStorage
     this.loadSelectedArea();
+    this.checkNightMode();
 
     // Auto-detect location on load
     this.detectLocation().then(() => {
@@ -239,8 +243,8 @@ export class HomeAlongComponent implements OnInit {
       // Try to get address name
       this.geocodingService.reverseGeocode(lat, lng).subscribe({
         next: (result: any) => {
-          if (result && (result.name || result.area)) {
-            const locationName = `📍 ${result.name || result.area}`;
+          if (result && (result.display_name || result.name || result.area)) {
+            const locationName = `📍 ${result.display_name || result.name || result.area}`;
             this.fromLocation = {
               ...detectedLocation,
               name: locationName
@@ -450,20 +454,6 @@ export class HomeAlongComponent implements OnInit {
       queryParams.isHybridTo = true;
     }
 
-    // Navigate to route display (skip boarding inference if pure text search?)
-    // Note: Boarding inference usually requires coords. If we only have text, we might skip to route display.
-    // However, the original code went to boarding inference first? 
-    // Wait, the router.navigate was to boarding-inference? 
-    // Actually, traditionally route finding goes to 'route-display' or similar. 
-    // The previous code navigated to 'boarding-inference'. Let's check routes. 
-    // Usually "Find Route" goes to the route results. "Smart Boarding" is the one that uses inference.
-    // Let's assume for this task "Find Route" should go to 'route-display'. 
-    // BUT the previous code was `this.router.navigate(['/boarding-inference']...` ??
-    // That seems odd for "Find Route". Let me check app.routes.ts to be sure where I should send them.
-    // Assuming the user wants to see the route, it should be 'route-display'. 
-    // If I send them to boarding-inference without coords, it might break.
-    // Let's send them to 'route-display' directly for hybrid search.
-
     this.router.navigate(['/route-display'], { queryParams });
   }
 
@@ -491,5 +481,50 @@ export class HomeAlongComponent implements OnInit {
       'bus_stop': '🚏'
     };
     return icons[type as keyof typeof icons] || '📍';
+  }
+
+  // Modal state
+  isRefineModalOpen = false;
+  refineModalCurrentName = '';
+
+  /**
+   * Open refinement modal for detected/selected location name
+   */
+  refineLocation() {
+    if (!this.fromLocation) {
+      alert('Detect your location first to refine the name.');
+      return;
+    }
+
+    this.refineModalCurrentName = this.fromInput.replace('📍 ', '');
+    this.isRefineModalOpen = true;
+  }
+
+  /**
+   * Handle modal close event
+   */
+  onRefineModalClosed(result: RefineLocationResult) {
+    this.isRefineModalOpen = false;
+
+    if (result.confirmed && result.refinedName !== result.originalName && this.fromLocation) {
+      this.fromInput = `📍 ${result.refinedName}`;
+
+      // Send to backend to "learn" this alias
+      this.busStopService.submitMissingStop({
+        name: result.refinedName,
+        latitude: this.fromLocation.coords.lat,
+        longitude: this.fromLocation.coords.lng,
+        description: `User-refined name for OSM point: ${result.originalName}`,
+        localNames: [result.originalName]
+      }).subscribe({
+        next: () => console.log('[HomeAlong] Name refinement submitted for verification'),
+        error: (err: any) => console.error('[HomeAlong] Failed to submit refinement:', err)
+      });
+    }
+  }
+
+  checkNightMode() {
+    const hour = new Date().getHours();
+    this.isNightMode = hour >= 20 || hour < 5;
   }
 }

@@ -17,6 +17,16 @@ export interface User {
     onboardingComplete?: boolean;
     userType?: string;
     profilePicture?: string;
+
+    // V4 Intelligence Fields
+    securityProfile?: {
+        level: 'safe' | 'caution' | 'high_risk';
+        trustedAreas: string[];
+        recentAlerts: string[];
+        classification: string; // e.g., "Frequent Commuter", "Night Owl"
+    };
+    zoneClassification?: string; // "Urban Core", "Estate Resident", "Night Hub"
+
     createdAt?: string;
     updatedAt?: string;
 }

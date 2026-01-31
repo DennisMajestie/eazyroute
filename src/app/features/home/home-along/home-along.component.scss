@@ -167,6 +167,30 @@
   transform: scale(1.1);
 }
 
+.refine-btn {
+  position: absolute;
+  right: 48px;
+  width: 32px;
+  height: 32px;
+  background-color: white;
+  color: var(--primary);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  font-size: var(--text-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.refine-btn:hover {
+  background-color: var(--bg-hover);
+  transform: scale(1.1);
+  border-color: var(--primary);
+}
+
 .loading-spinner {
   position: absolute;
   right: var(--space-4);

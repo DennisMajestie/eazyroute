@@ -37,9 +37,10 @@
             </div>
         </div>
 
-        <!-- Location Error -->
-        <div class="alert alert-error" *ngIf="locationError">
-            ⚠️ {{ locationError }}
+        <!-- Night Mode Alert -->
+        <div class="alert alert-night mt-2 mb-3" *ngIf="isNightMode">
+            <i class="fas fa-moon me-2"></i>
+            <strong>Night Mode:</strong> Prioritizing well-lit arteries.
         </div>
 
         <!-- FROM Field -->
@@ -55,6 +56,10 @@
                 </button>
                 <button *ngIf="fromInput" class="clear-btn" (click)="clearField('from')" type="button">
                     ×
+                </button>
+                <button *ngIf="fromLocation && fromInput && !isDetectingLocation" class="refine-btn"
+                    (click)="refineLocation()" type="button" title="Refine Location Name">
+                    ✏️
                 </button>
                 <div class="loading-spinner" *ngIf="isDetectingLocation">
                     <div class="spinner"></div>
@@ -163,3 +168,8 @@
         </p>
     </div>
 </div>
+
+<!-- Refine Location Modal -->
+<app-refine-location-modal [isOpen]="isRefineModalOpen" [currentName]="refineModalCurrentName"
+    (closed)="onRefineModalClosed($event)">
+</app-refine-location-modal>

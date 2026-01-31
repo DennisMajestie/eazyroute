@@ -52,10 +52,21 @@ export interface BusStop {
     backboneSide?: 'L' | 'R' | 'C'; // Side of expressway: Left, Right, Center
     bridgeEnabled?: boolean;       // True if this point is a pedestrian bridge
 
+    // V3/V4 Safety Hardening
+    securityProfile?: SecurityProfile;
+
     // Legacy fields (keep for backward compatibility)
     verified: boolean;
     addedBy?: number;
     createdAt: Date;
+}
+
+export interface SecurityProfile {
+    level: 'safe' | 'caution' | 'high_risk';
+    safeZones: string[];
+    riskAlerts: string[];
+    lastVerifiedAt: Date;
+    verificationSource?: 'police' | 'community' | 'official';
 }
 
 export interface CreateBusStopRequest {

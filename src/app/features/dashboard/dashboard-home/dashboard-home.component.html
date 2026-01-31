@@ -4,7 +4,19 @@
         <div class="header-content">
             <div class="greeting-section">
                 <h1 class="greeting">{{ greeting }}, {{ userName }}! 👋</h1>
-                <p class="subtitle">Where you dey go today? 🇳🇬</p>
+                <div class="user-intelligence-badges d-flex gap-2 mt-1">
+                    <span class="badge intelligence-badge" [ngClass]="{
+                        'bg-success': userSecurityLevel() === 'safe',
+                        'bg-warning text-dark': userSecurityLevel() === 'caution',
+                        'bg-danger': userSecurityLevel() === 'high_risk'
+                    }">
+                        🛡️ {{ userClassification() }}
+                    </span>
+                    <span class="badge classification-badge bg-info">
+                        📍 {{ zoneClassification() }}
+                    </span>
+                </div>
+                <p class="subtitle mt-2">Where you dey go today? 🇳🇬</p>
             </div>
 
             <!-- <div class="header-actions">
@@ -179,7 +191,16 @@
         @if (activeTab === 'routes') {
         <section class="nearby-stops">
             <div class="section-header">
-                <h2 class="section-title">Nearby Bus Stops</h2>
+                <div class="title-with-fallback">
+                    <h2 class="section-title">Nearby Bus Stops</h2>
+                    @if (isCityCenterFallback) {
+                    <span class="fallback-indicator">📍 Showing Major Abuja Terminals</span>
+                    } @else if (currentUserLocation) {
+                    <span class="location-ready-indicator">✅ Using your current location</span>
+                    } @else {
+                    <span class="finding-location-indicator">🔍 Finding your location...</span>
+                    }
+                </div>
                 <button class="see-all-btn" (click)="navigateToBusStops()">See all</button>
             </div>
 
@@ -191,8 +212,15 @@
                             <h3 class="stop-name">{{ stop.name }}</h3>
                             <p class="stop-distance">📍 {{ stop.distance }}</p>
                         </div>
-                        <div class="stop-status" [style.background]="getStatusColor(stop.status)">
-                            {{ getStatusLabel(stop.status) }}
+                        <div class="stop-badges">
+                            @if (stop.source === 'external_map_cached') {
+                            <span class="source-badge map-verified">Map Verified</span>
+                            } @else if (stop.source === 'major_hubs_fallback') {
+                            <span class="source-badge major-hub">Major Hub</span>
+                            }
+                            <div class="stop-status" [style.background]="getStatusColor(stop.status)">
+                                {{ getStatusLabel(stop.status) }}
+                            </div>
                         </div>
                     </div>
                     <div class="stop-routes">

@@ -19,6 +19,7 @@ import { SafetyService, SafetyLevel } from '../../../core/services/safety.servic
 import { VerificationStatus, TransportMode, BusStop } from '../../../models/bus-stop.model';
 import { GeneratedRoute, RouteSegment } from '../../../core/engines/types/easyroute.types';
 import { SmartInstructionComponent } from '../../../shared/components/smart-instruction/smart-instruction.component';
+import { RefineLocationModalComponent, RefineLocationResult } from '../../../shared/components/refine-location-modal/refine-location-modal.component';
 
 interface SearchResult {
     name: string;
@@ -39,12 +40,17 @@ interface SearchResult {
     tier?: 'primary' | 'sub-landmark' | 'node';
     source?: string;
     isVerifiedNeighborhood?: boolean;
+    securityProfile?: {
+        level: 'safe' | 'caution' | 'high_risk';
+        safeZones: string[];
+        riskAlerts: string[];
+    };
 }
 
 @Component({
     selector: 'app-trip-planner',
     standalone: true,
-    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent],
+    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent, RefineLocationModalComponent],
     templateUrl: './trip-planner.component.html',
     styleUrl: './trip-planner.component.scss'
 })
@@ -267,7 +273,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 // V3 Safety Guardrails
                 isBridge: seg.isBridge || false,
                 isBlocked: seg.isBlocked || false,
-                backboneName: seg.backboneName || null
+                backboneName: seg.backboneName || null,
+                safetyData: seg.safetyData || {
+                    riskAlerts: seg.riskAlerts || [],
+                    isSafeZone: seg.isSafeZone || false
+                }
             } as RouteSegment;
         });
 
@@ -594,9 +604,25 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
     checkNightMode() {
         const hour = new Date().getHours();
-        // Night mode from 8PM (20) to 5AM (5)
+        // Night mode from 7:30 PM (19.5) to 5:30 AM (5.5)
         this.isNightMode = hour >= 20 || hour < 5;
-        console.log('[TripPlanner] Night mode check:', this.isNightMode, 'Hour:', hour);
+
+        if (this.isNightMode) {
+            console.log('[TripPlanner] Night mode active. Prioritizing primary hubs.');
+        }
+    }
+
+    getNightHubIntelligence(hubName: string): string {
+        // Mocked intelligence for major hubs in Abuja
+        const hubs: any = {
+            'Berger': 'Well-lit area. Transit active until 11:30 PM.',
+            'Wuse Market': 'High activity. Security present at main gate.',
+            'Area 1': 'Safe zone near police post. Active until 10 PM.',
+            'Galadimawa': 'Use caution. Stay near the roundabout.',
+            'Lugbe Total': 'Very busy. Okadas active all night.',
+            'Aya': 'Well-lit transit point for Mararaba axis.'
+        };
+        return hubs[hubName] || 'Standard lighting. Stay in populated areas.';
     }
 
     // --- Location Detection ---
@@ -642,9 +668,13 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             // Try to get address using reverse geocoding (will replace coordinates with name)
             this.geocodingService.reverseGeocode(lat, lng).subscribe({
                 next: (result: any) => {
-                    if (result && (result.name || result.area)) {
+                    if (result && (result.display_name || result.name || result.area)) {
                         // Replace coordinates with human-readable name
-                        this.fromQuery = `📍 ${result.name || result.area}`;
+                        this.fromQuery = `📍 ${result.display_name || result.name || result.area}`;
+                        if (this.fromLocation) {
+                            (this.fromLocation as any).resolvedName = result.display_name || result.name || result.area;
+                            (this.fromLocation as any).isExternal = result.source === 'osm';
+                        }
                     }
                     // If no result, keep the coordinates that are already showing
                 },
@@ -775,6 +805,46 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.detectCurrentLocation();
     }
 
+    /**
+     * Open refinement modal for detected/selected location name
+     */
+    refineLocation() {
+        if (!this.fromLocation) {
+            alert('Detect your location first to refine the name.');
+            return;
+        }
+
+        this.refineModalCurrentName = this.fromQuery.replace('📍 ', '');
+        this.isRefineModalOpen = true;
+    }
+
+    // Modal state
+    isRefineModalOpen = false;
+    refineModalCurrentName = '';
+
+    /**
+     * Handle modal close event
+     */
+    onRefineModalClosed(result: RefineLocationResult) {
+        this.isRefineModalOpen = false;
+
+        if (result.confirmed && result.refinedName !== result.originalName && this.fromLocation) {
+            this.fromQuery = `📍 ${result.refinedName}`;
+
+            // Send to backend to "learn" this alias
+            this.busStopService.submitMissingStop({
+                name: result.refinedName,
+                latitude: this.fromLocation.lat,
+                longitude: this.fromLocation.lng,
+                description: `User-refined name for OSM point: ${result.originalName}`,
+                localNames: [result.originalName]
+            }).subscribe({
+                next: () => console.log('[TripPlanner] Name refinement submitted for verification'),
+                error: (err: any) => console.error('[TripPlanner] Failed to submit refinement:', err)
+            });
+        }
+    }
+
     // --- Search Logic ---
     onSearchInput(field: 'from' | 'to', query: string) {
         this.activeSearchField = field;
@@ -808,7 +878,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 upvotes: 0,
                 transportModes: s.transportModes || [],
                 tier: s.tier || 'node',
-                id: s._id || s.id
+                id: s._id || s.id,
+                securityProfile: s.securityProfile
             }));
 
             // Merge with existing results, keeping bus stops at the top

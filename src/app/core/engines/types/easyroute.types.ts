@@ -121,8 +121,8 @@ export interface RouteSegment {
 
     // V4 Aligned Keys
     vehicleType?: TransportModeType; // Normalized mode key
-    fromStop: { id?: string | number; name: string; latitude?: number; longitude?: number };
-    toStop: { id?: string | number; name: string; latitude?: number; longitude?: number };
+    fromStop: { id?: string | number; name: string; latitude?: number; longitude?: number; type?: string };
+    toStop: { id?: string | number; name: string; latitude?: number; longitude?: number; type?: string };
 
     // V3 Safety Guardrails
     isBridge?: boolean;       // User must use a pedestrian bridge here
@@ -130,6 +130,10 @@ export interface RouteSegment {
     backboneName?: string;    // Name of expressway (e.g., "Airport Road")
     microInstructions?: string[];
     barriers?: string[];
+    safetyData?: {
+        riskAlerts: string[];
+        isSafeZone: boolean;
+    };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -171,6 +175,7 @@ export interface GeneratedRoute {
         backbonePriority?: boolean;         // True if route heavily utilizes highway backbones
         transferCount?: number;             // Number of vehicle changes
         ribExitApplied?: boolean;           // True if Rib Exit fee is included
+        ribExitFee?: number;                // Specific fee for private estate exit
         arrivalWindow?: { minMinutes: number; maxMinutes: number; confidence: number }; // Probabilistic Arrival Window (PAW)
     };
 }

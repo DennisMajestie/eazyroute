@@ -5,6 +5,8 @@ export interface SmartStep {
     instruction: string;
     microInstructions?: string[];
     barriers?: string[];
+    riskAlerts?: string[];
+    isSafeZone?: boolean;
     isBoarding?: boolean;
 }
 
@@ -13,10 +15,19 @@ export interface SmartStep {
     standalone: true,
     imports: [CommonModule],
     template: `
-        <div class="smart-instruction-card" [class.boarding-step]="step.isBoarding">
+        <div class="smart-instruction-card" [class.boarding-step]="step.isBoarding" [class.safe-zone]="step.isSafeZone">
             <div class="main-instruction">
                 <i [class]="step.isBoarding ? 'fas fa-door-open text-success' : 'fas fa-directions text-primary'"></i>
                 <span class="ms-2">{{ step.instruction }}</span>
+                <span *ngIf="step.isSafeZone" class="badge bg-success ms-2 small">🛡️ Safe Zone</span>
+            </div>
+
+            <!-- Risk Alerts -->
+            <div *ngIf="step.riskAlerts && step.riskAlerts.length > 0" class="risk-alerts mt-2">
+                <div *ngFor="let alert of step.riskAlerts" class="alert-item text-danger">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    <strong>Risk:</strong> {{ alert }}
+                </div>
             </div>
 
             <!-- Micro Instructions (e.g. "Wait near the green transformer") -->
@@ -49,9 +60,27 @@ export interface SmartStep {
                 border-left: 3px solid #22C55E;
             }
 
+            &.safe-zone {
+                border-right: 3px solid #10B981;
+            }
+
             .main-instruction {
                 font-weight: 600;
                 font-size: 0.95rem;
+            }
+
+            .risk-alerts {
+                font-size: 0.85rem;
+                background: rgba(220, 38, 38, 0.1);
+                padding: 0.5rem;
+                border-radius: 0.5rem;
+                border: 1px solid rgba(220, 38, 38, 0.2);
+            }
+
+            .alert-item {
+                display: flex;
+                align-items: center;
+                font-weight: 600;
             }
 
             .micro-list {

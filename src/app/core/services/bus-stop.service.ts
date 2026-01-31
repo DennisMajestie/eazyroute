@@ -184,12 +184,13 @@ export class BusStopService {
   /**
    * Get nearby stops (enhanced with limit parameter)
    */
-  getNearbyStops(latitude: number, longitude: number, radius: number = 2000, limit: number = 10): Observable<BusStopSearchResponse> {
-    const params = new HttpParams()
-      .set('lat', latitude.toString())
-      .set('lng', longitude.toString())
+  getNearbyStops(latitude?: number, longitude?: number, radius: number = 2000, limit: number = 10): Observable<BusStopSearchResponse> {
+    let params = new HttpParams()
       .set('radius', radius.toString())
       .set('limit', limit.toString());
+
+    if (latitude !== undefined) params = params.set('lat', latitude.toString());
+    if (longitude !== undefined) params.set('lng', longitude.toString());
 
     return this.http.get<BusStopSearchResponse>(`${this.apiUrl}/nearby`, { params });
   }

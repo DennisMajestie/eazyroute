@@ -6,7 +6,7 @@
  * File: src/app/features/dashboard/dashboard-home/dashboard-home.component.ts
  */
 
-import { Component, OnInit, OnDestroy, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, effect, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -42,6 +42,7 @@ export interface DashboardBusStop {
   status: 'active' | 'busy' | 'quiet';
   latitude: number;
   longitude: number;
+  source?: string;
 }
 
 interface Route {
@@ -116,6 +117,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   activeTripId: string | null = null;
   orchestratorState$: any;
 
+  // V4 Security Intelligence
+  userSecurityLevel = computed(() => this.authService.currentUser()?.securityProfile?.level || 'safe');
+  userClassification = computed(() => this.authService.currentUser()?.securityProfile?.classification || 'Standard User');
+  zoneClassification = computed(() => this.authService.currentUser()?.zoneClassification || 'Urban Core');
+  trustedAreas = computed(() => this.authService.currentUser()?.securityProfile?.trustedAreas || []);
+  recentAlerts = computed(() => this.authService.currentUser()?.securityProfile?.recentAlerts || []);
+
   // Current user location
   currentUserLocation: { lat: number; lng: number } | null = null;
 
@@ -128,6 +136,10 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   // Notifications
   isNotificationCenterOpen: boolean = false;
   unreadCount$: Observable<number>;
+
+  // Metadata for search
+  isCityCenterFallback = false;
+  searchSource: 'local_db' | 'external_map_cached' | 'major_hubs_fallback' | 'unknown' = 'unknown';
 
   constructor(
     public authService: AuthService,  // ✅ Auth service for user info
@@ -175,12 +187,14 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       this.resetUserInfo();
     }
 
-    // Get user location
-    await this.getCurrentLocation();
+    // Load nearby stops IMMEDIATELY (will use city center fallback if location not ready)
+    this.loadNearbyStops();
 
+    // Get user location & Re-load data from APIs if location found
+    this.getCurrentLocation().then(() => {
+      this.loadNearbyStops();
+    });
 
-    // Load data from APIs
-    await this.loadNearbyStops();
     await this.loadPopularRoutes();
     this.loadTagAlongRides();
     this.loadUpcomingEvents();
@@ -201,7 +215,6 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
    */
 
   private loadUserInfo(): void {
-    // Get initial user from signal (effect() in constructor handles reactivity)
     const user = this.authService.currentUser();
     if (user) {
       this.updateUserInfo(user);
@@ -209,7 +222,6 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       this.resetUserInfo();
     }
 
-    // Optional: Refresh user data from server
     if (this.authService.isUserAuthenticated()) {
       this.authService.getCurrentUser().subscribe({
         next: (user) => {
@@ -228,7 +240,6 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     this.userName = user.firstName || 'Guest';
     this.userFullName = `${user.firstName} ${user.lastName}`.trim() || 'User';
     this.userEmail = user.email || '';
-    // this.userAvatar = user.avatar || null;
   }
 
   private resetUserInfo(): void {
@@ -274,7 +285,6 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   private async getCurrentLocation(): Promise<void> {
     try {
       if (!environment.geolocation.enabled) {
-        console.warn('[Dashboard] Geolocation disabled in environment');
         this.currentUserLocation = {
           lat: environment.geolocation.defaultCenter.lat,
           lng: environment.geolocation.defaultCenter.lng
@@ -282,31 +292,16 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
         return;
       }
 
-      if (environment.geolocation.enabled) {
-        // Use the smart location retry logic
-        const coords = await this.geolocationService.getSmartLocation();
-        if (coords) {
-          this.currentUserLocation = {
-            lat: coords.latitude,
-            lng: coords.longitude
-          };
-        } else {
-          throw new Error('GPS Timeout');
-        }
-      } else {
+      const coords = await this.geolocationService.getSmartLocation();
+      if (coords) {
         this.currentUserLocation = {
-          lat: environment.geolocation.defaultCenter.lat,
-          lng: environment.geolocation.defaultCenter.lng
+          lat: coords.latitude,
+          lng: coords.longitude
         };
-        console.warn('[Dashboard] Geolocation not available, using default');
+      } else {
+        throw new Error('GPS Timeout');
       }
     } catch (error: any) {
-      if (error.code === 1) { // 1 = User Denied
-        console.warn('[Dashboard] User denied geolocation. Using default location (Abuja).');
-      } else {
-        console.warn('[Dashboard] Geolocation error:', error.message);
-      }
-
       this.currentUserLocation = {
         lat: environment.geolocation.defaultCenter.lat,
         lng: environment.geolocation.defaultCenter.lng
@@ -321,19 +316,18 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
    */
 
   private async loadNearbyStops(): Promise<void> {
-    if (!this.currentUserLocation) return;
-
     this.isLoadingStops = true;
-
     try {
       const response = await this.busStopService.getNearbyStops(
-        this.currentUserLocation.lat,
-        this.currentUserLocation.lng,
-        2000 // 2km radius as per integration guide
+        this.currentUserLocation?.lat,
+        this.currentUserLocation?.lng,
+        2000
       ).toPromise();
 
       if (response?.success && Array.isArray(response.data)) {
-        // ⭐ ONLY TAKE FIRST 5 FOR DASHBOARD
+        this.isCityCenterFallback = !!response.searchParams?.isCityCenterFallback;
+        this.searchSource = response.searchParams?.source || 'local_db';
+
         const allNearbyStops = (response.data as any[]).map((stop: any) => ({
           id: stop._id || stop.id,
           name: stop.name,
@@ -343,12 +337,11 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
           status: this.determineStopStatus(stop),
           type: stop.type || 'bus_stop',
           latitude: stop.lat ?? stop.location?.coordinates?.[1] ?? stop.latitude,
-          longitude: stop.lng ?? stop.location?.coordinates?.[0] ?? stop.longitude
+          longitude: stop.lng ?? stop.location?.coordinates?.[0] ?? stop.longitude,
+          source: stop.source || this.searchSource
         }));
 
-        // Limit to 5 stops for dashboard
         this.nearbyStops = allNearbyStops.slice(0, 5);
-
       }
     } catch (error) {
       console.error('[Dashboard] Error loading nearby stops:', error);
@@ -359,10 +352,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
   private async loadPopularRoutes(): Promise<void> {
     this.isLoadingRoutes = true;
-
     try {
       const response = await this.routeHttpService.getPopularRoutes().toPromise();
-
       if (response?.success && Array.isArray(response.data)) {
         this.popularRoutes = (response.data as any[]).map((route: any) => ({
           id: route._id || route.id,
@@ -374,11 +365,9 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
           buses: 0,
           trending: false,
         }));
-
       }
     } catch (error) {
       console.error('[Dashboard] Error loading popular routes:', error);
-      this.loadMockRoutes();
     } finally {
       this.isLoadingRoutes = false;
     }
@@ -400,8 +389,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
             rating: ride.createdBy.rating || 5.0
           }));
         }
-      },
-      error: (err) => console.error('Failed to load rides', err)
+      }
     });
   }
 
@@ -416,20 +404,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
             time: new Date(evt.schedule.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             location: evt.venue.name,
             category: evt.eventType,
-            image: 'assets/event-placeholder.jpg', // Placeholder
+            image: 'assets/event-placeholder.jpg',
             attending: evt.stats.registeredGuests
           }));
         }
-      },
-      error: (err) => console.error('Failed to load events', err)
+      }
     });
   }
-
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * ACTIVE TRIP MANAGEMENT
-   * ═══════════════════════════════════════════════════════════════
-   */
 
   private async checkActiveTrip(): Promise<void> {
     const token = localStorage.getItem(environment.storageKeys.token);
@@ -441,14 +422,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     try {
       const response = await firstValueFrom(
         this.tripHttpService.getActiveTrip().pipe(
-          catchError((error: HttpErrorResponse) => {
-            if (error.status === 401) {
-              console.log('[Dashboard] Not authenticated/Session expired - no active trip');
-              return of({ success: false, data: null });
-            }
-            console.error('[Dashboard] Active trip check failed:', error);
-            return of({ success: false, data: null });
-          })
+          catchError(() => of({ success: false, data: null }))
         )
       );
 
@@ -463,13 +437,11 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
           ];
           this.activeTripDestination = lastSegment?.toStop?.name || 'Unknown';
         }
-
         this.activeTripProgress = this.calculateTripProgress(activeTrip);
       } else {
         this.hasActiveTrip = false;
       }
     } catch (error) {
-      console.error('[Dashboard] Error checking active trip (handled):', error);
       this.hasActiveTrip = false;
     }
 
@@ -490,19 +462,11 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       });
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * TRIP PLANNING
-   * ═══════════════════════════════════════════════════════════════
-   */
-
   showTripPlanner(): void {
     this.router.navigate(['/trip-planner']);
   }
 
   async planTripFromRoute(route: Route): Promise<void> {
-    console.log('[Dashboard] Planning trip from route:', route);
-
     if (route.fromLocation && route.toLocation) {
       this.router.navigate(['/trip-planner'], {
         state: {
@@ -514,10 +478,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       });
     } else {
       this.router.navigate(['/trip-planner'], {
-        queryParams: {
-          from: route.from,
-          to: route.to
-        }
+        queryParams: { from: route.from, to: route.to }
       });
     }
   }
@@ -527,12 +488,6 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       this.router.navigate(['/trip-tracking']);
     }
   }
-
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * HELPER METHODS
-   * ═══════════════════════════════════════════════════════════════
-   */
 
   updateGreeting(): void {
     const hour = new Date().getHours();
@@ -547,82 +502,53 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
   private calculateDistance(stop: any): string {
     if (!this.currentUserLocation || !stop) return 'N/A';
-
     const lat1 = this.currentUserLocation.lat;
     const lon1 = this.currentUserLocation.lng;
     const lat2 = stop.lat ?? stop.location?.coordinates?.[1] ?? stop.latitude;
     const lon2 = stop.lng ?? stop.location?.coordinates?.[0] ?? stop.longitude;
-
     if (!lat2 || !lon2) return 'N/A';
-
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
-
-    if (distance < 1) {
-      return `${Math.round(distance * 1000)} m`;
-    }
+    if (distance < 1) return `${Math.round(distance * 1000)} m`;
     return `${distance.toFixed(1)} km`;
   }
 
   private calculateDistanceMeters(stop: any): number {
     if (!this.currentUserLocation || !stop) return 0;
-
     const lat1 = this.currentUserLocation.lat;
     const lon1 = this.currentUserLocation.lng;
     const lat2 = stop.lat ?? stop.location?.coordinates?.[1] ?? stop.latitude;
     const lon2 = stop.lng ?? stop.location?.coordinates?.[0] ?? stop.longitude;
-
     if (!lat2 || !lon2) return 0;
-
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distanceMeters = R * c * 1000;
-    return distanceMeters;
+    return R * c * 1000;
   }
 
   private calculateTravelTime(distanceMeters: number | string): string {
-    // If distance is string (e.g. "1.2 km"), try to parse it
     let meters = 0;
     if (typeof distanceMeters === 'string') {
-      if (distanceMeters.includes('km')) {
-        meters = parseFloat(distanceMeters) * 1000;
-      } else if (distanceMeters.includes('m')) {
-        meters = parseFloat(distanceMeters);
-      }
-    } else {
-      meters = distanceMeters;
-    }
-
+      if (distanceMeters.includes('km')) meters = parseFloat(distanceMeters) * 1000;
+      else if (distanceMeters.includes('m')) meters = parseFloat(distanceMeters);
+    } else meters = distanceMeters;
     if (meters <= 0) return '1 min';
-
-    // Average driving speed: 400 meters per minute (approx 24 km/h)
     const minutes = Math.ceil(meters / 400);
-
     if (minutes >= 60) {
       const hours = Math.floor(minutes / 60);
-      const remainingMins = minutes % 60;
-      return `${hours}h ${remainingMins}m drive`;
+      return `${hours}h ${minutes % 60}m drive`;
     }
-
     return `${minutes} mins drive`;
-  }
-
-  private estimateNextBus(): string {
-    const mins = Math.floor(Math.random() * 15) + 3;
-    return `${mins} mins`;
   }
 
   private determineStopStatus(stop: any): 'active' | 'busy' | 'quiet' {
@@ -633,53 +559,26 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   }
 
   private formatDuration(minutes: number | null | undefined): string {
-    if (minutes == null || isNaN(minutes) || minutes <= 0) {
-      return '0 mins';
-    }
-    if (minutes < 60) {
-      return `${Math.round(minutes)} mins`;
-    }
+    if (minutes == null || isNaN(minutes) || minutes <= 0) return '0 mins';
+    if (minutes < 60) return `${Math.round(minutes)} mins`;
     const hours = Math.floor(minutes / 60);
     const mins = Math.round(minutes % 60);
-    if (mins === 0) {
-      return `${hours}h`;
-    }
-    return `${hours}h ${mins}m`;
+    return mins === 0 ? `${hours}h` : `${hours}h ${mins}m`;
   }
 
   private formatFare(amount: number | null | undefined): string {
-    if (amount == null || isNaN(amount)) {
-      return '₦0';
-    }
+    if (amount == null || isNaN(amount)) return '₦0';
     return `₦${Math.round(amount)}`;
   }
 
   private calculateTripProgress(trip: any): number {
     if (!trip.currentSegmentIndex || !trip.selectedRoute?.segments) return 0;
-    const current = trip.currentSegmentIndex;
-    const total = trip.selectedRoute.segments.length;
-    return Math.round((current / total) * 100);
-  }
-
-  private loadMockRoutes(): void {
-    this.popularRoutes = [
-      {
-        id: '1',
-        name: 'Kubwa - Berger',
-        from: 'Kubwa',
-        to: 'Berger',
-        duration: '45 mins',
-        fare: '₦300',
-        buses: 12,
-        trending: true
-      }
-    ];
+    return Math.round((trip.currentSegmentIndex / trip.selectedRoute.segments.length) * 100);
   }
 
   toggleNotifications(): void {
     const token = localStorage.getItem(environment.storageKeys.token);
     if (!token) return;
-
     this.isNotificationCenterOpen = !this.isNotificationCenterOpen;
     if (this.isNotificationCenterOpen) {
       this.notificationService.loadNotifications().subscribe();
@@ -688,9 +587,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
   onSearch(): void {
     if (this.searchQuery.trim()) {
-      this.router.navigate(['/trip-planner'], {
-        queryParams: { to: this.searchQuery }
-      });
+      this.router.navigate(['/trip-planner'], { queryParams: { to: this.searchQuery } });
     }
   }
 
@@ -703,10 +600,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       this.searchResults = [];
       return;
     }
-
     this.busStopService.searchBusStops(query).subscribe({
       next: (response: any) => {
-        // ✅ Comprehensive null-safety
         if (response?.success && Array.isArray(response?.data)) {
           this.searchResults = response.data
             .filter((stop: any) => stop != null)
@@ -715,31 +610,19 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
               name: stop?.name || 'Unknown',
               location: stop?.location || { coordinates: [0, 0] }
             }));
-        } else {
-          this.searchResults = [];
-        }
-
-        console.log('[Dashboard] Search results:', this.searchResults.length);
+        } else this.searchResults = [];
       },
-      error: (err) => {
-        console.error('[Dashboard] Search failed:', err);
-        this.searchResults = [];
-      }
+      error: () => this.searchResults = []
     });
   }
 
   selectResult(result: any): void {
     const lat = result.lat ?? result.location?.lat ?? result.location?.coordinates?.[1];
     const lng = result.lng ?? result.location?.lng ?? result.location?.coordinates?.[0];
-
     this.searchQuery = result.name;
     this.searchResults = [];
     this.router.navigate(['/trip-planner'], {
-      queryParams: {
-        to: result.name,
-        lat: lat,
-        lng: lng
-      }
+      queryParams: { to: result.name, lat: lat, lng: lng }
     });
   }
 
@@ -748,64 +631,43 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   }
 
   viewBusStop(stop: BusStop): void {
-    console.log('[Dashboard] Planning route to bus stop:', stop);
     this.planRouteToStop(stop);
   }
 
-  /**
-   * Navigate to the full bus stops list page
-   */
   navigateToBusStops(): void {
     this.router.navigate(['/bus-stops']);
   }
 
   async planRouteToStop(stop: any): Promise<void> {
-    // If we have current location, pass it
+    const stopLat = stop.lat || stop.latitude;
+    const stopLng = stop.lng || stop.longitude;
     if (this.currentUserLocation) {
       this.router.navigate(['/trip-planner'], {
         state: {
-          fromLocation: {
-            lat: this.currentUserLocation.lat,
-            lng: this.currentUserLocation.lng
-          },
-          toLocation: {
-            lat: stop.lat || stop.latitude,
-            lng: stop.lng || stop.longitude
-          },
+          fromLocation: { lat: this.currentUserLocation.lat, lng: this.currentUserLocation.lng },
+          toLocation: { lat: stopLat, lng: stopLng },
           fromName: 'Current Location',
           toName: stop.name
         }
       });
     } else {
-      // Fallback to just destination
       this.router.navigate(['/trip-planner'], {
-        queryParams: {
-          to: stop.name,
-          lat: stop.lat || stop.latitude,
-          lng: stop.lng || stop.longitude
-        }
+        queryParams: { to: stop.name, lat: stopLat, lng: stopLng }
       });
     }
   }
 
   viewRoute(route: Route): void {
-    console.log('[Dashboard] Viewing route:', route);
     this.planTripFromRoute(route);
   }
 
-  viewEvent(event: Event): void {
-    console.log('[Dashboard] Viewing event:', event);
-  }
-
-  bookRide(ride: TagAlongRide): void {
-    console.log('[Dashboard] Booking ride:', ride);
-  }
+  viewEvent(event: Event): void { }
+  bookRide(ride: TagAlongRide): void { }
 
   getStatusColor(status: string): string {
     switch (status) {
       case 'active': return '#10B981';
       case 'busy': return '#F59E0B';
-      case 'quiet': return '#6B7280';
       default: return '#6B7280';
     }
   }

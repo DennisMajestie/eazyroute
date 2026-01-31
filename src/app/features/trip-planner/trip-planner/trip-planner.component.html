@@ -32,6 +32,12 @@
             title="Refresh location">
             <i [class]="isDetectingLocation ? 'fas fa-spinner fa-spin' : 'fas fa-crosshairs'"></i>
           </button>
+
+          <!-- Refine Name Button (Shows when location is detected) -->
+          <button *ngIf="fromLocation && !isDetectingLocation" class="refine-name-btn" (click)="refineLocation()"
+            title="Refine Name">
+            <i class="fas fa-edit"></i>
+          </button>
         </div>
 
         <!-- Location Error -->
@@ -125,10 +131,20 @@
                   <i class="fas fa-check-circle me-1"></i> Verified Neighborhood
                 </span>
 
-                <small class="d-block text-muted">
-                  {{ result.type === 'bus_stop' ? '🚏 Bus Stop' : '📍 Location' }}
-                  {{ result.area ? '• ' + result.area : '' }}
-                </small>
+                <div class="result-meta d-flex align-items-center gap-2">
+                  <span class="badge" [ngClass]="{
+                    'bg-success': result.securityProfile.level === 'safe',
+                    'bg-warning text-dark': result.securityProfile.level === 'caution',
+                    'bg-danger': result.securityProfile.level === 'high_risk'
+                  }" *ngIf="result.securityProfile">
+                    {{ result.securityProfile.level === 'safe' ? '🛡️ Safe' : (result.securityProfile.level ===
+                    'caution' ? '⚠️ Caution' : '🚨 High Risk') }}
+                  </span>
+                  <small class="text-muted">
+                    {{ result.type === 'bus_stop' ? '🚏 Bus Stop' : '📍 Location' }}
+                    {{ result.area ? '• ' + result.area : '' }}
+                  </small>
+                </div>
 
                 <!-- Local Names (Also known as...) -->
                 <small *ngIf="result.localNames && result.localNames.length > 0" class="d-block text-info">
@@ -273,6 +289,17 @@
       </div>
     </section>
 
+    <!-- Night Mode Guardrail -->
+    <div *ngIf="isNightMode" class="night-mode-alert mb-3">
+      <div class="alert alert-dark d-flex align-items-center gap-3 border-warning">
+        <i class="fas fa-moon text-warning fs-4"></i>
+        <div>
+          <strong class="text-warning">Night Mode Active</strong>
+          <p class="mb-0 small opacity-75">Prioritizing well-lit hubs and primary transit arteries for your safety.</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Loading State -->
     <div *ngIf="isLoadingRoutes" class="loading-state">
       <div class="spinner-border text-primary" role="status">
@@ -327,9 +354,9 @@
             <span *ngIf="route.metadata?.transferCount" class="stat-item text-muted" title="Number of transfers">
               <i class="fas fa-exchange-alt"></i> {{ route.metadata?.transferCount }}
             </span>
-            <span *ngIf="route.metadata?.ribExitApplied" class="badge bg-warning text-dark ms-2"
-              title="Exit fee included">
+            <span *ngIf="route.metadata?.ribExitFee" class="badge bg-warning text-dark ms-2" title="Exit fee included">
               <i class="fas fa-ticket-alt"></i> Exit Fee
+              <span>(₦{{ route.metadata?.ribExitFee }})</span>
             </span>
           </div>
         </div>
@@ -363,6 +390,8 @@
                     instruction: segment.instructions || '',
                     microInstructions: segment.microInstructions,
                     barriers: segment.barriers,
+                    riskAlerts: segment.safetyData?.riskAlerts,
+                    isSafeZone: segment.safetyData?.isSafeZone,
                     isBoarding: true
                   }">
                 </app-smart-instruction>
@@ -371,6 +400,14 @@
                 <div *ngIf="segment.isBridge" class="safety-badge bridge-warning mt-2">
                   <i class="fas fa-bridge me-1"></i>
                   <span>🌉 Use Pedestrian Bridge</span>
+                </div>
+
+                <!-- Night Hub Intelligence -->
+                <div *ngIf="isNightMode && $any(segment.toStop)?.type === 'hub'"
+                  class="night-hub-intelligence mt-2 p-2 rounded border border-warning-subtle"
+                  style="background: rgba(255, 193, 7, 0.05); color: #ffc107; font-size: 0.85rem;">
+                  <i class="fas fa-shield-night me-1"></i>
+                  <strong>Hub Intel:</strong> {{ getNightHubIntelligence(segment.toStop.name) }}
                 </div>
 
                 <div class="segment-meta text-muted small mt-1">
@@ -610,3 +647,8 @@
     </div>
   </div>
 </ng-container>
+
+<!-- Refine Location Modal -->
+<app-refine-location-modal [isOpen]="isRefineModalOpen" [currentName]="refineModalCurrentName"
+  (closed)="onRefineModalClosed($event)">
+</app-refine-location-modal>

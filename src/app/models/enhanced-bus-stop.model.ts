@@ -22,6 +22,11 @@ export interface EnhancedBusStop {
     distanceFromCity?: number; // NEW - Distance from city center in km
     distance?: number; // Distance from user (for nearby searches)
     notes?: string;
+    securityProfile?: {
+        level: 'safe' | 'caution' | 'high_risk';
+        safeZones: string[];
+        riskAlerts: string[];
+    };
 }
 
 export interface RouteSegment {
@@ -54,9 +59,17 @@ export interface EnhancedRouteResponse {
     message?: string;
 }
 
+export interface SearchParams {
+    isCityCenterFallback?: boolean;
+    source?: 'local_db' | 'external_map_cached' | 'major_hubs_fallback';
+    radius?: number;
+    limit?: number;
+}
+
 export interface BusStopSearchResponse {
     success: boolean;
     data: EnhancedBusStop[];
     total?: number;
     message?: string;
+    searchParams?: SearchParams; // NEW - Metadata about the search result
 }
