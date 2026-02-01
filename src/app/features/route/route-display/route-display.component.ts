@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AlongService } from '../../../core/services/along.service';
 import { SafetyService, SafetyTip } from '../../../core/services/safety.service';
 import { CommuterProtocolService, BoardingProtocol } from '../../../core/services/commuter-protocol.service';
+import { EasyrouteOrchestratorService } from '../../../core/services/easyroute-orchestrator.service';
 import { AlongRoute, AlongSegment } from '../../../models/transport.types';
 import { SubmitPriceComponent } from '../../community/submit-price/submit-price.component';
 
@@ -22,6 +23,7 @@ export class RouteDisplayComponent implements OnInit {
 
     // UI state
     isLoading = false;
+    isStartingJourney = false;
     error: string = '';
     expandedSegments: Set<number> = new Set();
     showStops: { [key: number]: boolean } = {};
@@ -46,7 +48,8 @@ export class RouteDisplayComponent implements OnInit {
         private router: Router,
         private alongService: AlongService,
         private safetyService: SafetyService,
-        private protocolService: CommuterProtocolService
+        private protocolService: CommuterProtocolService,
+        private orchestrator: EasyrouteOrchestratorService
     ) { }
 
     /**
@@ -357,15 +360,56 @@ export class RouteDisplayComponent implements OnInit {
     /**
      * Start journey
      */
-    startJourney() {
-        if (!this.route) return;
+    async startJourney() {
+        if (!this.route || !this.fromLocation || !this.toLocation) return;
+        if (this.isStartingJourney) return;
 
-        // Navigate to trip tracking with route data
-        this.router.navigate(['/trip-tracking'], {
-            queryParams: {
-                routeData: JSON.stringify(this.route)
-            }
-        });
+        this.isStartingJourney = true;
+
+        try {
+            // Convert AlongRoute to GeneratedRoute format for orchestrator
+            const generatedRoute = {
+                id: this.route.id || `route-${Date.now()}`,
+                segments: this.route.segments.map((seg, i) => ({
+                    id: `seg-${i}`,
+                    distance: seg.distance || 0,
+                    estimatedTime: seg.estimatedTime || 0,
+                    mode: {
+                        type: (seg.vehicleType || seg.type || 'walk').toLowerCase(),
+                        name: seg.vehicleType || seg.type || 'Walk',
+                        availabilityFactor: 1
+                    },
+                    cost: typeof seg.cost === 'number' ? seg.cost : (seg.cost as any)?.min || 0,
+                    instructions: seg.instruction || seg.instructions || '',
+                    fromStop: { name: seg.fromStop || 'Start', latitude: this.fromLocation!.lat, longitude: this.fromLocation!.lng },
+                    toStop: { name: seg.toStop || 'End', latitude: this.toLocation!.lat, longitude: this.toLocation!.lng }
+                })),
+                totalDistance: this.route.totalDistance || 0,
+                totalTime: this.route.totalTime || 0,
+                totalCost: typeof this.route.totalCost === 'number' ? this.route.totalCost : (this.route.totalCost as any)?.min || 0,
+                rankingScore: { shortest: 50, cheapest: 50, balanced: 50 },
+                generatedAt: new Date(),
+                strategy: 'balanced' as const
+            };
+
+            // Create trip in orchestrator
+            const tripId = await this.orchestrator.createTrip(
+                { latitude: this.fromLocation.lat, longitude: this.fromLocation.lng },
+                { latitude: this.toLocation.lat, longitude: this.toLocation.lng },
+                generatedRoute as any
+            );
+
+            // Start the trip
+            await this.orchestrator.startTrip(tripId);
+
+            // Navigate to trip tracking
+            this.router.navigate(['/trip-tracking']);
+        } catch (error) {
+            console.error('[RouteDisplay] Failed to start journey:', error);
+            alert('Failed to start journey. Please try again.');
+        } finally {
+            this.isStartingJourney = false;
+        }
     }
 
     /**

@@ -246,8 +246,9 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <button class="btn btn-primary btn-xl" (click)="startJourney()">
-                🚀 Start Journey
+            <button class="btn btn-primary btn-xl" (click)="startJourney()" [disabled]="isStartingJourney">
+                <span *ngIf="isStartingJourney" class="spinner-border spinner-border-sm me-2"></span>
+                {{ isStartingJourney ? 'Starting...' : '🚀 Start Journey' }}
             </button>
             <button class="btn btn-secondary btn-lg" (click)="shareRoute()">
                 📤 Share via WhatsApp
