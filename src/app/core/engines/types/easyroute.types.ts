@@ -187,7 +187,7 @@ export interface GeneratedRoute {
 // 5. TRIP STATE MACHINE (Extends Trip model)
 // ═══════════════════════════════════════════════════════════════════
 
-export type TripStatus = 'not_started' | 'in_progress' | 'completed' | 'cancelled' | 'paused';
+export type TripStatus = 'not_started' | 'in_progress' | 'completed' | 'cancelled' | 'paused' | 'active';
 
 // export interface TripState {
 //     tripId: string;
