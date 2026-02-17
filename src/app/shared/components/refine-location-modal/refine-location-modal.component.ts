@@ -6,6 +6,7 @@ export interface RefineLocationResult {
     originalName: string;
     refinedName: string;
     confirmed: boolean;
+    isDefault?: boolean;
 }
 
 @Component({
@@ -21,6 +22,7 @@ export class RefineLocationModalComponent {
     @Output() closed = new EventEmitter<RefineLocationResult>();
 
     refinedName = '';
+    isDefault = false;
 
     ngOnChanges() {
         // Initialize refined name when modal opens
@@ -33,7 +35,8 @@ export class RefineLocationModalComponent {
         this.closed.emit({
             originalName: this.currentName,
             refinedName: this.refinedName.trim(),
-            confirmed: true
+            confirmed: true,
+            isDefault: this.isDefault
         });
     }
 

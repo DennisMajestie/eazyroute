@@ -38,6 +38,8 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
     currentRoute: GeneratedRoute | null = null;
     currentSegmentIndex = 0;
     completedSegments: Set<number> = new Set();
+    tripStartTime: Date | null = null;
+    totalPlannedDuration = 0;
 
     // UI State
     currentStep: CurrentStepInfo | null = null;
@@ -45,6 +47,9 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
     distanceRemainingKm = 0;
     totalCost = 0;
     progressPercent = 0;
+    isArrived = false;
+    distanceToNextStopM = Infinity;
+    showCelebrationModal = false;
 
     // Map
     center: { lat: number; lng: number } = { lat: 9.0579, lng: 7.4951 }; // Abuja default
@@ -72,9 +77,12 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
             this.currentSegmentIndex = state.currentSegmentIndex || 0;
 
             if (this.currentRoute) {
+                this.tripStartTime = state.tripStartTime || null;
+                this.totalPlannedDuration = this.currentRoute.totalTime || 0;
                 this.updateCurrentStep();
                 this.calculateProgress();
                 this.updateMapData();
+                this.checkArrivalProximity(state.currentLocation);
             }
         });
 
@@ -162,6 +170,40 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
         this.totalCost = this.currentRoute.totalCost || 0;
     }
 
+    private checkArrivalProximity(userLocation: any): void {
+        if (!userLocation || !this.currentStep?.segment?.toStop) {
+            this.isArrived = false;
+            this.distanceToNextStopM = Infinity;
+            return;
+        }
+
+        const stop = this.currentStep.segment.toStop;
+        if (!stop.latitude || !stop.longitude) {
+            this.isArrived = false;
+            return;
+        }
+
+        // Calculate distance in meters
+        this.distanceToNextStopM = this.haversineDistance(
+            userLocation.latitude, userLocation.longitude,
+            stop.latitude, stop.longitude
+        ) * 1000;
+
+        // Enabled if within 100 meters
+        this.isArrived = this.distanceToNextStopM <= 100;
+    }
+
+    private haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+        const R = 6371; // km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
     private updateMapData(): void {
         if (!this.currentRoute) return;
 
@@ -197,13 +239,12 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
 
     async confirmEndTrip(): Promise<void> {
         this.showEndTripModal = false;
-        try {
-            await this.orchestrator.endTrip();
-            this.router.navigate(['/dashboard']);
-        } catch (error) {
-            console.error('[TripTracking] Error stopping trip:', error);
-            // Optionally show an error toast here
-        }
+        this.goToDashboard();
+    }
+
+    goToDashboard(): void {
+        this.orchestrator.endTrip();
+        this.router.navigate(['/dashboard']);
     }
 
     cancelEndTrip(): void {
@@ -211,13 +252,23 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
     }
 
     async markSegmentComplete(): Promise<void> {
+        if (!this.isArrived && this.distanceToNextStopM !== Infinity) {
+            console.warn('[TripTracking] Too far to mark complete');
+            return;
+        }
+
+        if (this.currentStep?.isLastSegment) {
+            this.showCelebrationModal = true;
+            return;
+        }
+
         this.completedSegments.add(this.currentSegmentIndex);
         try {
             await this.orchestrator.advanceToNextSegment();
-            // The subscription to state$ will update this.currentSegmentIndex and trigger UI updates
+            // Reset arrival for next segment
+            this.isArrived = false;
         } catch (error) {
             console.error('[TripTracking] Failed to advance segment:', error);
-            // Fallback for local UI only if orchestrator fails
             this.currentSegmentIndex++;
             this.updateCurrentStep();
             this.calculateProgress();
@@ -240,7 +291,16 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
     }
 
     getFormattedETA(): string {
-        const arrival = new Date(this.currentTime.getTime() + this.etaMinutes * 60000);
+        // Use trip start time + total planned duration for a stable arrival time
+        // If trip hasn't started or no start time yet, fall back to current time + remaining minutes
+        let arrival: Date;
+
+        if (this.tripStartTime && this.totalPlannedDuration > 0) {
+            arrival = new Date(this.tripStartTime.getTime() + this.totalPlannedDuration * 60000);
+        } else {
+            arrival = new Date(this.currentTime.getTime() + this.etaMinutes * 60000);
+        }
+
         return arrival.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     }
 }

@@ -390,16 +390,16 @@ export class ReroutingEngine {
         id: `seg-${index}-${Date.now()}`,
         fromStop: {
           id: 'reroute-from',
-          name: seg.fromStop || 'Current Location',
-          latitude: 0,
-          longitude: 0,
+          name: seg.fromStop?.name || seg.fromStop || 'Current Location',
+          latitude: seg.fromStop?.latitude || 0,
+          longitude: seg.fromStop?.longitude || 0,
           type: 'landmark'
         } as any,
         toStop: {
           id: 'reroute-to',
-          name: seg.toStop || 'Waypoint',
-          latitude: 0,
-          longitude: 0,
+          name: seg.toStop?.name || seg.toStop || 'Waypoint',
+          latitude: seg.toStop?.latitude || 0,
+          longitude: seg.toStop?.longitude || 0,
           type: 'landmark'
         } as any,
         distance: seg.distance,
@@ -638,10 +638,23 @@ export class ReroutingEngine {
     if (severity === 'severe') {
       return `Significantly off course (${Math.round(distance)}m, ${duration}s)`;
     }
+
     if (severity === 'moderate') {
-      return `Moderately off course (${Math.round(distance)}m)`;
+      return `Off course (${Math.round(distance)}m, ${duration}s)`;
     }
-    return `Slightly off course (${Math.round(distance)}m)`;
+
+    return `Checking path... (${duration}s)`;
+  }
+
+  /**
+   * Reset engine state
+   */
+  reset(): void {
+    console.log('[ReroutingEngine] Resetting engine state');
+    this.pendingRerouteSubject.next(null);
+    this.resetDeviationTracking();
+    this.rerouteHistory = [];
+    this.rerouteEventsSubject.next(null);
   }
 
   private async handleReroutingFailure(tripState: TripState): Promise<void> {

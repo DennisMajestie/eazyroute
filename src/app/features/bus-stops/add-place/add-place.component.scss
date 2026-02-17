@@ -42,31 +42,16 @@
 
 // ===== PREMIUM HEADER =====
 .premium-header {
-  position: relative;
-  z-index: 10;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   align-items: center;
-  padding: 1.5rem;
-  padding-top: 3.5rem;
-
-  .glass-back-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 16px;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    backdrop-filter: blur(12px);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.25rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: var(--shadow-md);
-
-    &:hover { background: rgba(255,255,255,0.2); border-color: white; }
-    &:active { transform: scale(0.9); }
-  }
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-6);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 
   .header-title {
     margin-left: 1.5rem;

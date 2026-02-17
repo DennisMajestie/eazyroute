@@ -21,6 +21,7 @@
     <section class="search-section" *ngIf="!state.hasActiveTrip">
       <!-- From Input -->
       <div class="search-box position-relative mb-3">
+        <span class="default-badge mb-1" *ngIf="isDefaultSelected">🏠 Saved Default</span>
         <div class="input-with-button">
           <input type="text"
             [placeholder]="isDetectingLocation ? 'Detecting location...' : 'From: Enter location or use 📍 button'"
@@ -210,84 +211,7 @@
       </div>
     </section>
 
-    <!-- Active Trip Section (Visible when a trip is active) -->
-    <section class="active-trip-section" *ngIf="state.hasActiveTrip">
-      <div class="active-trip-card">
-        <div class="live-indicator">
-          <span class="pulse-dot"></span>
-          LIVE TRIP
-        </div>
-
-        <div class="trip-status-header">
-          <h3>{{ state.tripStatus | titlecase }}</h3>
-          <span class="trip-id">ID: {{ state.currentTripId | slice:0:8 }}</span>
-        </div>
-
-        <div class="trip-actions-grid">
-          <button class="btn btn-danger stop-btn" (click)="stopActiveTrip()">
-            <i class="fas fa-stop-circle"></i> Stop Trip
-          </button>
-        </div>
-
-        <!-- Reroute Suggestion (Nested in Active Trip) -->
-        <div *ngIf="pendingReroute$ | async as reroute" class="reroute-alert-mini mt-3">
-          <div class="alert-content">
-            <i class="fas fa-exclamation-triangle warning-icon"></i>
-            <div>
-              <strong>Deviation Detected!</strong>
-              <p>Better route available. Save {{ reroute.proposedRoute.totalTime }} mins?</p>
-            </div>
-          </div>
-          <div class="alert-actions mt-2">
-            <button class="btn btn-sm btn-success" (click)="orchestrator.acceptReroute()">Accept</button>
-            <button class="btn btn-sm btn-outline-light" (click)="orchestrator.declineReroute()">Ignore</button>
-          </div>
-        </div>
-
-        <!-- Shouting Protocol Panel (How to Board) -->
-        <div *ngIf="activeProtocol$ | async as protocolData" class="protocol-panel mt-3">
-          <div class="protocol-header">
-            <div class="d-flex justify-content-between align-items-center">
-              <h5 class="mb-0">
-                <i class="fas fa-megaphone text-warning me-2"></i>
-                📍 {{ protocolData.hub.name }}
-              </h5>
-              <button class="btn btn-sm btn-outline-light" (click)="dismissProtocol()">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-            <small class="text-muted">How to Board</small>
-          </div>
-
-          <div class="protocol-body mt-3">
-            <div class="protocol-destination">
-              <strong>To {{ protocolData.protocol.destination }}:</strong>
-            </div>
-
-            <div class="protocol-details mt-2">
-              <div class="detail-item">
-                <i class="fas fa-map-pin text-danger me-2"></i>
-                <span><strong>Location:</strong> {{ protocolData.protocol.location }}</span>
-              </div>
-              <div class="detail-item mt-2">
-                <i class="fas fa-bullhorn text-warning me-2"></i>
-                <span><strong>Shout:</strong> "{{ protocolData.protocol.shout }}"</span>
-              </div>
-              <div class="detail-item mt-2">
-                <i class="fas fa-money-bill-wave text-success me-2"></i>
-                <span><strong>Price:</strong> ₦{{ protocolData.protocol.price.min }} - ₦{{
-                  protocolData.protocol.price.max }} ({{ protocolData.protocol.mode }})</span>
-              </div>
-            </div>
-
-            <div class="protocol-tip mt-3 p-2 bg-dark rounded">
-              <i class="fas fa-lightbulb text-warning me-1"></i>
-              <em>{{ protocolData.protocol.tip }}</em>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+    <!-- Results Section (Visible when no trip active) -->
 
     <!-- Night Mode Guardrail -->
     <div *ngIf="isNightMode" class="night-mode-alert mb-3">

@@ -21,7 +21,8 @@ export const environment = {
       lng: 7.3986
     },
     enableHighAccuracy: true,
-    timeout: 5000,
-    maximumAge: 0
+    timeout: 15000,
+    maximumAge: 0,
+    locationUpdateIntervalMs: 10000
   }
 };

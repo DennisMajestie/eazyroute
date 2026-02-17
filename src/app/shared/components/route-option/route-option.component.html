@@ -4,6 +4,13 @@
         {{ getBadgeLabel() }}
     </div>
 
+    <!-- Commuter Guardian Risk Badge -->
+    @if (getHighestRisk(); as risk) {
+    <div class="risk-badge" [class]="risk">
+        {{ getRiskLabel(risk) }}
+    </div>
+    }
+
     <!-- Summary Row -->
     <div class="summary">
         <div class="cost">

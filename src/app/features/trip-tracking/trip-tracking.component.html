@@ -1,11 +1,11 @@
-<div class="trip-tracking-container" *ngIf="orchestratorState$ | async as state">
+<div class="trip-tracking-container animate-fadeIn" *ngIf="orchestratorState$ | async as state">
     <!-- No Active Trip State -->
     <div *ngIf="!state.hasActiveTrip" class="no-trip-state">
-        <div class="empty-state text-center p-5">
-            <i class="fas fa-route fa-4x text-muted mb-3"></i>
+        <div class="empty-state text-center p-5 animate-slideUp">
+            <i class="fas fa-route fa-4x mb-3"></i>
             <h3>No Active Trip</h3>
-            <p class="text-muted">Start a trip from the Trip Planner to begin tracking.</p>
-            <a routerLink="/trip-planner" class="btn btn-primary">
+            <p>Start a trip from the Trip Planner to begin tracking.</p>
+            <a routerLink="/trip-planner" class="btn btn-primary btn-lg mt-4">
                 <i class="fas fa-map-marked-alt me-2"></i> Plan a Trip
             </a>
         </div>
@@ -21,7 +21,7 @@
             </div>
             <div class="status-info">
                 <h2 class="status-text">{{ state.tripStatus | titlecase }}</h2>
-                <span class="trip-id">Trip #{{ state.currentTripId?.slice(0, 8) }}</span>
+                <span class="trip-id">Trip ID: {{ state.currentTripId?.slice(0, 8) }}</span>
             </div>
             <div class="eta-badge" *ngIf="etaMinutes > 0">
                 <i class="fas fa-clock"></i>
@@ -30,17 +30,17 @@
         </header>
 
         <!-- Current Step Card -->
-        <section class="current-step-card" *ngIf="currentStep">
+        <section class="current-step-card animate-slideUp" *ngIf="currentStep">
             <div class="step-icon">
                 <i [class]="currentStep.transportIcon"></i>
             </div>
             <div class="step-content">
-                <div class="step-instruction">{{ currentStep.instruction }}</div>
+                <h3 class="step-instruction">{{ currentStep.instruction }}</h3>
                 <div class="step-details">
                     <span class="from-to">
                         <i class="fas fa-map-pin text-success me-1"></i>
                         {{ currentStep.fromStop }}
-                        <i class="fas fa-arrow-right mx-2"></i>
+                        <i class="fas fa-arrow-right mx-2 opacity-50"></i>
                         <i class="fas fa-flag-checkered text-danger me-1"></i>
                         {{ currentStep.toStop }}
                     </span>
@@ -54,9 +54,10 @@
                     </span>
                 </div>
             </div>
-            <button class="done-btn" (click)="markSegmentComplete()" *ngIf="!currentStep.isLastSegment">
-                <i class="fas fa-check"></i>
-                Done
+            <button class="done-btn" (click)="markSegmentComplete()" [disabled]="!isArrived">
+                <i class="fas" [class.fa-check]="!currentStep.isLastSegment"
+                    [class.fa-trophy]="currentStep.isLastSegment"></i>
+                {{ currentStep.isLastSegment ? 'Complete Trip' : 'Arrived at Stop' }}
             </button>
         </section>
 
@@ -66,7 +67,7 @@
                 <div class="progress-fill" [style.width.%]="progressPercent"></div>
             </div>
             <div class="progress-labels">
-                <span>{{ progressPercent }}% complete</span>
+                <span>{{ progressPercent }}% Complete</span>
                 <span>{{ distanceRemainingKm.toFixed(1) }} km left</span>
             </div>
         </div>
@@ -74,7 +75,7 @@
         <!-- Timeline (Compact) -->
         <section class="timeline-section" *ngIf="currentRoute && currentRoute.segments">
             <h4 class="section-title">
-                <i class="fas fa-list-ol me-2"></i> Journey Steps
+                <i class="fas fa-list-ol me-2"></i> JOURNEY STEPS
             </h4>
             <div class="timeline-compact">
                 <div *ngFor="let segment of currentRoute.segments; let i = index" class="timeline-item"
@@ -106,34 +107,37 @@
                 <div class="stat">
                     <i class="fas fa-clock"></i>
                     <span class="value">{{ etaMinutes }}</span>
-                    <span class="label">min left</span>
+                    <span class="label">MIN LEFT</span>
                 </div>
                 <div class="stat">
                     <i class="fas fa-money-bill-wave"></i>
                     <span class="value">₦{{ totalCost }}</span>
-                    <span class="label">total</span>
+                    <span class="label">TOTAL</span>
                 </div>
                 <div class="stat">
                     <i class="fas fa-route"></i>
                     <span class="value">{{ distanceRemainingKm.toFixed(1) }}</span>
-                    <span class="label">km left</span>
+                    <span class="label">KM LEFT</span>
                 </div>
             </div>
         </footer>
 
         <!-- Control Buttons (Fixed at bottom) -->
         <div class="control-buttons">
-            <button class="btn btn-outline-warning flex-grow-1" (click)="reportIssue()">
-                <i class="fas fa-exclamation-triangle me-2"></i> Report Issue
+            <button class="btn btn-outline-warning" (click)="reportIssue()">
+                <i class="fas fa-exclamation-triangle"></i> Report Issue
             </button>
-            <button class="btn btn-danger flex-grow-1" (click)="stopTrip()">
-                <i class="fas fa-stop-circle me-2"></i> End Trip
+            <button class="btn btn-danger" (click)="stopTrip()">
+                <i class="fas fa-stop-circle"></i> End Trip
             </button>
         </div>
 
+        <!-- SOS Emergency Button -->
+        <app-sos-button></app-sos-button>
+
         <!-- Custom Confirmation Modal -->
         <div class="modal-overlay" *ngIf="showEndTripModal">
-            <div class="trip-confirm-modal">
+            <div class="trip-confirm-modal animate-slideUp">
                 <div class="modal-icon">
                     <i class="fas fa-stop-circle"></i>
                 </div>
@@ -150,7 +154,32 @@
             </div>
         </div>
 
-        <!-- SOS Emergency Button -->
-        <app-sos-button></app-sos-button>
+        <!-- Celebration Modal (Trip Complete) -->
+        <div class="modal-overlay celebration-overlay" *ngIf="showCelebrationModal">
+            <div class="celebration-modal animate-bounceIn">
+                <div class="confetti-container">
+                    <i class="fas fa-star s1"></i>
+                    <i class="fas fa-star s2"></i>
+                    <i class="fas fa-certificate s3"></i>
+                </div>
+                <div class="modal-icon gold-glow">
+                    <i class="fas fa-medal"></i>
+                </div>
+                <h2>Mission Accomplished!</h2>
+                <p>You've successfully reached your destination. We hope you had a safe and pleasant journey with
+                    EazyRoute.</p>
+                <div class="trip-stats-final" *ngIf="currentRoute">
+                    <div class="stat-item">
+                        <span class="label">Trip ID</span>
+                        <span class="value">#{{ state.currentTripId?.slice(0, 8) }}</span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn btn-primary btn-lg w-100" (click)="goToDashboard()">
+                        <i class="fas fa-home me-2"></i> Return to Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>

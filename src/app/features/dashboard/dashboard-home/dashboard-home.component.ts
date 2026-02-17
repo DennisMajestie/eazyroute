@@ -265,6 +265,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
 
   logout(): void {
     if (confirm('Are you sure you want to logout?')) {
+      this.orchestrator.reset(); // Stop tracking immediately
       this.authService.logout().subscribe({
         next: () => {
           console.log('Logged out successfully');
@@ -364,8 +365,16 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
           to: route.destination?.name || 'Unknown',
           duration: this.formatDuration(route.estimatedDuration || 0),
           fare: this.formatFare(route.fare || 0),
-          buses: 0,
-          trending: false,
+          buses: route.activeBuses || 0,
+          trending: !!route.trending,
+          fromLocation: route.origin?.location ? {
+            lat: route.origin.location.coordinates[1],
+            lng: route.origin.location.coordinates[0]
+          } : undefined,
+          toLocation: route.destination?.location ? {
+            lat: route.destination.location.coordinates[1],
+            lng: route.destination.location.coordinates[0]
+          } : undefined
         }));
       }
     } catch (error) {
@@ -469,20 +478,24 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   }
 
   async planTripFromRoute(route: Route): Promise<void> {
-    if (route.fromLocation && route.toLocation) {
-      this.router.navigate(['/trip-planner'], {
-        state: {
-          fromLocation: route.fromLocation,
-          toLocation: route.toLocation,
-          fromName: route.from,
-          toName: route.to
-        }
-      });
-    } else {
-      this.router.navigate(['/trip-planner'], {
-        queryParams: { from: route.from, to: route.to }
-      });
-    }
+    const navigationExtras = {
+      state: {
+        fromLocation: route.fromLocation,
+        toLocation: route.toLocation,
+        fromName: route.from,
+        toName: route.to
+      },
+      queryParams: {
+        from: route.from,
+        to: route.to,
+        fromLat: route.fromLocation?.lat,
+        fromLng: route.fromLocation?.lng,
+        toLat: route.toLocation?.lat,
+        toLng: route.toLocation?.lng
+      }
+    };
+
+    this.router.navigate(['/trip-planner'], navigationExtras);
   }
 
   viewActiveTrip(): void {

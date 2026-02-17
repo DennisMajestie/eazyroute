@@ -6,11 +6,40 @@ export enum TransportMode {
     WALKING = 'walking'
 }
 
+export enum BoardingStrength {
+    WEAK = 'weak',
+    MEDIUM = 'medium',
+    STRONG = 'strong'
+}
+
+export interface IDynamicAdjustment {
+    fareMultiplier: number;
+    waitMultiplier: number;
+    riskBoost: number;
+    congestionPenalty: number;
+    confidence: number;
+    rationale?: string;
+}
+
 export interface IBusStop {
     id: string;
     name: string;
     location: { type: 'Point'; coordinates: [number, number] };
-    // ... other existing fields if needed
+    type?: string;
+    address?: string;
+    securityProfile?: {
+        riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+        threats: string[];
+        safetyAdvice?: string;
+    };
+    backboneName?: string;
+    // Hybrid Intelligence Fields
+    zone?: 'VILLAGE' | 'HUB' | 'RESTRICTED' | string;
+    parentZoneId?: string;
+    allowedModes?: TransportMode[]; // Modes allowed in this zone (e.g., only OKADA in VILLAGE)
+    isVillageExit?: boolean;
+    // 🏠 Street Realism Fields
+    boardingProfile?: { [key in TransportMode]?: BoardingStrength | string };
 }
 
 export interface BoardingInference {
@@ -43,7 +72,21 @@ export interface AlongSegment {
     isBridge?: boolean;       // User must use a pedestrian bridge here
     isBlocked?: boolean;      // Route is flagged as unsafe/blocked
     backboneName?: string;    // Name of the expressway (e.g., "Airport Road")
+
+    // 🗺️ V5: Spatial Engine Fields
+    /** GeoJSON LineString for map polyline rendering */
+    path?: {
+        type: 'LineString';
+        coordinates: number[][];
+    };
+    /** OSM road metadata for UI hints (e.g., "Unpaved road ahead") */
+    osmMetadata?: {
+        roadType?: string;
+        surface?: string;
+    };
+    dynamicAdjustment?: IDynamicAdjustment;
 }
+
 
 export interface AlongRoute {
     from: string;
@@ -51,7 +94,7 @@ export interface AlongRoute {
     segments: AlongSegment[];
     totalDistance: number;
     totalTime: number;
-    totalCost: number;
+    totalCost: number | { min: number, max: number };
     instructions: string[];
     rationale?: string; // NEW: Explains route choice logic
     suggestion?: string; // Handling 404 Route Not Found suggestions
@@ -59,7 +102,7 @@ export interface AlongRoute {
     minCost?: number;
     maxCost?: number;
     warnings?: string[];
-    classification?: 'FASTEST' | 'CHEAPEST' | 'BALANCED'; // NEW: Route classification
+    classification?: 'FASTEST' | 'CHEAPEST' | 'BALANCED' | 'SAFE' | 'RECOMMENDED';
     comparisonLabel?: string; // NEW: e.g., "₦800 cheaper than fastest"
     alternatives?: AlongRoute[]; // NEW: K-Best alternatives
     metadata?: {
@@ -68,7 +111,10 @@ export interface AlongRoute {
         isSurgeApplied?: boolean;
         backbonePriority?: boolean;
         ribExitApplied?: boolean;     // V3: Village Exit Fee included
+        // Hybrid Intelligence Fields
+        classification?: 'FASTEST' | 'CHEAPEST' | 'BALANCED' | 'SAFEST' | 'RECOMMENDED';
     };
+    dynamicAdjustment?: IDynamicAdjustment;
 }
 
 export interface Corridor {
@@ -97,3 +143,4 @@ export interface ApiResponse<T> {
     suggestion?: string; // e.g. "We don't cover Lagos yet. Try searching near Abuja."
     nearbyHubs?: { id: string; name: string; lat: number; lng: number }[]; // For recovery
 }
+

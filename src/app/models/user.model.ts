@@ -2,6 +2,14 @@
  * User and Authentication Models
  */
 
+export interface UserReputation {
+    tier: 'new' | 'trusted' | 'captain';
+    accuracyScore: number;
+    reportsVerified: number;
+    totalPoints: number;
+    progressToNextTier: number; // 0-100
+}
+
 export interface User {
     avatar: null;
     _id?: string;
@@ -26,6 +34,7 @@ export interface User {
         classification: string; // e.g., "Frequent Commuter", "Night Owl"
     };
     zoneClassification?: string; // "Urban Core", "Estate Resident", "Night Hub"
+    reputation?: UserReputation;
 
     createdAt?: string;
     updatedAt?: string;

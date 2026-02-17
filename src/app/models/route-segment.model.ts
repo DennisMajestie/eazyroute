@@ -31,7 +31,36 @@ export interface RouteSegment {
         area: string;
         type?: string;
     };
+    isOneWay?: boolean;
+    activeHours?: { start: number; end: number };
+
+    // 🗺️ V5: Spatial Engine Fields
+    /** GeoJSON LineString for map polyline rendering */
+    path?: {
+        type: 'LineString';
+        coordinates: number[][]; // [[lng, lat], ...]
+    };
+    /** Start point for spatial queries */
+    startPoint?: {
+        type: 'Point';
+        coordinates: number[]; // [lng, lat]
+    };
+    /** End point for spatial queries */
+    endPoint?: {
+        type: 'Point';
+        coordinates: number[]; // [lng, lat]
+    };
+    /** OSM road metadata for UI hints */
+    osmMetadata?: {
+        roadType?: string;   // e.g., 'residential', 'primary'
+        surface?: string;    // e.g., 'paved', 'unpaved'
+        maxspeed?: number;
+        lanes?: number;
+    };
+    /** Geometry validation status */
+    geometryStatus?: 'VALID' | 'FLOATING' | 'OFF_ROAD' | 'PENDING';
 }
+
 
 export interface CreateRouteSegmentRequest {
     fromStopId: string;
@@ -43,6 +72,8 @@ export interface CreateRouteSegmentRequest {
     };
     estimatedTime: number;
     distance: number;
+    isOneWay?: boolean;
+    activeHours?: { start: number; end: number };
 }
 
 export interface RouteSegmentSearchParams {

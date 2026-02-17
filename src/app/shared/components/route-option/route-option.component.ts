@@ -19,6 +19,11 @@ export interface RouteLeg {
     cost: number;
     instruction: string;
     intermediateStops?: { id: string; name: string }[];
+    safetyData?: {
+        riskLevel: 'safe' | 'caution' | 'high_risk';
+        threats?: string[];
+        advice?: string;
+    };
 }
 
 /**
@@ -64,15 +69,33 @@ export class RouteOptionComponent {
     }
 
     getBadgeLabel(): string {
-        switch (this.route.classification) {
-            case 'FASTEST': return '⚡ Fastest';
-            case 'CHEAPEST': return '💰 Cheapest';
-            default: return '⚖️ Balanced';
+        const c = (this.route.classification || '').toUpperCase();
+        switch (c) {
+            case 'FASTEST':
+            case 'QUICKEST':
+                return '⚡ Fastest';
+            case 'CHEAPEST':
+            case 'ECONOMY':
+                return '💰 Cheapest';
+            case 'BALANCED':
+            case 'RECOMMENDED':
+                return '⚖️ Balanced';
+            case 'SAFE':
+            case 'SECURE':
+                return '🛡️ Safest';
+            default:
+                return '⚖️ Balanced';
         }
     }
 
     getBadgeClass(): string {
-        return this.route.classification.toLowerCase();
+        const c = (this.route.classification || '').toUpperCase();
+        switch (c) {
+            case 'FASTEST': return 'fastest';
+            case 'CHEAPEST': return 'cheapest';
+            case 'SAFE': return 'safe';
+            default: return 'balanced';
+        }
     }
 
     onSelect(): void {
@@ -81,5 +104,39 @@ export class RouteOptionComponent {
 
     onViewDetails(): void {
         this.viewDetails.emit(this.route);
+    }
+
+    getHighestRisk(): 'safe' | 'caution' | 'high_risk' | null {
+        if (!this.route.legs) return null;
+
+        const risks = this.route.legs
+            .map(leg => (leg as any).safetyData?.riskLevel)
+            .filter(risk => !!risk);
+
+        if (risks.includes('high_risk')) return 'high_risk';
+        if (risks.includes('caution')) return 'caution';
+        if (risks.includes('safe')) return 'safe';
+        return null;
+    }
+
+    getRiskLabel(risk: string): string {
+        const r = (risk || '').toUpperCase();
+        switch (r) {
+            case 'HIGH_RISK':
+            case 'HIGH':
+                return '🚨 High Risk';
+            case 'CAUTION':
+            case 'MEDIUM':
+            case 'MODERATE':
+            case 'YELLOW':
+                return '⚠️ Caution';
+            case 'SAFE':
+            case 'SAFE_ZONE':
+            case 'SECURE':
+            case 'LOW':
+                return '🛡️ Safe Zone';
+            default:
+                return '';
+        }
     }
 }

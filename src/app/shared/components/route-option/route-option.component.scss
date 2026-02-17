@@ -42,6 +42,32 @@
   }
 }
 
+.risk-badge {
+    position: absolute;
+    top: -8px;
+    right: 16px; // Opposite side of classification badge
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 20px;
+    color: white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+
+    &.high_risk {
+        background: linear-gradient(135deg, #EF4444, #F87171);
+    }
+
+    &.caution {
+        background: linear-gradient(135deg, #F59E0B, #FBBF24);
+        color: #1a1a1a;
+    }
+
+    &.safe {
+        background: linear-gradient(135deg, #10B981, #34D399);
+    }
+}
+
 .summary {
   display: flex;
   justify-content: space-between;

@@ -6,7 +6,8 @@
 
 import { Injectable, Inject } from '@angular/core';
 import { GeolocationService, Coordinates } from '../../services/geolocation.service';
-import { ILocationService, Location, IBusStopRepository } from '../types/easyroute.types';
+// 🛡️ Safety: Rename 'Location' to 'AppLocation' to avoid collision with DOM 'Location'
+import { ILocationService, Location as AppLocation, IBusStopRepository } from '../types/easyroute.types';
 import { Observable, firstValueFrom, map } from 'rxjs';
 import { BUS_STOP_REPOSITORY } from './engine-adapters.provider';
 
@@ -19,11 +20,15 @@ export class LocationServiceAdapter implements ILocationService {
         @Inject(BUS_STOP_REPOSITORY) private busStopRepo: IBusStopRepository
     ) { }
 
-    async getCurrentLocation(): Promise<Location> {
+    async getCurrentLocation(): Promise<AppLocation> {
         try {
-            const coords = await firstValueFrom(
-                this.geolocationService.getCurrentPosition()
-            );
+            // 🇳🇬 Use smart location for better resilience (GPS -> WiFi -> LastKnown)
+            const coords = await this.geolocationService.getSmartLocation();
+
+            if (!coords) {
+                throw new Error('Unable to determine location');
+            }
+
             return {
                 latitude: coords.latitude,
                 longitude: coords.longitude,
@@ -31,17 +36,13 @@ export class LocationServiceAdapter implements ILocationService {
             };
         } catch (error) {
             console.error('[LocationService] Error getting current location:', error);
-            // Return default location on error
-            const defaultCoords = this.geolocationService.getDefaultLocation();
-            return {
-                latitude: defaultCoords.latitude,
-                longitude: defaultCoords.longitude,
-                timestamp: new Date()
-            };
+            // 🛡️ Safety: Propagate error instead of returning a default location.
+            // Returning default transmits "Abuja City Center" to the backend, causing false deviations.
+            throw error;
         }
     }
 
-    watchLocation(): Observable<Location> {
+    watchLocation(): Observable<AppLocation> {
         return new Observable(subscriber => {
             this.geolocationService.watchPosition((coords: Coordinates) => {
                 subscriber.next({
@@ -58,7 +59,7 @@ export class LocationServiceAdapter implements ILocationService {
         });
     }
 
-    calculateDistance(from: Location, to: Location): number {
+    calculateDistance(from: AppLocation, to: AppLocation): number {
         // Your service returns distance in km, we need meters
         const distanceInKm = this.geolocationService.calculateDistance(
             from.latitude,
@@ -69,7 +70,7 @@ export class LocationServiceAdapter implements ILocationService {
         return distanceInKm * 1000; // Convert to meters
     }
 
-    calculateBearing(from: Location, to: Location): number {
+    calculateBearing(from: AppLocation, to: AppLocation): number {
         const lat1 = this.toRadians(from.latitude);
         const lat2 = this.toRadians(to.latitude);
         const dLon = this.toRadians(to.longitude - from.longitude);
@@ -82,14 +83,14 @@ export class LocationServiceAdapter implements ILocationService {
         return (this.toDegrees(bearing) + 360) % 360; // Normalize to 0-360
     }
 
-    isWithinRadius(point: Location, center: Location, radiusMeters: number): boolean {
+    isWithinRadius(point: AppLocation, center: AppLocation, radiusMeters: number): boolean {
         const distance = this.calculateDistance(point, center);
         return distance <= radiusMeters;
     }
 
     isOnRoute(
-        currentLocation: Location,
-        routePath: Location[],
+        currentLocation: AppLocation,
+        routePath: AppLocation[],
         toleranceMeters: number
     ): boolean {
         // Check if current location is within tolerance of any point on the route
@@ -102,7 +103,7 @@ export class LocationServiceAdapter implements ILocationService {
         return false;
     }
 
-    async snapToNearestNode(location: Location): Promise<Location> {
+    async snapToNearestNode(location: AppLocation): Promise<AppLocation> {
         try {
             const nearbyStops = await this.busStopRepo.findNearby(location, 150);
             if (!nearbyStops || nearbyStops.length === 0) {
@@ -113,13 +114,13 @@ export class LocationServiceAdapter implements ILocationService {
             let minDist = this.calculateDistance(location, {
                 latitude: closest.latitude,
                 longitude: closest.longitude
-            } as Location);
+            } as AppLocation);
             for (let i = 1; i < nearbyStops.length; i++) {
                 const stop = nearbyStops[i];
                 const dist = this.calculateDistance(location, {
                     latitude: stop.latitude,
                     longitude: stop.longitude
-                } as Location);
+                } as AppLocation);
                 if (dist < minDist) {
                     minDist = dist;
                     closest = stop;

@@ -85,6 +85,10 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/trip-planner/trip-planner/trip-planner.component').then(m => m.TripPlannerComponent)
             },
             {
+                path: 'trip-tracking',
+                loadComponent: () => import('./features/trip-tracking/trip-tracking.component').then(m => m.TripTrackingComponent)
+            },
+            {
                 path: 'profile',
                 loadChildren: () => import('./features/profile/profile.routes').then(m => m.PROFILE_ROUTES)
             }

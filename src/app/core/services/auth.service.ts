@@ -5,8 +5,8 @@
 
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, of } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { catchError, map, tap, finalize } from 'rxjs/operators';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import {
@@ -176,9 +176,15 @@ export class AuthService {
     logout(): Observable<any> {
         return this.http.post(`${this.API_URL}/logout`, {})
             .pipe(
-                tap(() => {
+                catchError(err => {
+                    console.warn('[AuthService] Logout API failed (expected if session expired):', err);
+                    return of({ success: true }); // Continue cleanup anyway
+                }),
+                finalize(() => {
                     this.clearAuth();
                     this.router.navigate(['/auth/login']);
+                    // Reset orchestrator if it exists (via notification or direct reset)
+                    // Note: We might need a logout event or direct call
                 })
             );
     }

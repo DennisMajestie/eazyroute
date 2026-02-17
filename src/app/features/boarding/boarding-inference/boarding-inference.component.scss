@@ -21,22 +21,6 @@
   gap: var(--space-4);
 }
 
-.back-btn {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: white;
-  border: none;
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-full);
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  cursor: pointer;
-  transition: all var(--transition-base);
-}
-
-.back-btn:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
 .page-title {
   font-family: var(--font-display);
   font-size: var(--text-3xl);

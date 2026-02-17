@@ -137,6 +137,8 @@ export interface RouteSegment {
         threats?: string[];
     };
     zone?: string;
+    isOneWay?: boolean;
+    activeHours?: { start: number; end: number };
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -455,7 +457,7 @@ export const DEFAULT_CONFIG: EasyRouteConfig = {
     maxStopsPerRoute: 10,
     nearbyStopRadiusMeters: 500,
     maxRouteCandidates: 5,
-    locationUpdateIntervalMs: 5000,
+    locationUpdateIntervalMs: 10000,
     milestoneProximityMeters: 50,
     deviationToleranceMeters: 100,
     minVerificationsRequired: 3,

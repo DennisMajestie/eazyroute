@@ -73,10 +73,15 @@ export class CommuterProtocolService {
     /**
      * Find hub by name or local name
      */
-    findHub(stopName: string): HubProtocol | null {
-        if (!this.protocolsData) return null;
+    findHub(stopName: any): HubProtocol | null {
+        if (!this.protocolsData || !stopName) return null;
 
-        const normalizedName = stopName.toLowerCase().trim();
+        // 🛡️ Safeguard: Unwrap name if stopName is an object (due to hydrated stop data)
+        const nameToNormalize = typeof stopName === 'object' ? (stopName.name || stopName.stopName || '') : stopName;
+
+        if (!nameToNormalize || typeof nameToNormalize !== 'string') return null;
+
+        const normalizedName = nameToNormalize.toLowerCase().trim();
 
         for (const key of Object.keys(this.protocolsData.hubs)) {
             const hub = this.protocolsData.hubs[key];

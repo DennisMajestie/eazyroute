@@ -1,11 +1,24 @@
 <div class="route-display-container">
     <!-- Header -->
     <div class="route-header">
-        <button class="back-btn" (click)="goBack()" type="button">
-            ← Back
+        <button class="btn-back" (click)='goBack()' type="button" title="Go Back">
+            <i class="fas fa-arrow-left"></i>
         </button>
-        <div class="route-title">
-            <h1 class="from-to">{{ route?.from }} → {{ route?.to }}</h1>
+        <div class="route-title" *ngIf="route">
+            <div class="route-from-to">
+                <span class="from-label">{{ route.from }}</span>
+                <span class="arrow-icon"><i class="fas fa-long-arrow-alt-right"></i></span>
+                <span class="to-label">{{ route.to }}</span>
+            </div>
+            <div class="route-meta-line">
+                <span class="legs-badge"><i class="fas fa-route"></i> {{ route.segments.length }} legs, {{
+                    (route.totalDistance / 1000).toFixed(1) }}km</span>
+            </div>
+        </div>
+        <div class="street-mode-toggle" (click)="useStreetMode = !useStreetMode" [class.active]="useStreetMode"
+            title="Toggle Street Mode (Pidgin Directions)">
+            <span class="toggle-icon">🗣️</span>
+            <span class="toggle-label">{{ useStreetMode ? 'Street' : 'Normal' }}</span>
         </div>
     </div>
 
@@ -19,25 +32,6 @@
             <div class="tip" *ngFor="let tip of nightTips">
                 <span class="tip-icon">{{ tip.icon }}</span>
                 <span class="tip-text">{{ tip.text }}</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- Route Selection Tabs -->
-    <div class="route-tabs" *ngIf="routes && routes.length > 0">
-        <div class="route-tab" *ngFor="let r of routes; let i = index" [class.active]="i === selectedRouteIndex"
-            (click)="selectRoute(i)">
-
-            <div class="tab-badge" [class.fastest]="r.classification === 'FASTEST'"
-                [class.cheapest]="r.classification === 'CHEAPEST'">
-                {{ r.classification || getStrategyLabel(r.metadata?.strategy || 'balanced') }}
-            </div>
-            <div class="tab-info">
-                <span class="tab-time">{{ r.totalTime }} min</span>
-                <span class="tab-cost">₦{{ r.totalCost }}</span>
-            </div>
-            <div class="tab-diff" *ngIf="getRouteDiff(r)">
-                {{ getRouteDiff(r) }}
             </div>
         </div>
     </div>
@@ -98,12 +92,89 @@
             </div>
         </div>
 
-        <!-- Map Placeholder -->
+        <!-- Interactive Map -->
         <div class="map-section">
-            <div class="map-placeholder" [class.backbone-active]="route.metadata?.backbonePriority">
-                🗺️ Interactive Map
-                <p class="map-hint" *ngIf="route.metadata?.backbonePriority">✨ Optimized via Expressway Backbone</p>
-                <p class="map-hint" *ngIf="!route.metadata?.backbonePriority">Shows route with landmarks</p>
+            <app-map [center]="mapCenter" [zoom]="13" [markers]="mapMarkers" [polylines]="mapPolylines">
+            </app-map>
+            <div class="map-overlay-badge" *ngIf="route?.metadata?.backbonePriority">
+                <i class="fas fa-road"></i> Expressway Backbone
+            </div>
+        </div>
+
+        <!-- 🌟 Hybrid Intelligence: Recommended Route Card -->
+        <div class="recommended-card" *ngIf="recommendedRoute" [class.selected]="selectedRouteIndex === 0"
+            (click)="selectRoute(0)">
+            <div class="card-header">
+                <span class="badge-recommended">🌟 Recommended</span>
+                <span class="badge-strategy" *ngIf="getStrategyBadge(recommendedRoute)">
+                    {{ getStrategyBadge(recommendedRoute) }}
+                </span>
+
+                <!-- Dynamic Intelligence Badge -->
+                <div class="dynamic-badge" *ngIf="getDynamicBadge(recommendedRoute.dynamicAdjustment) as badge"
+                    [class]="badge.type">
+                    <span class="badge-icon">
+                        <i class="fas" [ngClass]="{
+                            'fa-bolt': badge.type === 'fare',
+                            'fa-clock': badge.type === 'wait',
+                            'fa-exclamation-triangle': badge.type === 'risk',
+                            'fa-traffic-light': badge.type === 'traffic'
+                        }"></i>
+                    </span>
+                    {{ badge.label }}
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="route-main-info">
+                    <div class="info-time">
+                        <span class="value">{{ recommendedRoute.totalTime }}</span>
+                        <span class="unit">min</span>
+                    </div>
+                    <div class="info-cost">
+                        <span class="currency">₦</span>
+                        <span class="value">{{ formatCost(recommendedRoute.totalCost) }}</span>
+                    </div>
+                </div>
+
+                <div class="route-meta-info">
+                    <span>{{ (recommendedRoute.totalDistance / 1000).toFixed(1) }}km</span>
+                    <span class="separator">•</span>
+                    <span>{{ recommendedRoute.segments.length }} legs</span>
+                </div>
+            </div>
+
+            <div class="card-rationale" *ngIf="recommendedRoute.rationale">
+                💡 {{ recommendedRoute.rationale }}
+            </div>
+        </div>
+
+        <!-- 🔄 Alternatives Toggle -->
+        <div class="alternatives-section" *ngIf="alternativeRoutes.length > 0">
+            <h3 class="section-title">Alternative Options</h3>
+
+            <div class="alternatives-list">
+                <div class="alternative-card" *ngFor="let r of alternativeRoutes; let i = index"
+                    [class.selected]="selectedRouteIndex === (i + 1)" (click)="selectRoute(i + 1)">
+
+                    <div class="alt-header">
+                        <span class="alt-strategy">{{ r.classification || 'Alternative' }}</span>
+                        <!-- Dynamic Badge for Alt -->
+                        <div class="dynamic-badge mini" *ngIf="getDynamicBadge(r.dynamicAdjustment) as badge"
+                            [class]="badge.type">
+                            {{ badge.label }}
+                        </div>
+                    </div>
+
+                    <div class="alt-body">
+                        <div class="alt-time">{{ r.totalTime }} min</div>
+                        <div class="alt-cost">₦{{ formatCost(r.totalCost) }}</div>
+                    </div>
+
+                    <div class="alt-diff" *ngIf="getRouteDiff(r)">
+                        {{ getRouteDiff(r) }}
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -144,14 +215,18 @@
                             </div>
                             <div class="mode-info">
                                 <div class="mode-title">
-                                    <span class="mode-name">{{ (segment.vehicleType || segment.type) | uppercase
-                                        }}</span>
+                                    <span class="mode-name">{{ getSegmentMode(segment) | uppercase }}</span>
                                     <span class="mode-cost" *ngIf="segment.cost">₦{{ formatCost(segment.cost) }}</span>
                                 </div>
                                 <div class="mode-meta">
                                     <span *ngIf="segment.distance">{{ segment.distance }}m</span>
                                     <span *ngIf="segment.estimatedTime">• {{ segment.estimatedTime }} min</span>
                                     <span class="bridge-tag" *ngIf="segment.bridgeEnabled">🌉 Bridge</span>
+                                </div>
+
+                                <!-- Dynamic Adjustment Indicator for Segment -->
+                                <div class="segment-dynamic-hint" *ngIf="segment.dynamicAdjustment">
+                                    <i class="fas fa-bolt"></i>
                                 </div>
                             </div>
                             <div class="mode-expand">
@@ -161,10 +236,48 @@
 
                         <!-- Expanded Details -->
                         <div class="mode-details" *ngIf="isSegmentExpanded(i)">
+                            <!-- Dynamic Adjustment Rationale -->
+                            <div class="dynamic-rationale" *ngIf="segment.dynamicAdjustment?.rationale">
+                                <span class="icon">🔍</span>
+                                <p>{{ segment.dynamicAdjustment?.rationale }}</p>
+                            </div>
+
                             <!-- Guidance Bubble -->
                             <div class="guidance-bubble">
                                 <span class="guidance-icon">📢</span>
                                 <p class="instruction">{{ segment.instructions || segment.instruction }}</p>
+                            </div>
+
+                            <!-- Security Status -->
+                            <div class="security-card" *ngIf="getSecurityInfo(segment) as security">
+                                <div class="security-header">
+                                    <span class="security-label">🛡️ Commuter Guardian</span>
+                                    <span class="risk-badge" [class]="security.risk.toLowerCase()">
+                                        {{ getRiskLabel(security.risk) }}
+                                    </span>
+                                </div>
+                                <div class="safety-advice" *ngIf="security.advice">
+                                    {{ security.advice }}
+                                </div>
+                                <div class="threat-tags" *ngIf="security.threats.length > 0">
+                                    <span class="threat-tag" *ngFor="let threat of security.threats">⚠️ {{ threat
+                                        }}</span>
+                                </div>
+                            </div>
+
+                            <!-- Boarding Strength Hub Status -->
+                            <div class="hub-status-card" *ngIf="getBoardingStrengthInfo(segment) as hub">
+                                <div class="hub-header" *ngIf="hub.isMajorHub">
+                                    <span class="hub-badge strong">✅ Major {{ getSegmentMode(segment) | titlecase }}
+                                        Hub</span>
+                                    <span class="hub-hint">Plenty {{ getSegmentMode(segment) }} here</span>
+                                </div>
+                                <div class="hub-header" *ngIf="hub.isWeak">
+                                    <span class="hub-badge weak">🚫 {{ getSegmentMode(segment) | titlecase }}s rare
+                                        here</span>
+                                    <span class="hub-hint">Better to board at <strong>{{ hub.backboneName
+                                            }}</strong></span>
+                                </div>
                             </div>
 
                             <!-- Boarding Protocol (Shouting) -->
@@ -176,15 +289,6 @@
                                     <span class="price">💰 ₦{{ protocol.price.min }} - {{ protocol.price.max }}</span>
                                 </div>
                                 <div class="protocol-tip">💡 {{ protocol.tip }}</div>
-                            </div>
-
-                            <!-- Pedestrian Bridge Alert -->
-                            <div class="bridge-alert" *ngIf="segment.bridgeEnabled">
-                                <span class="alert-icon">🌉</span>
-                                <div class="alert-content">
-                                    <strong>Use Pedestrian Bridge</strong>
-                                    <p>Safety alert: Do not cross the expressway on foot.</p>
-                                </div>
                             </div>
 
                             <!-- Intermediate Stops Dropdown -->
@@ -201,24 +305,14 @@
                                 </ul>
                             </div>
 
-                            <!-- Micro-Instruction (Drop off) -->
-                            <div class="micro-instruction" *ngIf="segment.dropInstruction">
-                                <span class="micro-icon">💡</span>
-                                <span>{{ segment.dropInstruction }}</span>
-                            </div>
-
-                            <!-- Micro-Instruction (Wait/Transfer) -->
-                            <div class="micro-instruction warning"
-                                *ngIf="segment.type === 'wait' || segment.type === 'transfer'">
-                                <span class="micro-icon">⚠️</span>
-                                <span>Check for oncoming traffic</span>
-                            </div>
-
-                            <!-- Contribute Price Button -->
-                            <div class="contribute-section" *ngIf="segment.type !== 'walk' && segment.type !== 'wait'">
-                                <button class="btn-link-sm"
+                            <!-- Reporting Actions -->
+                            <div class="reporting-section">
+                                <button class="btn-report" (click)="$event.stopPropagation(); openReporting(segment)">
+                                    <i class="fas fa-bullhorn"></i> Report Live Condition
+                                </button>
+                                <button class="btn-price" *ngIf="segment.type !== 'walk' && segment.type !== 'wait'"
                                     (click)="$event.stopPropagation(); openSubmitPrice(segment)">
-                                    ➕ Contribute Price Info
+                                    ➕ Contribute Fare Info
                                 </button>
                             </div>
                         </div>
@@ -228,7 +322,7 @@
                     <div class="timeline-point transfer" *ngIf="!last">
                         <div class="point-marker small"></div>
                         <div class="point-label" *ngIf="segment.toStop">
-                            {{ segment.toStop }}
+                            {{ getStopName(segment.toStop) }}
                         </div>
                     </div>
                 </div>
@@ -278,7 +372,77 @@
         </button>
     </div>
 
-    <!-- Submit Price Modal -->
+    <!-- Street Intelligence FAB (Global on route screen) -->
+    <button class="street-intel-fab" (click)="openReporting(route!.segments[0])" *ngIf="route">
+        <div class="fab-icon"><i class="fas fa-bullhorn"></i></div>
+        <div class="fab-text">Street Intelligence</div>
+    </button>
+
+    <!-- Intelligence Reporting Bottom Sheet -->
+    <div class="bottom-sheet-overlay" *ngIf="showReportingModal" (click)="closeReporting()">
+        <div class="bottom-sheet" (click)="$event.stopPropagation()">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+                <h3>Live Street Intelligence</h3>
+                <p>What's happening on the road right now?</p>
+            </div>
+
+            <div class="report-types">
+                <div class="report-type-item" (click)="reportType = 'fare'" [class.active]="reportType === 'fare'">
+                    <div class="type-icon fare"><i class="fas fa-money-bill-wave"></i></div>
+                    <span>Fare</span>
+                </div>
+                <div class="report-type-item" (click)="reportType = 'wait_time'"
+                    [class.active]="reportType === 'wait_time'">
+                    <div class="type-icon wait"><i class="fas fa-hourglass-half"></i></div>
+                    <span>Wait</span>
+                </div>
+                <div class="report-type-item" (click)="reportType = 'risk_alert'"
+                    [class.active]="reportType === 'risk_alert'">
+                    <div class="type-icon risk"><i class="fas fa-shield-alt"></i></div>
+                    <span>Risk</span>
+                </div>
+                <div class="report-type-item" (click)="reportType = 'stop_alias'"
+                    [class.active]="reportType === 'stop_alias'">
+                    <div class="type-icon alias"><i class="fas fa-tag"></i></div>
+                    <span>Alias</span>
+                </div>
+            </div>
+
+            <div class="report-inputs">
+                <div class="input-group" *ngIf="reportType === 'fare'">
+                    <label>Current Fare (₦)</label>
+                    <input type="number" [(ngModel)]="reportValue.fare" placeholder="e.g. 300">
+                </div>
+                <div class="input-group" *ngIf="reportType === 'wait_time'">
+                    <label>Wait Duration</label>
+                    <select [(ngModel)]="reportValue.waitTime">
+                        <option value="short">Short (< 5 mins)</option>
+                        <option value="medium">Medium (5-15 mins)</option>
+                        <option value="long">Long (> 15 mins)</option>
+                    </select>
+                </div>
+                <div class="input-group" *ngIf="reportType === 'risk_alert'">
+                    <label>Security Detail</label>
+                    <textarea [(ngModel)]="reportValue.riskAlert"
+                        placeholder="Describe the safety concern..."></textarea>
+                </div>
+                <div class="input-group" *ngIf="reportType === 'stop_alias'">
+                    <label>Common Name</label>
+                    <input type="text" [(ngModel)]="reportValue.stopAlias" placeholder="What do locals call this stop?">
+                </div>
+            </div>
+
+            <div class="sheet-actions">
+                <button class="btn btn-secondary" (click)="closeReporting()">Cancel</button>
+                <button class="btn btn-primary" (click)="submitCommunityReport()" [disabled]="isSubmittingReport">
+                    {{ isSubmittingReport ? 'Reporting...' : 'Submit Intelligence' }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submit Price Modal (Legacy Context) -->
     <app-submit-price *ngIf="showSubmitPriceModal" [fromStopName]="submitData.from" [toStopName]="submitData.to"
         [transportMode]="submitData.mode" [fromStopId]="submitData.fromId" [toStopId]="submitData.toId"
         [distance]="submitData.distance" [estimatedTime]="submitData.estimatedTime"

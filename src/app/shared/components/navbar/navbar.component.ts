@@ -3,6 +3,7 @@ import { Component, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { EasyrouteOrchestratorService } from '../../../core/services/easyroute-orchestrator.service';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -19,7 +20,8 @@ export class NavbarComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private orchestrator: EasyrouteOrchestratorService
   ) { }
 
   // Computed signals from AuthService - defined after constructor

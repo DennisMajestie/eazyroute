@@ -14,7 +14,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
-import { User } from '../../../models/user.model';
+import { CommunityService } from '../../../core/services/community.service';
+import { User, UserReputation } from '../../../models/user.model';
 
 interface ProfileStats {
   tripsCompleted: number;
@@ -49,6 +50,7 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   userPhone = '';
   userAvatar: string | null = null;
   userInitials = 'G';
+  userReputation: UserReputation | null = null;
 
   // Profile stats
   stats: ProfileStats = {
@@ -76,10 +78,11 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   };
 
   // Active section
-  activeSection: 'overview' | 'trips' | 'settings' | 'security' = 'overview';
+  activeSection: 'overview' | 'trips' | 'settings' | 'security' | 'reputation' = 'overview';
 
   constructor(
     public authService: AuthService,
+    public communityService: CommunityService,
     private router: Router
   ) { }
 
@@ -87,6 +90,7 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     this.loadUserProfile();
     this.loadProfileStats();
     this.loadRecentTrips();
+    this.loadUserReputation();
   }
 
   /**
@@ -185,6 +189,17 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     ];
   }
 
+  private loadUserReputation(): void {
+    this.communityService.getUserReputation().subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.userReputation = res.data;
+        }
+      },
+      error: (err) => console.error('Error loading reputation:', err)
+    });
+  }
+
   /**
    * ═══════════════════════════════════════════════════════════════
    * PROFILE EDITING
@@ -266,7 +281,7 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
    * ═══════════════════════════════════════════════════════════════
    */
 
-  setActiveSection(section: 'overview' | 'trips' | 'settings' | 'security'): void {
+  setActiveSection(section: 'overview' | 'trips' | 'settings' | 'security' | 'reputation'): void {
     this.activeSection = section;
   }
 

@@ -238,7 +238,8 @@ export class TripExecutionEngine {
         });
 
         // Fallback: Poll location at intervals if watch doesn't work
-        this.trackingIntervalSubscription = interval(this.config.locationUpdateIntervalMs)
+        const intervalMs = this.config.locationUpdateIntervalMs || 10000;
+        this.trackingIntervalSubscription = interval(intervalMs)
             .subscribe(async () => {
                 const tripState = this.activeTripSubject.value;
                 if (tripState && tripState.status === 'in_progress') {

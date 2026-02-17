@@ -37,7 +37,7 @@ export interface RouteSegment {
     mode: TransportMode;
     distance: number; // in meters
     duration: number; // in minutes
-    cost?: number; // in Naira
+    cost?: number | { min: number, max: number }; // in Naira
     instruction: string;
     dropPoints?: string[];
 }
@@ -48,7 +48,7 @@ export interface EnhancedRoute {
     segments: RouteSegment[];
     totalDistance: number; // in meters
     totalTime: number; // in minutes
-    totalCost: number; // in Naira
+    totalCost: number | { min: number, max: number }; // in Naira
     instructions: string[];
     rationale: string;
 }

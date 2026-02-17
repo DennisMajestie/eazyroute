@@ -2,11 +2,8 @@
     <!-- Header -->
     <header class="dashboard-header">
         <div class="header-content">
-            <button class="back-btn" (click)="goBack()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5M12 19l-7-7 7-7" />
-                </svg>
+            <button class="btn-back" (click)="goBack()" title="Go Back">
+                <i class="fas fa-arrow-left"></i>
             </button>
             <h1 class="page-title">My Profile</h1>
             <button class="logout-btn" (click)="showLogout()">
@@ -120,7 +117,64 @@
                 </div>
             </div>
 
-            <!-- Settings Section -->
+            <!-- Reputation Section -->
+            <div class="menu-group">
+                <button class="menu-item"
+                    (click)="setActiveSection(activeSection === 'reputation' ? 'overview' : 'reputation')"
+                    [class.active]="activeSection === 'reputation'">
+                    <div class="menu-icon reputation-icon" [class]="userReputation?.tier || 'new'">
+                        <i class="fas" [ngClass]="{
+                            'fa-seedling': userReputation?.tier === 'new',
+                            'fa-shield-halved': userReputation?.tier === 'trusted',
+                            'fa-crown': userReputation?.tier === 'captain'
+                        }"></i>
+                    </div>
+                    <div class="menu-text">
+                        <span class="menu-title">Street Reputation</span>
+                        <span class="menu-subtitle">Tier: {{ userReputation?.tier | titlecase }}</span>
+                    </div>
+                    <svg class="chevron" [class.rotated]="activeSection === 'reputation'"
+                        xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                </button>
+                <div class="menu-content" *ngIf="activeSection === 'reputation'">
+                    <div class="reputation-dashboard">
+                        <div class="tier-card" [class]="userReputation?.tier || 'new'">
+                            <div class="tier-badge">
+                                {{ (userReputation?.tier || 'new') | uppercase }}
+                            </div>
+                            <div class="progress-section">
+                                <div class="progress-header">
+                                    <span>Next Tier: {{ userReputation?.tier === 'new' ? 'Trusted' :
+                                        (userReputation?.tier === 'trusted' ? 'Captain' : 'Elite') }}</span>
+                                    <span>{{ userReputation?.progressToNextTier || 0 }}%</span>
+                                </div>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar" [style.width.%]="userReputation?.progressToNextTier || 0">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="reputation-stats">
+                            <div class="rep-stat-item">
+                                <span class="rep-stat-label">Accuracy Score</span>
+                                <span class="rep-stat-value">{{ (userReputation?.accuracyScore || 0) * 100 }}%</span>
+                            </div>
+                            <div class="rep-stat-item">
+                                <span class="rep-stat-label">Verified Reports</span>
+                                <span class="rep-stat-value">{{ userReputation?.reportsVerified || 0 }}</span>
+                            </div>
+                            <div class="rep-stat-item">
+                                <span class="rep-stat-label">Total Points</span>
+                                <span class="rep-stat-value">{{ userReputation?.totalPoints || 0 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="menu-group">
                 <button class="menu-item"
                     (click)="setActiveSection(activeSection === 'settings' ? 'overview' : 'settings')"

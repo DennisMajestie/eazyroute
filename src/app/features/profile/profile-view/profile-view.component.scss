@@ -46,26 +46,6 @@
   margin: 0;
 }
 
-.back-btn, .logout-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
-  }
-}
-
 // ===== PROFILE SUMMARY =====
 .profile-summary {
   display: flex;
@@ -616,4 +596,145 @@
     background: rgba(0, 0, 0, 0.02);
     border-radius: 0.75rem;
   }
+}
+// ===== REPUTATION DASHBOARD =====
+.reputation-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.tier-card {
+  padding: 1.5rem;
+  border-radius: 1rem;
+  position: relative;
+  overflow: hidden;
+  color: white;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+    z-index: 1;
+  }
+
+  &.new {
+    background: linear-gradient(135deg, #64748b 0%, #334155 100%); // Slate/Steel
+  }
+
+  &.trusted {
+    background: linear-gradient(135deg, #94a3b8 0%, #475569 100%); // Silver look
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    
+    .tier-badge {
+        color: #e2e8f0;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  &.captain {
+    background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); // Gold look
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    
+    .tier-badge {
+        color: #fef3c7;
+        text-shadow: 0 0 15px rgba(251, 191, 36, 0.5);
+    }
+    
+    &::after {
+        content: '\f521'; // FontAwesome Crown
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        font-size: 3rem;
+        opacity: 0.1;
+        transform: rotate(15deg);
+    }
+  }
+}
+
+.tier-badge {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 1.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.progress-section {
+  position: relative;
+  z-index: 2;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  opacity: 0.9;
+}
+
+.progress-bar-container {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+  backdrop-filter: blur(4px);
+}
+
+.progress-bar {
+  height: 100%;
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.reputation-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.rep-stat-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  text-align: center;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.rep-stat-label {
+  display: block;
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 0.25rem;
+}
+
+.rep-stat-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+// Icon Tier Colors
+.reputation-icon {
+    &.new { color: #64748b; }
+    &.trusted { color: #475569; }
+    &.captain { 
+        color: #f59e0b;
+        filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.3));
+    }
 }

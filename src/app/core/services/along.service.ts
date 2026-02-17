@@ -58,7 +58,7 @@ export class AlongService {
      * Generate Route (Trip Planner) - Synchronized V3/V4 Logic
      * data now returns an array of routes directly.
      */
-    generateRoute(from: any, to: any): Observable<ApiResponse<AlongRoute[]>> {
+    generateRoute(from: any, to: any, preferences?: { userId?: string, prioritization?: string }): Observable<ApiResponse<AlongRoute[]>> {
         // Validate From Location Coordinates
         if (this.isInvalidCoordinate(from)) {
             console.warn('[AlongService] Blocked generateRoute call with invalid From details:', from);
@@ -90,7 +90,10 @@ export class AlongService {
             endLocation: normalize(to),
             fromLocation: normalize(from),
             toLocation: normalize(to),
-            preferences: { optimizeFor: 'balanced' }
+            preferences: {
+                optimizeFor: 'balanced',
+                ...preferences
+            }
         };
 
         return this.http.post<any>(url, payload).pipe(

@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, Subscription, forkJoin, of, firstValueFrom } from 'rxjs';
-import { debounceTime, distinctUntilChanged, catchError } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, catchError, takeUntil } from 'rxjs/operators';
 import { MapComponent } from '../../../shared/components/map/map.component';
 import { BusStopService, UnverifiedBusStop } from '../../../core/services/bus-stop.service';
 
@@ -56,6 +56,7 @@ interface SearchResult {
 })
 export class TripPlannerComponent implements OnInit, OnDestroy {
     private route = inject(ActivatedRoute);
+    private router = inject(Router);
     private busStopService = inject(BusStopService);
     private geocodingService = inject(GeocodingService);
     private tripService = inject(TripService);
@@ -381,6 +382,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     generatedRoutes: GeneratedRoute[] = [];
     selectedRoute: GeneratedRoute | null = null;
     isLoadingRoutes = false;
+    isDefaultSelected = false;
 
     // Crowdsourcing State
     showReportModal = false;
@@ -503,15 +505,28 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.safetyService.stopLiveLocationSharing();
     }
 
+    private destroy$ = new Subject<void>();
+
     ngOnInit() {
+        console.log('[TripPlanner] Initialization (Version 3.0 - Reactive Flow)');
         this.checkNightMode();
+
+        // Reactive redirect if trip becomes active
+        this.orchestrator.state$
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(state => {
+                if (state.hasActiveTrip) {
+                    console.log('[TripPlanner] Active trip detected via subscription, redirecting to tracking...');
+                    this.router.navigate(['/trip-tracking']);
+                }
+            });
         // ... (rest of ngOnInit)
         // Auto-detect user location on load (commented out to make it opt-in)
         // Uncomment the line below if you want automatic location detection
         // this.detectCurrentLocation();
 
         // Handle query params from Dashboard or other nav
-        this.route.queryParams.subscribe(params => {
+        this.route.queryParams.subscribe(async params => {
             if (params['to']) {
                 this.toQuery = params['to'];
             }
@@ -525,6 +540,57 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 };
                 this.addMarker(this.toLocation.lat, this.toLocation.lng, 'Destination');
                 this.center = { ...this.toLocation };
+            }
+
+            // Handle auto-starting from route display
+            if (params['routeData']) {
+                try {
+                    const routeParsed = JSON.parse(params['routeData']) as GeneratedRoute;
+                    if (routeParsed && routeParsed.segments && routeParsed.segments.length > 0) {
+                        // Priority 1: Use Location state if available (passed from RouteDisplay)
+                        const navState = history.state;
+                        if (navState) {
+                            if (navState.fromLocation) this.fromLocation = navState.fromLocation;
+                            if (navState.toLocation) this.toLocation = navState.toLocation;
+                        }
+
+                        // Priority 2: Fallback to route-level coordinates
+                        if (!this.fromLocation) {
+                            const firstStop = routeParsed.segments[0].fromStop;
+                            const lat = firstStop?.latitude || (routeParsed.segments[0] as any).fromLat || (routeParsed.segments[0] as any).fromLatitude || 0;
+                            const lng = firstStop?.longitude || (routeParsed.segments[0] as any).fromLng || (routeParsed.segments[0] as any).fromLongitude || 0;
+
+                            if (lat && lng) {
+                                this.fromLocation = { lat, lng };
+                            }
+                        }
+
+                        if (!this.toLocation) {
+                            const lastSeg = routeParsed.segments[routeParsed.segments.length - 1];
+                            const lastStop = lastSeg.toStop;
+                            const lat = lastStop?.latitude || (lastSeg as any).toLat || (lastSeg as any).toLatitude || 0;
+                            const lng = lastStop?.longitude || (lastSeg as any).toLng || (lastSeg as any).toLongitude || 0;
+
+                            if (lat && lng) {
+                                this.toLocation = { lat, lng };
+                            }
+                        }
+
+                        console.log('[TripPlanner] Auto-starting trip with coordinates:', {
+                            from: this.fromLocation,
+                            to: this.toLocation
+                        });
+
+                        if (this.fromLocation && this.toLocation) {
+                            // Small delay to ensure state and map are ready
+                            setTimeout(() => this.startTripWithRoute(routeParsed), 300);
+                        } else {
+                            console.warn('[TripPlanner] Cannot auto-start: Missing valid coordinates');
+                        }
+                    }
+                } catch (e) {
+                    console.error('[TripPlanner] Error parsing routeData:', e);
+                }
             }
         });
 
@@ -579,6 +645,24 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 }
             }
         });
+
+        // Check for primary location on init
+        const primary = this.geolocationService.getPrimaryLocation();
+        if (primary && this.geolocationService.isValidCoordinates(primary.latitude, primary.longitude)) {
+            console.log('[TripPlanner] Found Primary Default Location');
+            this.isDefaultSelected = true;
+            this.fromLocation = { lat: primary.latitude, lng: primary.longitude };
+            this.fromQuery = `📍 Saved Home Location`;
+
+            // Background refresh name
+            this.geocodingService.reverseGeocode(primary.latitude, primary.longitude).subscribe({
+                next: (result: any) => {
+                    if (result && (result.display_name || result.name || result.area)) {
+                        this.fromQuery = `📍 ${result.display_name || result.name || result.area}`;
+                    }
+                }
+            });
+        }
     }
 
     /**
@@ -645,6 +729,34 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
             const lat = coords.latitude;
             const lng = coords.longitude;
+
+            // 0. Check for primary location first
+            const primary = this.geolocationService.getPrimaryLocation();
+            if (primary && this.geolocationService.isValidCoordinates(primary.latitude, primary.longitude)) {
+                console.log('[TripPlanner] Using Primary Default Location');
+                this.isDefaultSelected = true;
+                const lat = primary.latitude;
+                const lng = primary.longitude;
+                this.fromLocation = { lat, lng };
+                this.center = { lat, lng };
+                this.zoom = 15;
+                this.fromQuery = `📍 Saved Home Location`;
+                this.addMarker(lat, lng, 'My Location');
+                this.isDetectingLocation = false;
+
+                // Background refresh name
+                this.geocodingService.reverseGeocode(lat, lng).subscribe({
+                    next: (result: any) => {
+                        if (result && (result.display_name || result.name || result.area)) {
+                            this.fromQuery = `📍 ${result.display_name || result.name || result.area}`;
+                        }
+                    }
+                });
+
+                // Fetch nearby stops
+                this.fetchNearbyStops(lat, lng);
+                return;
+            }
 
             // 1. Abuja Bounding Box Warning
             const isInsideAbuja = lat >= 8.8 && lat <= 9.2 && lng >= 7.2 && lng <= 7.6;
@@ -805,6 +917,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.detectCurrentLocation();
     }
 
+
     /**
      * Open refinement modal for detected/selected location name
      */
@@ -848,6 +961,9 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     // --- Search Logic ---
     onSearchInput(field: 'from' | 'to', query: string) {
         this.activeSearchField = field;
+        if (field === 'from') {
+            this.isDefaultSelected = false;
+        }
         if (query.length > 2) {
             this.searchSubject.next({ query, field });
         } else {
@@ -946,6 +1062,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     }
 
     selectResult(result: SearchResult) {
+        this.isDefaultSelected = false; // Reset if manual selection
+        const lat = result.latitude;
         if (this.activeSearchField === 'from') {
             this.fromQuery = result.name;
             if (result.latitude && result.longitude) {
@@ -1123,7 +1241,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             this.generatedRoutes = [];
             this.selectedRoute = null;
 
-            console.log('[TripPlanner] Trip started successfully');
+            console.log('[TripPlanner] Trip started successfully, navigating to tracking...');
+            this.router.navigate(['/trip-tracking']);
         } catch (error) {
             console.error('[TripPlanner] Failed to start trip:', error);
             alert('Failed to start trip. Please check your connection and try again.');
@@ -1356,6 +1475,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
+        this.destroy$.next();
+        this.destroy$.complete();
         if (this.updateInterval) clearInterval(this.updateInterval);
         if (this.searchSubscription) this.searchSubscription.unsubscribe();
         // Stop location tracking to prevent memory leaks

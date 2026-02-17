@@ -45,7 +45,8 @@
 
         <!-- FROM Field -->
         <div class="location-field">
-            <label class="field-label">📍 FROM</label>
+            <label class="field-label">📍 FROM <span class="default-badge" *ngIf="isDefaultSelected">🏠 Saved
+                    Default</span></label>
             <div class="input-wrapper">
                 <input type="text" class="location-input" [(ngModel)]="fromInput"
                     (input)="onSearchInput('from', fromInput)" placeholder="Your Location"

@@ -350,6 +350,54 @@ body {
     min-height: 64px;
 }
 
+/* Back Button - Unified Premium Style */
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: white;
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-decoration: none;
+}
+
+.btn-back i {
+    font-size: 1.1rem;
+    transition: transform var(--transition-base);
+}
+
+.btn-back:hover {
+    background: var(--bg-secondary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.btn-back:hover i {
+    transform: translateX(-3px);
+}
+
+.btn-back:active {
+    transform: scale(0.95);
+}
+
+/* Glassmorphic variant */
+.btn-back-glass {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.btn-back-glass:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
 /* ==================== CARD STYLES ==================== */
 
 .card {

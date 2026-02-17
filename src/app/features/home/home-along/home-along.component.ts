@@ -64,6 +64,7 @@ export class HomeAlongComponent implements OnInit {
   showSearchResults = false;
   activeField: 'from' | 'to' | null = null;
   isSearching = false;
+  isDefaultSelected = false;
 
   // Smart Boarding (ALONG Framework)
   boardingInferences: BoardingInference[] = [];
@@ -170,12 +171,13 @@ export class HomeAlongComponent implements OnInit {
    * Update Smart Boarding UI based on nearest inference
    */
   updateSmartBoardingUI(inference: BoardingInference) {
+    const anchorName = inference?.anchor?.name || 'nearby stop';
     if (inference.walkingDistance < 20) {
-      this.smartBoardingMessage = `🎯 You are at ${inference.anchor.name}. Boarding permitted.`;
+      this.smartBoardingMessage = `🎯 You are at ${anchorName}. Boarding permitted.`;
     } else if (inference.walkingDistance < 100) {
-      this.smartBoardingMessage = `🚶 Walk ${Math.round(inference.walkingDistance)}m to ${inference.anchor.name}.`;
+      this.smartBoardingMessage = `🚶 Walk ${Math.round(inference.walkingDistance)}m to ${anchorName}.`;
     } else {
-      this.smartBoardingMessage = `📍 Nearest stop: ${inference.anchor.name} (${Math.round(inference.walkingDistance)}m)`;
+      this.smartBoardingMessage = `📍 Nearest stop: ${anchorName} (${Math.round(inference.walkingDistance)}m)`;
     }
   }
 
@@ -211,6 +213,32 @@ export class HomeAlongComponent implements OnInit {
     this.fromInput = '📍 Detecting your location...';
 
     try {
+      // 0. Prioritize User-Defined Primary Location
+      const primary = this.geolocationService.getPrimaryLocation();
+      if (primary && this.geolocationService.isValidCoordinates(primary.latitude, primary.longitude)) {
+        console.log('[HomeAlong] Loading Primary Default Location');
+        this.isDefaultSelected = true;
+        const detectedLocation: SelectedLocation = {
+          type: 'anchor',
+          name: `Home Location`,
+          coords: { lat: primary.latitude, lng: primary.longitude }
+        };
+        this.fromLocation = detectedLocation;
+        this.fromInput = detectedLocation.name;
+        this.isDetectingLocation = false;
+
+        // Background refresh name
+        this.geocodingService.reverseGeocode(primary.latitude, primary.longitude).subscribe({
+          next: (res: any) => {
+            if (res?.display_name) {
+              this.fromInput = `📍 ${res.display_name}`;
+              this.fromLocation!.name = this.fromInput;
+            }
+          }
+        });
+        return;
+      }
+
       // Use getSmartLocation for stabilized, high-accuracy fix
       const coords = await this.geolocationService.getSmartLocation();
 
@@ -464,6 +492,7 @@ export class HomeAlongComponent implements OnInit {
     if (field === 'from') {
       this.fromLocation = null;
       this.fromInput = '';
+      this.isDefaultSelected = false;
     } else {
       this.toLocation = null;
       this.toInput = '';
@@ -506,20 +535,36 @@ export class HomeAlongComponent implements OnInit {
   onRefineModalClosed(result: RefineLocationResult) {
     this.isRefineModalOpen = false;
 
-    if (result.confirmed && result.refinedName !== result.originalName && this.fromLocation) {
-      this.fromInput = `📍 ${result.refinedName}`;
+    if (result.confirmed && this.fromLocation) {
+      const isNewName = result.refinedName !== result.originalName;
 
-      // Send to backend to "learn" this alias
-      this.busStopService.submitMissingStop({
-        name: result.refinedName,
-        latitude: this.fromLocation.coords.lat,
-        longitude: this.fromLocation.coords.lng,
-        description: `User-refined name for OSM point: ${result.originalName}`,
-        localNames: [result.originalName]
-      }).subscribe({
-        next: () => console.log('[HomeAlong] Name refinement submitted for verification'),
-        error: (err: any) => console.error('[HomeAlong] Failed to submit refinement:', err)
-      });
+      if (isNewName) {
+        this.fromInput = `📍 ${result.refinedName}`;
+        this.fromLocation.name = this.fromInput;
+
+        // Send to backend to "learn" this alias
+        this.busStopService.submitMissingStop({
+          name: result.refinedName,
+          latitude: this.fromLocation.coords.lat,
+          longitude: this.fromLocation.coords.lng,
+          description: `User-refined name for OSM point: ${result.originalName}`,
+          localNames: [result.originalName]
+        }).subscribe({
+          next: () => console.log('[HomeAlong] Name refinement submitted'),
+          error: (err: any) => console.error('[HomeAlong] Refinement failed:', err)
+        });
+      }
+
+      // 🏠 Persistent Location Logic
+      if (result.isDefault) {
+        this.geolocationService.setPrimaryLocation({
+          latitude: this.fromLocation.coords.lat,
+          longitude: this.fromLocation.coords.lng,
+          accuracy: 0
+        });
+        this.locationError = "Custom home location saved! We will use this as your default.";
+        setTimeout(() => this.locationError = "", 5000);
+      }
     }
   }
 

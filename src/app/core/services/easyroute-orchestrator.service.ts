@@ -4,7 +4,7 @@ import { BehaviorSubject, Observable, interval, Subscription } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 
 // Import Engines
-import { RouteGenerationEngine } from '../engines/route-generation.engine';
+import { AlongService } from './along.service';
 import { TripExecutionEngine } from '../engines/trip-execution.engine';
 import { ReroutingEngine } from '../engines/rerouting.engine';
 
@@ -20,6 +20,10 @@ export interface OrchestratorState {
   hasActiveTrip: boolean;
   currentTripId: string | null;
   tripStatus: 'idle' | 'planning' | 'active' | 'paused' | 'completed' | 'cancelled';
+  activeRoute?: GeneratedRoute | null;
+  currentSegmentIndex?: number;
+  tripStartTime?: Date | null;
+  currentLocation?: Location | null;
 }
 
 @Injectable({
@@ -44,12 +48,16 @@ export class EasyrouteOrchestratorService {
 
   // Location tracking subscription
   private locationTrackingSubscription: Subscription | null = null;
+  private isUpdatingLocation: boolean = false;
 
   // Resumption tracking (to avoid immediate deviation alerts)
   private resumedAt: number = 0;
 
+  // Stale trip threshold: trips not updated in the last 2 hours are considered stale
+  private readonly STALE_TRIP_THRESHOLD_MS = 2 * 60 * 60 * 1000; // 2 hours
+
   constructor(
-    private routeGenerationEngine: RouteGenerationEngine,
+    private alongService: AlongService,
     private tripExecutionEngine: TripExecutionEngine,
     private reroutingEngine: ReroutingEngine,
     private tripHttpService: TripHttpService,
@@ -67,16 +75,38 @@ export class EasyrouteOrchestratorService {
     console.log('[Orchestrator] Initializing...');
 
     // Check for active trip from backend
-    // try {
-    //   const response = await firstValueFrom(this.tripHttpService.getActiveTrip());
+    try {
+      const response = await firstValueFrom(this.tripHttpService.getActiveTrip());
 
-    //   if (response.success && response.data) {
-    //     console.log('[Orchestrator] Found active trip:', response.data);
-    //     await this.resumeTrip(response.data);
-    //   }
-    // } catch (error) {
-    //   console.log('[Orchestrator] No active trip found');
-    // }
+      if (response.success && response.data) {
+        // Check if trip is stale (not updated recently)
+        const tripUpdatedAt = new Date(response.data.updatedAt || response.data.createdAt).getTime();
+        const now = Date.now();
+        const isStale = (now - tripUpdatedAt) > this.STALE_TRIP_THRESHOLD_MS;
+
+        if (isStale) {
+          console.log('[Orchestrator] Found stale trip (older than 2 hours), auto-cancelling:', response.data._id || response.data.id);
+          // Auto-cancel stale trip to prevent zombie trips
+          try {
+            await firstValueFrom(this.tripHttpService.cancelTrip(
+              response.data._id || response.data.id,
+              'Auto-cancelled: Stale trip from previous session'
+            ));
+            console.log('[Orchestrator] Stale trip cancelled successfully');
+          } catch (cancelError) {
+            console.warn('[Orchestrator] Failed to auto-cancel stale trip:', cancelError);
+          }
+        } else {
+          console.log('[Orchestrator] Found recent active trip, resuming:', response.data);
+          await this.resumeTrip(response.data);
+        }
+      }
+    } catch (error: any) {
+      console.log('[Orchestrator] No active trip found or auth error');
+      if (error?.status === 401) {
+        this.reset();
+      }
+    }
 
     this.updateState({ isInitialized: true });
     console.log('[Orchestrator] Initialized successfully');
@@ -91,19 +121,27 @@ export class EasyrouteOrchestratorService {
     startLocation: Location,
     endLocation: Location
   ): Promise<GeneratedRoute[]> {
-    console.log('[Orchestrator] Planning trip...', { startLocation, endLocation });
+    console.log('[Orchestrator] Planning trip via AlongService...', { startLocation, endLocation });
 
     this.updateState({ tripStatus: 'planning' });
 
     try {
-      // Generate routes using RouteGenerationEngine
-      const routes = await this.routeGenerationEngine.generateRoutes(
+      // Generate routes using AlongService (Backend behavioral brain)
+      const response = await firstValueFrom(this.alongService.generateRoute(
         startLocation,
-        endLocation,
-        3 // maxAlternatives
-      );
+        endLocation
+      ));
 
-      console.log('[Orchestrator] Generated routes:', routes.length);
+      if (!response.success || !response.data) {
+        console.warn('[Orchestrator] No routes found or error from AlongService:', response.message);
+        return [];
+      }
+
+      // AlongService already sanitizes and maps to AlongRoute[]
+      // Which matches the GeneratedRoute interface for the orchestrator
+      const routes = response.data as any as GeneratedRoute[];
+
+      console.log('[Orchestrator] Found routes:', routes.length);
       return routes;
     } catch (error) {
       console.error('[Orchestrator] Error planning trip:', error);
@@ -127,6 +165,7 @@ export class EasyrouteOrchestratorService {
     try {
       // Create trip in backend
       const request: CreateTripRequest = {
+        routeId: selectedRoute.id,
         originLocation,
         destinationLocation,
         selectedRoute
@@ -140,7 +179,25 @@ export class EasyrouteOrchestratorService {
         throw new Error('Failed to create trip');
       }
 
-      const tripId = response.data._id || response.data.id;
+      console.log('[Orchestrator] createTrip raw response data:', JSON.stringify(response.data));
+
+      // The sanitizer interceptor will have added an 'id' field, but we check raw data too for safety
+      let tripId = response.data.id || response.data._id || (typeof response.data === 'string' ? response.data : undefined);
+
+      console.log('[Orchestrator] Extracted tripId (initial):', tripId, 'Type:', typeof tripId);
+
+      // Robust stringification if it's still an object
+      if (typeof tripId === 'object' && tripId !== null) {
+        console.warn('[Orchestrator] tripId is an object, attempting to extract string ID:', tripId);
+        tripId = tripId.id || tripId._id || tripId.$oid || String(tripId);
+      }
+
+      console.log('[Orchestrator] Final tripId:', tripId, 'Type:', typeof tripId);
+
+      if (!tripId || tripId === '[object Object]') {
+        console.error('[Orchestrator] Invalid trip ID found in response:', response.data);
+        throw new Error('Failed to extract valid trip ID from response');
+      }
 
       // Initialize trip state locally
       this.currentTripState = {
@@ -163,7 +220,10 @@ export class EasyrouteOrchestratorService {
       this.updateState({
         hasActiveTrip: true,
         currentTripId: tripId,
-        tripStatus: 'active'
+        tripStatus: 'active',
+        activeRoute: selectedRoute,
+        currentSegmentIndex: 0,
+        tripStartTime: null
       });
 
       console.log('[Orchestrator] Trip created:', tripId);
@@ -190,8 +250,11 @@ export class EasyrouteOrchestratorService {
       }
 
       this.currentTripState.status = 'in_progress';
-      this.currentTripState.startTime = new Date();
+      const startTime = new Date();
+      this.currentTripState.startTime = startTime;
       this.resumedAt = Date.now();
+
+      this.updateState({ tripStatus: 'active', tripStartTime: startTime });
 
       // ✅ Now safe to pass - TypeScript knows it's not null
       await this.tripExecutionEngine.initializeTrip(this.currentTripState);
@@ -199,7 +262,6 @@ export class EasyrouteOrchestratorService {
       // Start location tracking
       this.startLocationTracking();
 
-      this.updateState({ tripStatus: 'active' });
       console.log('[Orchestrator] Trip started successfully');
     } catch (error) {
       console.error('[Orchestrator] Error starting trip:', error);
@@ -309,16 +371,16 @@ export class EasyrouteOrchestratorService {
     }
   }
 
-  /**
-   * Cancel trip
-   */
   async cancelTrip(reason?: string): Promise<void> {
     // ✅ NULL SAFETY CHECK
-    if (!this.currentTripState) {
-      throw new Error('No active trip');
+    if (!this.currentTripState?.tripId) {
+      console.warn('[Orchestrator] Cannot cancel trip: No active trip ID found');
+      // Fallback: cleanup local state anyway
+      this.cleanupTrip();
+      return;
     }
 
-    console.log('[Orchestrator] Cancelling trip');
+    console.log('[Orchestrator] Cancelling trip:', this.currentTripState.tripId);
 
     try {
       await firstValueFrom(
@@ -343,23 +405,20 @@ export class EasyrouteOrchestratorService {
     }
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * LOCATION TRACKING
-   * ═══════════════════════════════════════════════════════════════
-   */
+  async endTrip(): Promise<void> {
+    return this.cancelTrip('User ended trip');
+  }
+
   private startLocationTracking(): void {
     console.log('[Orchestrator] Starting location tracking');
-
-    // Track location every 5 seconds
-    this.locationTrackingSubscription = interval(5000).subscribe(async () => {
+    // 🇳🇬 Optimized: 10s interval to reduce battery drain and backend load
+    this.locationTrackingSubscription = interval(10000).subscribe(async () => {
       await this.updateCurrentLocation();
     });
   }
 
   private stopLocationTracking(): void {
     console.log('[Orchestrator] Stopping location tracking');
-
     if (this.locationTrackingSubscription) {
       this.locationTrackingSubscription.unsubscribe();
       this.locationTrackingSubscription = null;
@@ -367,19 +426,19 @@ export class EasyrouteOrchestratorService {
   }
 
   private async updateCurrentLocation(): Promise<void> {
-    // ✅ NULL SAFETY CHECK
-    if (!this.currentTripState) return;
+    if (this.isUpdatingLocation) return;
 
+    const state = this.currentTripState;
+    if (!state?.tripId) return;
+
+    this.isUpdatingLocation = true;
     try {
-      // Get current location from TripExecutionEngine
-      const location = this.currentTripState.currentLocation;
-
+      const location = state.currentLocation;
       if (!location) return;
 
-      // Update location in backend
       await firstValueFrom(
         this.tripHttpService.updateLocation(
-          this.currentTripState.tripId,
+          state.tripId,
           {
             latitude: location.latitude,
             longitude: location.longitude
@@ -387,56 +446,52 @@ export class EasyrouteOrchestratorService {
         )
       );
 
-      // Check for deviation
+      // 🛰️ Update state with latest location for UI distance calcs
+      this.updateState({ currentLocation: location });
+
       await this.checkDeviation();
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Orchestrator] Error updating location:', error);
+      // 🛡️ Safety: If we get 401 Unauthorized, the session is dead. Stop tracking to avoid loops.
+      if (error?.status === 401) {
+        console.warn('[Orchestrator] 401 detected during background update. Resetting state.');
+        this.reset();
+      }
+    } finally {
+      this.isUpdatingLocation = false;
     }
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * REROUTING
-   * ═══════════════════════════════════════════════════════════════
-   */
   private async checkDeviation(): Promise<void> {
-    // ✅ NULL SAFETY CHECK
     if (!this.currentTripState) return;
 
-    // Skip deviation check for the first 15 seconds after resumption/start
-    // to allow GPS to stabilize and avoid false alerts
     if (Date.now() - this.resumedAt < 15000) {
       return;
     }
 
     try {
-      // Use ReroutingEngine to check deviation
       const analysis = await this.reroutingEngine.checkForDeviation(
         this.currentTripState
       );
 
       if (analysis.shouldReroute) {
         console.log(`[Orchestrator] Segment deviation detected: ${analysis.reason}`);
-        // ReroutingEngine will handle the reroute process automatically
       }
     } catch (error) {
       console.error('[Orchestrator] Error checking deviation:', error);
     }
   }
 
-  /**
-   * Accept reroute suggestion
-   */
   async acceptReroute(): Promise<void> {
-    // ✅ NULL SAFETY CHECK
-    if (!this.currentTripState) {
+    const state = this.currentTripState;
+    if (!state) {
       throw new Error('No active trip');
     }
 
     console.log('[Orchestrator] Accepting reroute');
 
     try {
-      await this.reroutingEngine.acceptReroute(this.currentTripState);
+      await this.reroutingEngine.acceptReroute(state);
       console.log('[Orchestrator] Reroute accepted');
     } catch (error) {
       console.error('[Orchestrator] Error accepting reroute:', error);
@@ -444,19 +499,16 @@ export class EasyrouteOrchestratorService {
     }
   }
 
-  /**
-   * Decline reroute suggestion
-   */
   async declineReroute(): Promise<void> {
-    // ✅ NULL SAFETY CHECK
-    if (!this.currentTripState) {
+    const state = this.currentTripState;
+    if (!state) {
       throw new Error('No active trip');
     }
 
     console.log('[Orchestrator] Declining reroute');
 
     try {
-      await this.reroutingEngine.declineReroute(this.currentTripState);
+      await this.reroutingEngine.declineReroute(state);
       console.log('[Orchestrator] Reroute declined');
     } catch (error) {
       console.error('[Orchestrator] Error declining reroute:', error);
@@ -464,11 +516,6 @@ export class EasyrouteOrchestratorService {
     }
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * STATE MANAGEMENT
-   * ═══════════════════════════════════════════════════════════════
-   */
   getCurrentTripState(): TripState | null {
     return this.currentTripState;
   }
@@ -488,25 +535,30 @@ export class EasyrouteOrchestratorService {
    * Resume trip from backend data
    */
   private async resumeTrip(tripData: any): Promise<void> {
-    console.log('[Orchestrator] Resuming trip from backend');
+    console.log('[Orchestrator] Resuming trip from backend', tripData);
 
-    // ✅ FIX: Remove locationHistory (not in TripState interface)
+    const tripId = tripData._id || tripData.id || (tripData.data?._id) || (tripData.data?.id);
+
+    if (!tripId) {
+      console.error('[Orchestrator] Failed to resume trip: No ID found in data', tripData);
+      return;
+    }
+
     this.currentTripState = {
-      tripId: tripData._id || tripData.id,
-      userId: tripData.userId,
-      status: tripData.status,
-      startLocation: tripData.originLocation, // ✅ FIX: Use startLocation
+      tripId: tripId,
+      userId: tripData.userId || '',
+      status: tripData.status || 'active',
+      startLocation: tripData.originLocation || tripData.startLocation,
       destinationLocation: tripData.destinationLocation,
-      currentLocation: tripData.currentLocation,
+      currentLocation: tripData.currentLocation || tripData.originLocation,
       selectedRoute: tripData.selectedRoute,
       currentSegmentIndex: tripData.currentSegmentIndex || 0,
       milestones: tripData.milestones || [],
       startTime: tripData.startTime ? new Date(tripData.startTime) : undefined,
       endTime: undefined,
-      lastUpdated: new Date(), // ✅ FIX: Add required field
+      lastUpdated: new Date(),
       deviationDetected: tripData.deviationDetected || false,
       rerouteCount: tripData.rerouteCount || 0
-      // ✅ locationHistory removed - not in interface
     };
 
     this.resumedAt = Date.now();
@@ -514,11 +566,12 @@ export class EasyrouteOrchestratorService {
     this.updateState({
       hasActiveTrip: true,
       currentTripId: this.currentTripState.tripId,
-      tripStatus: tripData.status === 'paused' ? 'paused' : 'active'
+      tripStatus: tripData.status === 'paused' ? 'paused' : 'active',
+      tripStartTime: this.currentTripState.startTime,
+      currentLocation: this.currentTripState.currentLocation
     });
 
-    // ✅ NULL SAFETY: Check before calling initializeTrip
-    if (tripData.status === 'in_progress' && this.currentTripState) {
+    if (this.currentTripState && (this.currentTripState.status === 'in_progress' || this.currentTripState.status === 'active')) {
       await this.tripExecutionEngine.initializeTrip(this.currentTripState);
       this.startLocationTracking();
     }
@@ -532,6 +585,29 @@ export class EasyrouteOrchestratorService {
   }
 
   /**
+   * Advance to the next segment of the trip
+   */
+  async advanceToNextSegment(): Promise<void> {
+    const state = this.currentTripState;
+    if (!state || !state.selectedRoute) {
+      throw new Error('No active trip or route');
+    }
+
+    const segments = state.selectedRoute.segments;
+    if (state.currentSegmentIndex < segments.length - 1) {
+      state.currentSegmentIndex++;
+
+      this.updateState({
+        currentSegmentIndex: state.currentSegmentIndex
+      });
+
+      console.log('[Orchestrator] Advanced to segment:', state.currentSegmentIndex);
+    } else {
+      console.log('[Orchestrator] Already at the last segment');
+    }
+  }
+
+  /**
    * ═══════════════════════════════════════════════════════════════
    * PUBLIC GETTERS
    * ═══════════════════════════════════════════════════════════════
@@ -541,12 +617,31 @@ export class EasyrouteOrchestratorService {
   }
 
   getTripProgress(): number {
-    // ✅ NULL SAFETY CHECK
-    if (!this.currentTripState) return 0;
+    const state = this.currentTripState;
+    if (!state?.selectedRoute?.segments) return 0;
 
-    const totalSegments = this.currentTripState.selectedRoute.segments.length;
-    const currentSegment = this.currentTripState.currentSegmentIndex;
+    const totalSegments = state.selectedRoute.segments.length;
+    const currentSegment = state.currentSegmentIndex;
 
     return (currentSegment / totalSegments) * 100;
+  }
+
+  /**
+   * Reset orchestrator
+   * Called on logout or when manual reset is needed
+   */
+  reset(): void {
+    console.log('[Orchestrator] Resetting orchestrator state');
+    this.stopLocationTracking();
+    this.reroutingEngine.reset();
+    this.cleanupTrip();
+    this.updateState({
+      hasActiveTrip: false,
+      currentTripId: null,
+      tripStatus: 'idle',
+      activeRoute: null,
+      currentSegmentIndex: 0,
+      currentLocation: null
+    });
   }
 }

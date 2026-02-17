@@ -102,21 +102,72 @@ export class GeolocationService {
             console.warn('[Geolocation] Attempt 2 failed:', e);
         }
 
-        // Attempt 3: Coarse Location (Accept anything) - Increased to 10s timeout
+        // REMOVED Attempt 3: Coarse Location (IP-based) - Never guess "random" locations in Abuja.
+        // Instead, fallback to user's specified Primary Location or Last Known Location.
+
+        console.warn('[Geolocation] GPS/Network failed. Checking for persistent fallbacks...');
+
+        const primary = this.getPrimaryLocation();
+        if (primary && this.isValidCoordinates(primary.latitude, primary.longitude)) {
+            console.log('[Geolocation] Using User-Defined Primary Location.');
+            this.currentLocation.set(primary);
+            return primary;
+        }
+
+        const lastKnown = this.getLastKnownLocation();
+        if (lastKnown && this.isValidCoordinates(lastKnown.latitude, lastKnown.longitude)) {
+            console.log('[Geolocation] Using Last Known Location.');
+            this.currentLocation.set(lastKnown);
+            return lastKnown;
+        }
+
+        console.error('[Geolocation] All detection attempts failed.');
+        const fallback = this.getDefaultLocation();
+        this.currentLocation.set(fallback);
+        return fallback;
+    }
+
+    /**
+     * Get Last Known Location from storage
+     */
+    private getLastKnownLocation(): Coordinates | null {
+        const stored = localStorage.getItem('lastKnownLocation');
+        if (!stored) return null;
         try {
-            console.log('[Geolocation] Attempt 3: Coarse Location');
-            const pos = await this.getPositionWithTimeout(Infinity, 10000, false);
-            // Mark as coarse/low accuracy for UI warnings
-            pos.accuracy = pos.accuracy || 5000;
-            return pos;
+            const parsed = JSON.parse(stored);
+            return {
+                latitude: parsed.lat || parsed.latitude,
+                longitude: parsed.lng || parsed.longitude,
+                accuracy: 1000 // Mark as potentially stale
+            };
         } catch (e) {
-            console.error('[Geolocation] All attempts failed, using fallback from environment');
-            const fallback = this.getDefaultLocation();
-            if (fallback) {
-                fallback.accuracy = 10000; // Indicate low accuracy/fallback
-                this.currentLocation.set(fallback);
-            }
-            return fallback;
+            return null;
+        }
+    }
+
+    /**
+     * Set a location as the Primary Default
+     */
+    public setPrimaryLocation(coords: Coordinates): void {
+        localStorage.setItem('primaryLocation', JSON.stringify({
+            latitude: coords.latitude,
+            longitude: coords.longitude,
+            accuracy: coords.accuracy || 0,
+            timestamp: Date.now()
+        }));
+        console.log('[Geolocation] Primary location saved.');
+    }
+
+    /**
+     * Get the User's Primary Default location
+     */
+    public getPrimaryLocation(): Coordinates | null {
+        const stored = localStorage.getItem('primaryLocation');
+        if (!stored) return null;
+        try {
+            return JSON.parse(stored);
+        } catch (e) {
+            return null;
         }
     }
 
