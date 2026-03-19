@@ -11,7 +11,6 @@
                 {
                     "destination": "Area 1",
                     "location": "Ebeano Supermarket Service Lane",
-                    "shout": "Area 1! Underbridge!",
                     "price": {
                         "min": 300,
                         "max": 400
@@ -22,7 +21,6 @@
                 {
                     "destination": "Wuse",
                     "location": "Main Road Junction",
-                    "shout": "Wuse! Wuse Market!",
                     "price": {
                         "min": 400,
                         "max": 500
@@ -42,7 +40,6 @@
                 {
                     "destination": "Jabi",
                     "location": "Under the flyover",
-                    "shout": "Jabi! Jabi Park!",
                     "price": {
                         "min": 150,
                         "max": 200
@@ -53,7 +50,6 @@
                 {
                     "destination": "Maitama",
                     "location": "Opposite the filling station",
-                    "shout": "Maitama! Maitama!",
                     "price": {
                         "min": 300,
                         "max": 400
@@ -73,7 +69,6 @@
                 {
                     "destination": "Garki",
                     "location": "Gate 2 Exit",
-                    "shout": "Garki! Area 11!",
                     "price": {
                         "min": 200,
                         "max": 300
@@ -84,7 +79,6 @@
                 {
                     "destination": "Nyanya",
                     "location": "Main Gate Parking",
-                    "shout": "Nyanya! Maraba!",
                     "price": {
                         "min": 400,
                         "max": 600
@@ -105,7 +99,6 @@
                 {
                     "destination": "Kubwa",
                     "location": "By the Total Filling Station",
-                    "shout": "Kubwa! Kubwa!",
                     "price": {
                         "min": 400,
                         "max": 500
@@ -116,7 +109,6 @@
                 {
                     "destination": "Gwagwalada",
                     "location": "Near the overhead bridge",
-                    "shout": "Gwagwa! Gwagwalada!",
                     "price": {
                         "min": 600,
                         "max": 800

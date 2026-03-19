@@ -122,26 +122,29 @@ export class BoardingInferenceComponent implements OnInit {
     }
 
     /**
-     * Get transport mode emoji
+     * Get transport mode icon class (Font Awesome 6.x)
      */
-    getTransportModeEmoji(mode: string): string {
-        const emojiMap: { [key: string]: string } = {
-            'keke': '🛺',
-            'okada': '🏍️',
-            'cab': '🚕',
-            'taxi': '🚕',
-            'bus': '🚌',
-            'walking': '🚶'
+    getTransportModeIcon(mode: string): string {
+        const iconMap: { [key: string]: string } = {
+            'keke': 'fa-solid fa-tricycle', // Fallback to custom if needed, or use fa-shuttle-van/fa-motorcycle
+            'okada': 'fa-solid fa-motorcycle',
+            'cab': 'fa-solid fa-taxi',
+            'taxi': 'fa-solid fa-taxi',
+            'bus': 'fa-solid fa-bus',
+            'walking': 'fa-solid fa-person-walking'
         };
-        return emojiMap[mode.toLowerCase()] || '🚏';
+        // Specific overrides for Nigerian context if FA icons aren't perfect
+        if (mode.toLowerCase() === 'keke') return 'fa-solid fa-van-shuttle'; // Closest common FA icon
+
+        return iconMap[mode.toLowerCase()] || 'fa-solid fa-location-dot';
     }
 
     /**
-     * Get probability stars
+     * Get probability stars as an array for template looping
      */
-    getProbabilityStars(probability: number): string {
+    getProbabilityStarsArray(probability: number): boolean[] {
         const starCount = Math.round(probability * 5);
-        return '⭐'.repeat(starCount);
+        return Array(5).fill(false).map((_, i) => i < starCount);
     }
 
     /**

@@ -2,34 +2,41 @@
     <!-- Header -->
     <div class="boarding-header">
         <button class="btn-back" (click)="goBack()" title="Go Back">
-            <i class="fas fa-chevron-left"></i>
+            <i class="fas fa-arrow-left"></i>
         </button>
-        <h1 class="page-title">Where to Board?</h1>
-    </div>
-
-    <!-- Current Location (ALONG Framework) -->
-    <div class="current-location-section">
-        <div class="location-icon">📍</div>
-        <div class="location-info">
-            <div class="location-label">You are here</div>
-            <div class="location-name">{{ currentLocation?.name || 'Your Location' }}</div>
+        <div class="header-content">
+            <h1 class="page-title">Where to Board?</h1>
+            <p class="summary-text" *ngIf="boardingPoints.length > 0">
+                Found {{ boardingPoints.length }} points near you
+            </p>
         </div>
     </div>
 
-    <!-- Hierarchy Breadcrumb (ALONG Framework) -->
-    <app-hierarchy-breadcrumb *ngIf="currentLocation?.hierarchy" [area]="getAreaFromHierarchy()"
-        [locality]="getLocalityFromHierarchy()" [anchor]="getAnchorFromHierarchy()">
-    </app-hierarchy-breadcrumb>
+    <!-- Current Location (ALONG Framework) -->
+    <div class="current-location-card" *ngIf="currentLocation">
+        <div class="loc-icon-node">
+            <i class="fas fa-location-dot"></i>
+        </div>
+        <div class="location-details">
+            <span class="loc-label">Your Current Spot</span>
+            <h3 class="loc-name">{{ currentLocation.name || 'Your Location' }}</h3>
+            <!-- Hierarchy Breadcrumb (ALONG Framework) -->
+            <app-hierarchy-breadcrumb class="mini-breadcrumb" *ngIf="currentLocation.hierarchy"
+                [area]="getAreaFromHierarchy()" [locality]="getLocalityFromHierarchy()"
+                [anchor]="getAnchorFromHierarchy()">
+            </app-hierarchy-breadcrumb>
+        </div>
+    </div>
 
     <!-- Loading State -->
     <div class="loading-state" *ngIf="isLoading">
-        <div class="spinner-large"></div>
-        <p>Finding best boarding points...</p>
+        <div class="spinner-premium"></div>
+        <p>Analyzing neighborhood intelligence...</p>
     </div>
 
     <!-- Error State -->
     <div class="error-state" *ngIf="error && !isLoading">
-        <div class="error-icon">⚠️</div>
+        <div class="error-icon"><i class="fas fa-exclamation-triangle"></i></div>
         <p class="error-message">{{ error }}</p>
         <button class="btn btn-primary" (click)="inferBoardingPoints()">
             Try Again
@@ -38,106 +45,91 @@
 
     <!-- Boarding Points -->
     <div class="boarding-points-section" *ngIf="!isLoading && !error && boardingPoints.length > 0">
-        <h2 class="section-title">🚶 Walk to one of these:</h2>
 
         <!-- Best Option (Highlighted) -->
         <div class="boarding-card best-option" *ngIf="bestOption" (click)="selectBoardingPoint(bestOption)">
-            <div class="best-badge">⭐ BEST OPTION</div>
+            <div class="premium-badge">
+                <i class="fas fa-crown"></i> RECOMMENDED HUB
+            </div>
 
-            <div class="card-content">
-                <div class="point-header">
-                    <div class="point-icon">🚏</div>
-                    <div class="point-info">
+            <div class="card-body">
+                <div class="point-main">
+                    <div class="point-avatar">
+                        <i [class]="getTransportModeIcon(bestOption.anchor.transportModes[0])"></i>
+                    </div>
+                    <div class="point-text">
                         <h3 class="point-name">{{ bestOption.anchor.name }}</h3>
-                        <div class="local-names"
+                        <div class="alias-tags"
                             *ngIf="bestOption.anchor.localNames && bestOption.anchor.localNames.length > 0">
-                            Also: {{ bestOption.anchor.localNames.join(', ') }}
+                            <span class="alias-label">ALONG Alias:</span>
+                            <span class="alias-chip" *ngFor="let name of bestOption.anchor.localNames">{{ name }}</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="point-details">
-                    <div class="detail-item">
-                        <span class="detail-icon">🚶</span>
-                        <span class="detail-text">{{ bestOption.walkingDistance }}m walk ({{
-                            bestOption.estimatedWalkTime }} min)</span>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <i class="fas fa-person-walking"></i>
+                        <div class="stat-val">
+                            <span>{{ bestOption.walkingDistance }}m</span>
+                            <small>{{ bestOption.estimatedWalkTime }} min walk</small>
+                        </div>
                     </div>
 
-                    <div class="detail-item">
-                        <span class="detail-icon">{{ getTransportModeEmoji(bestOption.anchor.transportModes[0])
-                            }}</span>
-                        <span class="detail-text">
-                            {{ bestOption.anchor.transportModes.join(', ') | titlecase }} available
-                        </span>
-                    </div>
-
-                    <div class="probability-indicator">
-                        {{ getProbabilityStars(bestOption.boardingProbability) }}
-                        <span class="probability-text">({{ (bestOption.boardingProbability * 100) | number:'1.0-0' }}%
-                            success rate)</span>
-                    </div>
-                </div>
-
-                <!-- Micro Instructions -->
-                <div class="micro-instructions" *ngIf="bestOption.anchor.microInstructions">
-                    <div class="instructions-icon">💡</div>
-                    <div class="instructions-text">
-                        "{{ bestOption.anchor.microInstructions }}"
+                    <div class="stat-item success-rate">
+                        <div class="stars-line">
+                            <i class="fas fa-star"
+                                *ngFor="let full of getProbabilityStarsArray(bestOption.boardingProbability)"
+                                [class.active]="full"></i>
+                        </div>
+                        <div class="stat-val">
+                            <span>{{ (bestOption.boardingProbability * 100) | number:'1.0-0' }}%</span>
+                            <small>Success Rate</small>
+                        </div>
                     </div>
                 </div>
 
-                <button class="btn btn-outline show-map-btn" (click)="showOnMap(bestOption); $event.stopPropagation()"
-                    type="button">
-                    📍 Show on Map
-                </button>
+                <!-- Street Hint/Micro Instructions -->
+                <div class="street-intelligence" *ngIf="bestOption.anchor.microInstructions">
+                    <div class="hint-icon"><i class="fas fa-comment-dots"></i></div>
+                    <p>"{{ bestOption.anchor.microInstructions }}"</p>
+                </div>
+
+                <div class="card-actions">
+                    <button class="btn btn-map" (click)="showOnMap(bestOption); $event.stopPropagation()">
+                        <i class="fas fa-map-marked-alt"></i> Show Path
+                    </button>
+                    <button class="btn btn-go">
+                        Walk to Point <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Alternative Options -->
-        <div class="alternative-options" *ngIf="boardingPoints.length > 1">
-            <h3 class="alternatives-title">Other Options:</h3>
+        <div class="alternatives-wrapper" *ngIf="boardingPoints.length > 1">
+            <h3 class="list-title">Other Boarding Points</h3>
 
-            <div class="boarding-card alternative-option" *ngFor="let point of boardingPoints.slice(1)"
+            <div class="boarding-card mini" *ngFor="let point of boardingPoints.slice(1)"
                 (click)="selectBoardingPoint(point)">
-
-                <div class="card-content">
-                    <div class="point-header">
-                        <div class="point-icon">🚏</div>
-                        <div class="point-info">
-                            <h4 class="point-name">{{ point.anchor.name }}</h4>
-                            <div class="local-names"
-                                *ngIf="point.anchor.localNames && point.anchor.localNames.length > 0">
-                                Also: {{ point.anchor.localNames.join(', ') }}
-                            </div>
-                        </div>
+                <div class="card-left">
+                    <div class="mini-avatar">
+                        <i [class]="getTransportModeIcon(point.anchor.transportModes[0])"></i>
                     </div>
-
-                    <div class="point-details">
-                        <div class="detail-item">
-                            <span class="detail-icon">🚶</span>
-                            <span class="detail-text">{{ point.walkingDistance }}m walk ({{ point.estimatedWalkTime }}
-                                min)</span>
-                        </div>
-
-                        <div class="detail-item">
-                            <span class="detail-icon">{{ getTransportModeEmoji(point.anchor.transportModes[0]) }}</span>
-                            <span class="detail-text">
-                                {{ point.anchor.transportModes.join(', ') | titlecase }} available
-                            </span>
-                        </div>
-
-                        <div class="probability-indicator">
-                            {{ getProbabilityStars(point.boardingProbability) }}
-                        </div>
+                </div>
+                <div class="card-mid">
+                    <h4 class="mini-name">{{ point.anchor.name }}</h4>
+                    <div class="mini-meta">
+                        <span><i class="fas fa-person-walking"></i> {{ point.walkingDistance }}m</span>
+                        <span class="stars-mini">
+                            <i class="fas fa-star"
+                                *ngFor="let full of getProbabilityStarsArray(point.boardingProbability)"
+                                [class.active]="full"></i>
+                        </span>
                     </div>
-
-                    <!-- Micro Instructions -->
-                    <div class="micro-instructions" *ngIf="point.anchor.microInstructions">
-                        <div class="instructions-icon">💡</div>
-                        <div class="instructions-text">
-                            "{{ point.anchor.microInstructions }}"
-                        </div>
-                    </div>
+                </div>
+                <div class="card-right">
+                    <i class="fas fa-chevron-right"></i>
                 </div>
             </div>
         </div>
@@ -145,11 +137,13 @@
 
     <!-- Empty State -->
     <div class="empty-state" *ngIf="!isLoading && !error && boardingPoints.length === 0">
-        <div class="empty-icon">🚏</div>
-        <h3>No boarding points found nearby</h3>
-        <p>Try adjusting your starting location or search radius</p>
-        <button class="btn btn-primary" (click)="goBack()">
-            Go Back
+        <div class="empty-illustration">
+            <i class="fas fa-map-location-dot"></i>
+        </div>
+        <h3>No active points found</h3>
+        <p>We couldn't find reliable boarding points within 500m of your spot.</p>
+        <button class="btn btn-primary-outline" (click)="goBack()">
+            Adjust Start Location
         </button>
     </div>
 </div>

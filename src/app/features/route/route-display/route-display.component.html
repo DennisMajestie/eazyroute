@@ -280,10 +280,8 @@
                                 </div>
                             </div>
 
-                            <!-- Boarding Protocol (Shouting) -->
+                            <!-- Boarding Protocol -->
                             <div class="protocol-card" *ngIf="getHubProtocol(segment) as protocol">
-                                <div class="protocol-header">🗣️ Conductor Shout</div>
-                                <div class="shout-box">"{{ protocol.shout }}"</div>
                                 <div class="protocol-meta">
                                     <span class="location">📍 {{ protocol.location }}</span>
                                     <span class="price">💰 ₦{{ protocol.price.min }} - {{ protocol.price.max }}</span>

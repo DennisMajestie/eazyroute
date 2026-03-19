@@ -1,0 +1,67 @@
+<div class="route-card" [class.selected]="selected" (click)="selectRoute()">
+    <!-- Header: Classification Badge -->
+    <div class="route-card-header">
+        <span class="badge" [ngClass]="route.classification?.toLowerCase()">
+            {{ getBadgeIcon() }} {{ getBadgeLabel() }}
+        </span>
+    </div>
+
+    <!-- Main Metrics Grid -->
+    <div class="metrics-grid">
+        <!-- Distance -->
+        <div class="metric">
+            <span class="value">{{ (route.totalDistance / 1000).toFixed(1) }}</span>
+            <span class="label">km</span>
+        </div>
+
+        <!-- Time -->
+        <div class="metric">
+            <span class="value">{{ route.totalTime }}</span>
+            <span class="label">mins</span>
+        </div>
+
+        <!-- Cost -->
+        <div class="metric">
+            <span class="currency">₦</span>
+            <span class="value">{{ formatCost(route.totalCost) }}</span>
+            <span class="label" *ngIf="route.totalCost && typeof route.totalCost === 'object'">range</span>
+        </div>
+
+        <!-- Transfers -->
+        <div class="metric">
+            <span class="value">{{ route.metadata?.transferCount || 0 }}</span>
+            <span class="label">transfers</span>
+        </div>
+    </div>
+
+    <!-- Comparison Insight -->
+    <div class="comparison-label" *ngIf="route.comparisonLabel">
+        💡 {{ route.comparisonLabel }}
+    </div>
+
+    <!-- Transport Modes Chain -->
+    <div class="transport-modes">
+        <span *ngFor="let segment of route.segments; let last = last" class="mode-chain">
+            <span class="mode-badge" [ngClass]="'mode-' + segment.vehicleType?.toLowerCase()">
+                {{ getTransportIcon(segment.vehicleType || segment.mode) }}
+            </span>
+            <span class="separator" *ngIf="!last">→</span>
+        </span>
+    </div>
+
+    <!-- Stress Meter -->
+    <div class="stress-meter-section" *ngIf="route.metadata?.stressScore !== undefined">
+        <app-stress-meter [stressScore]="route.metadata.stressScore" [showLabel]="true"
+            [compact]="false"></app-stress-meter>
+    </div>
+
+    <!-- Village Exit Fee Badge -->
+    <div class="exit-fee-badge" *ngIf="route.metadata?.ribExitApplied && route.metadata?.ribExitFee">
+        <i class="fas fa-ticket-alt"></i> Exit Fee: ₦{{ route.metadata.ribExitFee }}
+    </div>
+
+    <!-- Selection Button -->
+    <button class="details-btn" (click)="selectRoute()">
+        View Details →
+    </button>
+</div>

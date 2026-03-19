@@ -234,8 +234,9 @@
     </div>
 
     <!-- Route Results (Hidden if trip active) -->
+    <!-- Route Results Section -->
     <section *ngIf="!isLoadingRoutes && generatedRoutes.length > 0 && !state.hasActiveTrip" class="route-results">
-      <div class="d-flex justify-content-between align-items-center mb-2">
+      <div class="d-flex justify-content-between align-items-center mb-3">
         <h5>✨ Best Route</h5>
         <button *ngIf="generatedRoutes.length > 1" class="btn btn-sm btn-outline-primary"
           (click)="showAlternatives = !showAlternatives">
@@ -244,61 +245,35 @@
         </button>
       </div>
 
-      <div *ngFor="let route of generatedRoutes; let i = index" class="route-card"
-        [class.d-none]="!showAlternatives && selectedRoute !== route" [class.selected]="selectedRoute === route"
-        (click)="selectRoute(route)">
+      <!-- Route Cards Container -->
+      <div class="route-cards-container">
+        <!-- Use new RouteCardComponent -->
+        <app-route-card *ngFor="let route of generatedRoutes; let i = index" [route]="route"
+          [selected]="selectedRoute === route" [class.d-none]="!showAlternatives && selectedRoute !== route"
+          (select)="selectRoute($event)">
+        </app-route-card>
+      </div>
 
-        <!-- Route Summary -->
-        <div class="route-summary" [ngClass]="route.classification?.toLowerCase()">
-          <div class="d-flex justify-content-between align-items-center w-100">
-            <span class="route-badge">
-              <i class="fas" [ngClass]="{
-                'fa-bolt': route.classification === 'FASTEST',
-                'fa-piggy-bank': route.classification === 'CHEAPEST',
-                'fa-scale-balanced': route.classification === 'BALANCED'
-              }"></i>
-              {{ route.classification || 'Route ' + (i + 1) }}
-            </span>
-            <span *ngIf="route.comparisonLabel" class="comparison-label small fw-bold">
-              {{ route.comparisonLabel }}
-            </span>
-          </div>
-
-          <div class="route-stats mt-2">
-            <span class="stat-item">
-              <i class="fas fa-clock"></i> {{ route.totalTime }} min
-            </span>
-            <span class="stat-item cost">
-              <i class="fas fa-money-bill-wave"></i> ₦{{ route.totalCost }}
-            </span>
-            <span class="stat-item">
-              <i class="fas fa-route"></i> {{ (route.totalDistance / 1000).toFixed(1) }} km
-            </span>
-            <!-- Metadata Indicators -->
-            <span *ngIf="route.metadata?.transferCount" class="stat-item text-muted" title="Number of transfers">
-              <i class="fas fa-exchange-alt"></i> {{ route.metadata?.transferCount }}
-            </span>
-            <span *ngIf="route.metadata?.ribExitFee" class="badge bg-warning text-dark ms-2" title="Exit fee included">
-              <i class="fas fa-ticket-alt"></i> Exit Fee
-              <span>(₦{{ route.metadata?.ribExitFee }})</span>
-            </span>
-          </div>
-        </div>
-
-        <!-- Segment Timeline Breakdown -->
-        <div class="timeline-container" *ngIf="route && route.segments && route.segments.length > 0; else noSegments">
-          <div *ngFor="let segment of route.segments; let j = index" class="timeline-item"
-            [class.walk]="segment.mode.type === 'walk'">
+      <!-- Detailed Route View (Segment Breakdown) -->
+      <div class="selected-route-details mt-4" *ngIf="selectedRoute">
+        <h6 class="mb-3">
+          <i class="fas fa-directions me-2"></i>Journey Details
+        </h6>
+        <!-- Segment Timeline Breakdown for Selected Route -->
+        <div class="timeline-container"
+          *ngIf="selectedRoute && selectedRoute.segments && selectedRoute.segments.length > 0; else noSegments">
+          <div *ngFor="let segment of selectedRoute.segments; let j = index" class="timeline-item"
+            [class.walk]="segment.mode.type === 'walk' || (segment.mode | lowercase) === 'walking'">
             <div class="timeline-marker">
               <div class="marker-dot"></div>
-              <div class="marker-line" *ngIf="j < route.segments.length - 1"></div>
+              <div class="marker-line" *ngIf="j < selectedRoute.segments.length - 1"></div>
             </div>
 
             <div class="timeline-content">
               <div class="segment-header d-flex align-items-center justify-content-between">
                 <div class="mode-info">
                   <i [class]="getTransportIcon(segment.mode) + ' me-2'"></i>
-                  <span class="transport-name">{{ segment.mode.name }}</span>
+                  <span class="transport-name">{{ getTransportModeName(segment.mode) }}</span>
                 </div>
                 <span class="segment-cost" *ngIf="segment.cost > 0">₦{{ segment.cost }}</span>
               </div>
@@ -355,15 +330,15 @@
         </ng-template>
 
         <!-- Start Trip Button -->
-        <!-- Start Trip Button -->
         <button class="btn btn-success w-100 mt-3" [disabled]="isStartingTrip"
-          (click)="startTripWithRoute(route); $event.stopPropagation()">
+          (click)="startTripWithRoute(selectedRoute); $event.stopPropagation()">
           <span *ngIf="isStartingTrip" class="spinner-border spinner-border-sm me-2" role="status"
             aria-hidden="true"></span>
           <i *ngIf="!isStartingTrip" class="fas fa-play me-2"></i>
           {{ isStartingTrip ? 'Starting Trip...' : 'Start This Route' }}
         </button>
       </div>
+    </section>
     </section>
 
     <!-- Loading State with Coverage Dashboard -->

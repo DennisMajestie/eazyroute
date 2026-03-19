@@ -1,0 +1,90 @@
+.preference-selector {
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 16px;
+}
+
+.selector-header {
+  margin-bottom: 12px;
+
+  h6 {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #6b7280;
+    margin: 0;
+  }
+}
+
+.button-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preference-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 10px 12px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+
+  &:hover {
+    border-color: #d1d5db;
+    background: #f3f4f6;
+    transform: translateY(-1px);
+  }
+
+  &.active {
+    background: #22c55e;
+    color: white;
+    border-color: #16a34a;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+  }
+
+  .icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .label {
+    display: block;
+  }
+}
+
+.preference-description {
+  margin-top: 10px;
+  font-size: 11px;
+  color: #6b7280;
+  text-align: center;
+  font-style: italic;
+}
+
+@media (max-width: 576px) {
+  .button-group {
+    gap: 6px;
+  }
+
+  .preference-btn {
+    min-width: 70px;
+    padding: 8px 10px;
+    font-size: 11px;
+
+    .icon {
+      font-size: 16px;
+    }
+  }
+}

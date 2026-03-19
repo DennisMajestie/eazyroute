@@ -1,0 +1,17 @@
+<div class="preference-selector">
+    <div class="selector-header">
+        <h6>Route Preference</h6>
+    </div>
+
+    <div class="button-group">
+        <button *ngFor="let pref of preferences" class="preference-btn" [class.active]="selected === pref.type"
+            (click)="selectPreference(pref.type)" [title]="pref.description">
+            <span class="icon">{{ pref.icon }}</span>
+            <span class="label">{{ pref.label }}</span>
+        </button>
+    </div>
+
+    <div class="preference-description" *ngIf="selected">
+        {{ (preferences.find(p => p.type === selected))?.description }}
+    </div>
+</div>

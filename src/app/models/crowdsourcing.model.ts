@@ -6,7 +6,6 @@ export interface CommuterProtocol {
     destinationId: string;
 
     location: string; // "Expressway side, past bridge"
-    shout: string; // "Gwarinpa! 1st Gate!"
     signal?: string; // "Wave one finger"
     insiderTip?: string;
     avoidTime?: string;

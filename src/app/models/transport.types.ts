@@ -111,8 +111,13 @@ export interface AlongRoute {
         isSurgeApplied?: boolean;
         backbonePriority?: boolean;
         ribExitApplied?: boolean;     // V3: Village Exit Fee included
+        ribExitFee?: number;          // Village exit fee amount
         // Hybrid Intelligence Fields
         classification?: 'FASTEST' | 'CHEAPEST' | 'BALANCED' | 'SAFEST' | 'RECOMMENDED';
+        // Route Metrics
+        transferCount?: number;        // Number of transfers in route
+        transferTimeMinutes?: number;  // Total transfer wait time
+        stressScore?: number;          // Comfort metric (0-100, lower is better)
     };
     dynamicAdjustment?: IDynamicAdjustment;
 }

@@ -20,6 +20,7 @@ import { VerificationStatus, TransportMode, BusStop } from '../../../models/bus-
 import { GeneratedRoute, RouteSegment } from '../../../core/engines/types/easyroute.types';
 import { SmartInstructionComponent } from '../../../shared/components/smart-instruction/smart-instruction.component';
 import { RefineLocationModalComponent, RefineLocationResult } from '../../../shared/components/refine-location-modal/refine-location-modal.component';
+import { RouteCardComponent } from '../components/route-card/route-card.component';
 
 interface SearchResult {
     name: string;
@@ -50,7 +51,7 @@ interface SearchResult {
 @Component({
     selector: 'app-trip-planner',
     standalone: true,
-    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent, RefineLocationModalComponent],
+    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent, RefineLocationModalComponent, RouteCardComponent],
     templateUrl: './trip-planner.component.html',
     styleUrl: './trip-planner.component.scss'
 })
@@ -452,8 +453,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         "🛡️ Always sit by the door/window, never in the middle."
     ];
 
-    // Shouting Protocols
-    // Shouting Protocols
+    // Active boarding protocol
     activeProtocol$ = this.protocolService.getActiveProtocol();
 
     // Behavioral Layer (ALONG)
@@ -632,7 +632,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             next: (data: any) => {
                 console.log('Milestone reached:', data);
 
-                // Trigger Shouting Protocol if this is a transfer hub
+                // Show boarding protocol if this is a transfer hub
                 if (data.milestone && data.milestone.stopName) {
                     // Try to find protocols for this stop
                     const hub = this.protocolService.findHub(data.milestone.stopName);
@@ -1268,12 +1268,33 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         const iconMap: { [key: string]: string } = {
             'bus': 'fas fa-bus',
             'walk': 'fas fa-walking',
+            'walking': 'fas fa-walking',
             'keke': 'fas fa-motorcycle',
             'taxi': 'fas fa-taxi',
             'bike': 'fas fa-bicycle',
             'train': 'fas fa-train'
         };
-        return iconMap[mode.type] || 'fas fa-map-marker';
+        // Handle both mode.type (for GeneratedRoute segments) and direct string (for other cases)
+        const modeKey = (typeof mode === 'string' ? mode : mode?.type || '').toLowerCase();
+        return iconMap[modeKey] || 'fas fa-map-marker';
+    }
+
+    /**
+     * Get transport mode name for display
+     */
+    getTransportModeName(mode: any): string {
+        const modeKey = (typeof mode === 'string' ? mode : mode?.type || '').toLowerCase();
+        const nameMap: { [key: string]: string } = {
+            'bus': 'Bus',
+            'walk': 'Walking',
+            'walking': 'Walking',
+            'keke': 'Keke (Tricycle)',
+            'taxi': 'Taxi',
+            'bike': 'Bike',
+            'train': 'Train',
+            'okada': 'Okada (Motorcycle)'
+        };
+        return nameMap[modeKey] || 'Transport';
     }
 
     // --- Local Route Intelligence Helpers ---

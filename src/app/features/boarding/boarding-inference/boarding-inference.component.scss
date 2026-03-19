@@ -1,311 +1,375 @@
-/* ============================================
-   BOARDING INFERENCE - WHERE TO BOARD?
-   Nigerian-centric design
-   ============================================ */
-
 .boarding-inference-container {
-  min-height: 100vh;
-  background-color: var(--bg-secondary);
-  padding-bottom: var(--space-20);
+    background: #f8fafc;
+    min-height: 100vh;
+    padding-bottom: 40px;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* ==================== HEADER ==================== */
-
+/* Header */
 .boarding-header {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  padding: var(--space-4);
-  color: white;
-  box-shadow: var(--shadow-md);
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
+    padding: 16px 20px;
+    background: white;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    border-bottom: 1px solid #f1f5f9;
+
+    .btn-back {
+        background: #f8fafc;
+        border: 1px solid #f1f5f9;
+        color: #475569;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        
+        &:hover {
+            background: #e0f2fe;
+            color: #0ea5e9;
+            border-color: #bae6fd;
+        }
+    }
+
+    .header-content {
+        .page-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #1e293b;
+        }
+        .summary-text {
+            margin: 0;
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+    }
 }
 
-.page-title {
-  font-family: var(--font-display);
-  font-size: var(--text-3xl);
-  font-weight: var(--font-extrabold);
-  margin: 0;
-  flex: 1;
+/* Current Location Card */
+.current-location-card {
+    margin: 20px;
+    padding: 16px;
+    background: white;
+    border-radius: 20px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+    .loc-icon-node {
+        width: 48px;
+        height: 48px;
+        background: #eff6ff;
+        color: #2563eb;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .location-details {
+        flex: 1;
+        min-width: 0;
+        
+        .loc-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .loc-name {
+            margin: 2px 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .mini-breadcrumb {
+            display: block;
+            margin-top: 4px;
+            font-size: 0.75rem;
+        }
+    }
 }
 
-/* ==================== CURRENT LOCATION ==================== */
-
-.current-location-section {
-  background-color: white;
-  padding: var(--space-6);
-  margin: var(--space-4);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.location-icon {
-  font-size: var(--text-4xl);
-}
-
-.location-info {
-  flex: 1;
-}
-
-.location-label {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-1);
-}
-
-.location-name {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-}
-
-/* ==================== LOADING STATE ==================== */
-
-.loading-state {
-  text-align: center;
-  padding: var(--space-16) var(--space-4);
-}
-
-.spinner-large {
-  width: 64px;
-  height: 64px;
-  border: 6px solid rgba(var(--primary-rgb), 0.2);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin: 0 auto var(--space-4);
-}
-
-.loading-state p {
-  font-size: var(--text-lg);
-  color: var(--text-secondary);
-}
-
-/* ==================== ERROR STATE ==================== */
-
-.error-state {
-  text-align: center;
-  padding: var(--space-16) var(--space-4);
-}
-
-.error-icon {
-  font-size: var(--text-5xl);
-  margin-bottom: var(--space-4);
-}
-
-.error-message {
-  font-size: var(--text-lg);
-  color: var(--error);
-  margin-bottom: var(--space-6);
-}
-
-/* ==================== BOARDING POINTS ==================== */
-
+/* Boarding Cards */
 .boarding-points-section {
-  padding: 0 var(--space-4);
+    padding: 0 20px;
 }
-
-.section-title {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-4);
-}
-
-/* ==================== BOARDING CARD ==================== */
 
 .boarding-card {
-  background-color: white;
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  margin-bottom: var(--space-4);
-  box-shadow: var(--shadow-md);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  position: relative;
+    background: white;
+    border-radius: 24px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s, box-shadow 0.2s;
+    cursor: pointer;
+
+    &:active { transform: scale(0.98); }
+
+    &.best-option {
+        border: 2px solid #bae6fd;
+        background: linear-gradient(to bottom, white, #f0f9ff);
+
+        .premium-badge {
+            background: #0ea5e9;
+            color: white;
+            padding: 8px 16px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-bottom-right-radius: 16px;
+            letter-spacing: 0.03em;
+        }
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .point-main {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 20px;
+
+        .point-avatar {
+            width: 56px;
+            height: 56px;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: #0ea5e9;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .point-name { margin: 0; font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+        
+        .alias-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+            align-items: center;
+
+            .alias-label { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
+            .alias-chip {
+                font-size: 0.7rem;
+                background: #f1f5f9;
+                color: #475569;
+                padding: 2px 8px;
+                border-radius: 6px;
+                font-weight: 600;
+            }
+        }
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: white;
+        border-radius: 16px;
+        border: 1px solid #f1f5f9;
+
+        i { color: #64748b; font-size: 1rem; }
+        .stat-val {
+            display: flex;
+            flex-direction: column;
+            span { font-size: 0.9rem; font-weight: 800; color: #1e293b; }
+            small { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
+        }
+
+        &.success-rate {
+            background: #ecfdf5;
+            border-color: #d1fae5;
+            .stars-line {
+                display: flex;
+                gap: 2px;
+                i {
+                    font-size: 0.7rem;
+                    color: #e2e8f0;
+                    &.active { color: #10b981; }
+                }
+            }
+            .stat-val span { color: #065f46; }
+        }
+    }
+
+    .street-intelligence {
+        background: #fffbeb;
+        padding: 12px 16px;
+        border-radius: 16px;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        margin-bottom: 24px;
+        border: 1px solid #fef3c7;
+
+        .hint-icon { color: #d97706; font-size: 0.9rem; margin-top: 2px; }
+        p { margin: 0; font-size: 0.85rem; color: #92400e; font-weight: 600; font-style: italic; line-height: 1.4; }
+    }
+
+    .card-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+
+        .btn {
+            padding: 12px;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+
+            &.btn-map { background: #f8fafc; color: #475569; border: 1px solid #f1f5f9; }
+            &.btn-go { background: #0ea5e9; color: white; box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25); }
+        }
+    }
 }
 
-.boarding-card:hover {
-  box-shadow: var(--shadow-xl);
-  transform: translateY(-4px);
+/* Alternatives */
+.alternatives-wrapper {
+    margin-top: 32px;
+    
+    .list-title {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #64748b;
+        margin-bottom: 16px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
 }
 
-/* Best Option Styling */
-.boarding-card.best-option {
-  border: 3px solid var(--accent);
-  background: linear-gradient(135deg, #FFFBF0 0%, white 100%);
+.boarding-card.mini {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    border-radius: 20px;
+
+    .mini-avatar {
+        width: 44px;
+        height: 44px;
+        background: #f8fafc;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        color: #64748b;
+        margin-right: 16px;
+    }
+
+    .card-mid {
+        flex: 1;
+        .mini-name { margin: 0; font-size: 0.95rem; font-weight: 700; color: #1e293b; }
+        .mini-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 2px;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            font-weight: 600;
+            
+            i { font-size: 0.7rem; }
+            .stars-mini i { color: #e2e8f0; &.active { color: #10b981; } }
+        }
+    }
+
+    .card-right { color: #cbd5e1; }
 }
 
-.best-badge {
-  position: absolute;
-  top: -12px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--accent);
-  color: var(--text-primary);
-  padding: var(--space-2) var(--space-6);
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  font-weight: var(--font-extrabold);
-  box-shadow: var(--shadow-lg);
+/* States */
+.loading-state, .empty-state, .error-state {
+    padding: 80px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    h3 { margin: 16px 0 8px; font-size: 1.2rem; font-weight: 800; color: #1e293b; }
+    p { margin: 0; color: #64748b; font-size: 0.9rem; max-width: 240px; }
 }
 
-/* Alternative Option Styling */
-.boarding-card.alternative-option {
-  border: 2px solid var(--border);
+.spinner-premium {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #f1f5f9;
+    border-top: 4px solid #0ea5e9;
+    border-radius: 50%;
+    animation: spin 1s linear infinite, pulse 1.5s ease-in-out infinite;
 }
 
-/* ==================== CARD CONTENT ==================== */
+@keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes pulse { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.1) rotate(180deg); } }
 
-.card-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
+.empty-illustration, .error-icon {
+    font-size: 3rem;
+    color: #e2e8f0;
 }
 
-.point-header {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
+.error-icon { color: #fee2e2; }
+
+.btn-primary-outline {
+    margin-top: 24px;
+    padding: 12px 24px;
+    border-radius: 12px;
+    background: transparent;
+    border: 2px solid #0ea5e9;
+    color: #0ea5e9;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+    
+    &:hover { background: #0ea5e9; color: white; }
 }
 
-.point-icon {
-  font-size: var(--text-4xl);
-  flex-shrink: 0;
-}
-
-.point-info {
-  flex: 1;
-}
-
-.point-name {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin: 0 0 var(--space-1);
-}
-
-.local-names {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  font-style: italic;
-}
-
-/* ==================== POINT DETAILS ==================== */
-
-.point-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.detail-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-base);
-}
-
-.detail-icon {
-  font-size: var(--text-2xl);
-}
-
-.detail-text {
-  color: var(--text-primary);
-  font-weight: var(--font-medium);
-}
-
-.probability-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-lg);
-}
-
-.probability-text {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-}
-
-/* ==================== MICRO INSTRUCTIONS ==================== */
-
-.micro-instructions {
-  background-color: rgba(var(--accent), 0.1);
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  border-left: 4px solid var(--accent);
-  display: flex;
-  gap: var(--space-3);
-}
-
-.instructions-icon {
-  font-size: var(--text-2xl);
-  flex-shrink: 0;
-}
-
-.instructions-text {
-  font-size: var(--text-base);
-  color: var(--text-primary);
-  font-style: italic;
-  line-height: var(--leading-relaxed);
-}
-
-/* ==================== SHOW MAP BUTTON ==================== */
-
-.show-map-btn {
-  width: 100%;
-  margin-top: var(--space-2);
-}
-
-/* ==================== ALTERNATIVE OPTIONS ==================== */
-
-.alternative-options {
-  margin-top: var(--space-8);
-}
-
-.alternatives-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-4);
-}
-
-/* ==================== EMPTY STATE ==================== */
-
-.empty-state {
-  text-align: center;
-  padding: var(--space-16) var(--space-4);
-}
-
-.empty-icon {
-  font-size: var(--text-5xl);
-  margin-bottom: var(--space-4);
-}
-
-.empty-state h3 {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-2);
-}
-
-.empty-state p {
-  font-size: var(--text-base);
-  color: var(--text-secondary);
-  margin-bottom: var(--space-6);
-}
-
-/* ==================== RESPONSIVE ==================== */
-
-@media (max-width: 768px) {
-  .page-title {
-    font-size: var(--text-2xl);
-  }
-  
-  .point-name {
-    font-size: var(--text-lg);
-  }
+/* Responsive */
+@media (max-width: 480px) {
+    .boarding-header .header-content .page-title { font-size: 1rem; }
+    .boarding-card .card-body { padding: 16px; }
+    .boarding-card .point-main { gap: 12px; }
+    .boarding-card .point-main .point-avatar { width: 44px; height: 44px; font-size: 1.2rem; }
+    .boarding-card .stats-grid { gap: 12px; }
+    .boarding-card .stat-item { padding: 10px; gap: 8px; }
 }

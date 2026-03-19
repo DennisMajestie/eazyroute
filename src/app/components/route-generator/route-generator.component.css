@@ -295,6 +295,7 @@ input[type="text"]:focus {
 .link-btn:hover {
     text-decoration: underline;
 }
+
 /* Protocol Card */
 .protocol-card {
     margin-top: 12px;
@@ -313,17 +314,6 @@ input[type="text"]:focus {
     letter-spacing: 0.5px;
 }
 
-.shout-box {
-    background: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-weight: 700;
-    color: #0c4a6e;
-    font-style: italic;
-    border-left: 4px solid #0ea5e9;
-    margin-bottom: 8px;
-}
-
 .protocol-meta {
     display: flex;
     justify-content: space-between;
@@ -339,4 +329,3 @@ input[type="text"]:focus {
     padding: 6px 10px;
     border-radius: 4px;
 }
-

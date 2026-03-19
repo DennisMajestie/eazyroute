@@ -6,7 +6,6 @@ import { map, catchError, tap } from 'rxjs/operators';
 export interface BoardingProtocol {
     destination: string;
     location: string;
-    shout: string;
     price: { min: number; max: number };
     mode: string;
     tip: string;

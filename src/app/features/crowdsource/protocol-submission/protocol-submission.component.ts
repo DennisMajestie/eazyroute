@@ -22,7 +22,6 @@ export class ProtocolSubmissionComponent {
 
     protocol: Partial<CommuterProtocol> = {
         location: '',
-        shout: '',
         signal: '',
         insiderTip: '',
         avoidTime: '',
@@ -56,9 +55,7 @@ export class ProtocolSubmissionComponent {
     isValid(): boolean {
         return !!(
             this.protocol.location &&
-            this.protocol.shout &&
-            this.protocol.location.length > 5 &&
-            this.protocol.shout.length > 3
+            this.protocol.location.length > 5
         );
     }
 
@@ -80,7 +77,6 @@ export class ProtocolSubmissionComponent {
                 destinationId: this.destinationId,
                 destination: this.destinationName,
                 location: this.protocol.location,
-                shout: this.protocol.shout,
                 signal: this.protocol.signal,
                 insiderTip: this.protocol.insiderTip,
                 avoidTime: this.protocol.avoidTime,
@@ -124,7 +120,6 @@ export class ProtocolSubmissionComponent {
     reset() {
         this.protocol = {
             location: '',
-            shout: '',
             signal: '',
             insiderTip: '',
             avoidTime: '',
