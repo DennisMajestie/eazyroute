@@ -199,7 +199,7 @@
   transition: all 0.2s ease;
 
   &.selected {
-    ring: 2px solid var(--primary);
+    box-shadow: 0 0 0 2px var(--primary, #0ea5e9);
     transform: scale(1.02);
   }
 
@@ -419,6 +419,28 @@
     height: 30px;
     background: #cbd5e1;
   }
+
+  .night-safe-badge {
+    background: linear-gradient(135deg, #1e293b, #334155);
+    border-radius: 8px;
+    padding: 6px 12px;
+    border: 1px solid #475569;
+    
+    .summary-value {
+      color: #fcd34d !important;
+      font-weight: 800;
+    }
+    
+    .summary-icon {
+      color: #fcd34d;
+    }
+
+    &.fare {
+      background: linear-gradient(135deg, #fef2f2, #fee2e2);
+      border-color: #fecaca;
+      .summary-value, .summary-icon { color: #991b1b !important; }
+    }
+  }
 }
 
 /* Loading & Error States */
@@ -582,8 +604,35 @@
       font-weight: 700;
       color: #475569;
       text-transform: uppercase;
+      position: relative;
+    }
+
+    .terminal-alert {
+      margin-top: 8px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      padding: 8px 12px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      animation: pulse-soft 2s infinite;
+
+      .alert-icon { font-size: 1.1rem; }
+      .alert-text {
+        color: #166534;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: none;
+      }
     }
   }
+}
+
+@keyframes pulse-soft {
+  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.2); }
+  70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
 }
 
 .timeline-segment {
@@ -676,6 +725,24 @@
         font-size: 0.75rem;
         color: #64748b;
         font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+
+        .bridge-tag {
+          background: #e0f2fe;
+          color: #0369a1;
+          padding: 2px 8px;
+          border-radius: 4px;
+          font-weight: 700;
+
+          &.flyover {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+          }
+        }
       }
     }
   }

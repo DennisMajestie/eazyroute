@@ -42,8 +42,8 @@
     <!-- Transport Modes Chain -->
     <div class="transport-modes">
         <span *ngFor="let segment of route.segments; let last = last" class="mode-chain">
-            <span class="mode-badge" [ngClass]="'mode-' + segment.vehicleType?.toLowerCase()">
-                {{ getTransportIcon(segment.vehicleType || segment.mode) }}
+            <span class="mode-badge" [ngClass]="'mode-' + (segment.vehicleType || segment.mode.type)?.toLowerCase()">
+                {{ getTransportIcon(segment.vehicleType || segment.mode.type) }}
             </span>
             <span class="separator" *ngIf="!last">→</span>
         </span>
@@ -51,13 +51,13 @@
 
     <!-- Stress Meter -->
     <div class="stress-meter-section" *ngIf="route.metadata?.stressScore !== undefined">
-        <app-stress-meter [stressScore]="route.metadata.stressScore" [showLabel]="true"
+        <app-stress-meter [stressScore]="route.metadata?.stressScore || 0" [showLabel]="true"
             [compact]="false"></app-stress-meter>
     </div>
 
     <!-- Village Exit Fee Badge -->
     <div class="exit-fee-badge" *ngIf="route.metadata?.ribExitApplied && route.metadata?.ribExitFee">
-        <i class="fas fa-ticket-alt"></i> Exit Fee: ₦{{ route.metadata.ribExitFee }}
+        <i class="fas fa-ticket-alt"></i> Exit Fee: ₦{{ route.metadata?.ribExitFee }}
     </div>
 
     <!-- Selection Button -->

@@ -73,6 +73,8 @@ export class DataSanitizer {
 
                 sanitized.fromStopId = data.fromStopId || data.fromId || data.fromStop?._id || data.fromStop?.id;
                 sanitized.toStopId = data.toStopId || data.toId || data.toStop?._id || data.toStop?.id;
+                sanitized.portalType = data.portalType;
+                sanitized.isTerminalNode = data.isTerminalNode;
                 sanitized.dynamicAdjustment = data.dynamicAdjustment;
             }
 

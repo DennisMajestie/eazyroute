@@ -167,7 +167,7 @@ export interface GeneratedRoute {
     generatedAt: Date;
     suggestion?: string; // Handling 404/Alternative routing suggestions
     strategy: 'shortest' | 'cheapest' | 'balanced' | 'custom';
-    classification?: 'FASTEST' | 'CHEAPEST' | 'BALANCED'; // NEW: ALONG Algorithm Stack classification
+    classification?: 'FASTEST' | 'CHEAPEST' | 'BALANCED' | 'RECOMMENDED'; // NEW: ALONG Algorithm Stack classification
     comparisonLabel?: string; // NEW: e.g. "₦800 cheaper than fastest"
 
     // NEW: Backend optimization metadata
@@ -181,6 +181,7 @@ export interface GeneratedRoute {
         transferCount?: number;             // Number of vehicle changes
         ribExitApplied?: boolean;           // True if Rib Exit fee is included
         ribExitFee?: number;                // Specific fee for private estate exit
+        stressScore?: number;               // NEW: Comfort/Safety metric
         arrivalWindow?: { minMinutes: number; maxMinutes: number; confidence: number }; // Probabilistic Arrival Window (PAW)
     };
 }

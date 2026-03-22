@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AlongRoute } from '../../../../models/transport.types';
+import { GeneratedRoute } from '../../../../core/engines/types/easyroute.types';
 import { StressMeterComponent } from '../../../../shared/components/stress-meter/stress-meter.component';
 
 @Component({
@@ -11,9 +11,9 @@ import { StressMeterComponent } from '../../../../shared/components/stress-meter
     styleUrls: ['./route-card.component.scss']
 })
 export class RouteCardComponent {
-    @Input({ required: true }) route!: AlongRoute;
+    @Input({ required: true }) route!: GeneratedRoute;
     @Input() selected = false;
-    @Output() select = new EventEmitter<AlongRoute>();
+    @Output() select = new EventEmitter<GeneratedRoute>();
 
     /**
      * Get the badge icon based on route classification
@@ -54,7 +54,8 @@ export class RouteCardComponent {
     /**
      * Get transport mode icon emoji
      */
-    getTransportIcon(mode: string): string {
+    getTransportIcon(mode: string | undefined): string {
+        if (!mode) return '🚗';
         const icons: Record<string, string> = {
             bus: '🚌',
             taxi: '🚖',

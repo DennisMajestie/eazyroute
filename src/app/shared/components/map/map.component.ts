@@ -25,7 +25,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
     @Input() center: { lat: number, lng: number } = { lat: 9.0765, lng: 7.3986 }; // Abuja default
     @Input() zoom: number = 13;
     @Input() markers: Array<{ lat: number, lng: number, title?: string, tier?: 'primary' | 'sub-landmark' | 'node' }> = [];
-    @Input() polylines: Array<{ path: any[], color?: string, weight?: number, isBackbone?: boolean }> = [];
+    @Input() polylines: Array<{ path: any[], color?: string, weight?: number, isBackbone?: boolean, isWalking?: boolean, portalType?: string }> = [];
 
     @Output() mapClick = new EventEmitter<{ lat: number, lng: number }>();
 
@@ -106,7 +106,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
                     color: color,
                     weight: weight,
                     opacity: opacity,
-                    lineJoin: 'round'
+                    lineJoin: 'round',
+                    dashArray: (p.isWalking || p.portalType === 'PEDESTRIAN_BRIDGE') ? '10, 10' : undefined
                 }).addTo(this.map);
 
                 this.routeLayers.push(polyline);

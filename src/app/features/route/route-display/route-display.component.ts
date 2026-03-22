@@ -65,7 +65,7 @@ export class RouteDisplayComponent implements OnInit {
     // ===== CACHED MAP DATA (avoids infinite change detection) =====
     mapCenter: { lat: number; lng: number } = { lat: 9.0765, lng: 7.3986 };
     mapMarkers: Array<{ lat: number; lng: number; title?: string; tier?: 'primary' | 'sub-landmark' | 'node' }> = [];
-    mapPolylines: Array<{ path: any[]; color?: string; weight?: number; isBackbone?: boolean }> = [];
+    mapPolylines: Array<{ path: any[]; color?: string; weight?: number; isBackbone?: boolean, isWalking?: boolean, portalType?: string }> = [];
 
     get route(): AlongRoute | null {
         // Return selected alternative OR recommended route
@@ -144,7 +144,7 @@ export class RouteDisplayComponent implements OnInit {
         if (!currentRoute) {
             this.mapPolylines = [];
         } else {
-            const lines: Array<{ path: any[]; color?: string; weight?: number; isBackbone?: boolean }> = [];
+            const lines: Array<{ path: any[]; color?: string; weight?: number; isBackbone?: boolean; isWalking?: boolean; portalType?: string }> = [];
 
             currentRoute.segments.forEach(seg => {
                 if (seg.path?.coordinates && seg.path.coordinates.length >= 2) {
@@ -153,7 +153,9 @@ export class RouteDisplayComponent implements OnInit {
                         path: leafletPath,
                         color: this.getSegmentColor(seg).replace(/var\(--[^)]+\)/, '#0ea5e9'),
                         weight: seg.backbonePriority ? 6 : 4,
-                        isBackbone: seg.backbonePriority
+                        isBackbone: seg.backbonePriority,
+                        isWalking: this.getSegmentMode(seg).toLowerCase() === 'walking' || this.getSegmentMode(seg).toLowerCase() === 'walk',
+                        portalType: seg.portalType
                     });
                 } else {
                     const from = seg.fromStop as any;
@@ -163,7 +165,9 @@ export class RouteDisplayComponent implements OnInit {
                             path: [[from.latitude, from.longitude], [to.latitude, to.longitude]],
                             color: '#0ea5e9',
                             weight: seg.backbonePriority ? 6 : 4,
-                            isBackbone: seg.backbonePriority
+                            isBackbone: seg.backbonePriority,
+                            isWalking: this.getSegmentMode(seg).toLowerCase() === 'walking' || this.getSegmentMode(seg).toLowerCase() === 'walk',
+                            portalType: seg.portalType
                         });
                     }
                 }
@@ -388,6 +392,42 @@ export class RouteDisplayComponent implements OnInit {
         }
 
         return null;
+    }
+
+    /**
+     * Get dynamic badge for route (Night-Safe, Transfer etc)
+     */
+    getDynamicBadge(adjustment: IDynamicAdjustment | undefined): { label: string, type: 'fare' | 'wait' | 'risk' | 'traffic' | 'security' } | null {
+        // 1. Check Night-Safe (Harness Priority)
+        const hr = new Date().getHours();
+        if (hr >= 23 || hr < 5) {
+            return { label: 'Night-Safe Active', type: 'security' };
+        }
+
+        if (!adjustment) return null;
+
+        if (adjustment.riskBoost > 0) return { label: 'Risk Alert', type: 'risk' };
+        if (adjustment.fareMultiplier > 1.2) return { label: 'High Fare', type: 'fare' };
+        if (adjustment.waitMultiplier > 1.5) return { label: 'Long Wait', type: 'wait' };
+        if (adjustment.congestionPenalty > 5000) return { label: 'Heavy Traffic', type: 'traffic' };
+
+        return null;
+    }
+
+    /**
+     * Check if a segment ends at a terminal node (Last Bus Stop)
+     */
+    isTerminalArrival(segment: AlongSegment): boolean {
+        return !!segment.isTerminalNode;
+    }
+
+    /**
+     * Get descriptive bridge instruction
+     */
+    getBridgeInstruction(segment: AlongSegment): string {
+        if (segment.portalType === 'PEDESTRIAN_BRIDGE') return 'Use Pedestrian Bridge to cross Expressway';
+        if (segment.portalType === 'VEHICULAR_FLYOVER') return 'Flyover Section';
+        return 'Bridge Crossing';
     }
 
     /**
@@ -810,16 +850,5 @@ export class RouteDisplayComponent implements OnInit {
                 this.isSubmittingReport = false;
             }
         });
-    }
-
-    getDynamicBadge(adj?: IDynamicAdjustment) {
-        if (!adj) return null;
-
-        if (adj.fareMultiplier > 1.2) return { label: 'Surge: +₦' + Math.round((adj.fareMultiplier - 1) * 200), type: 'fare' };
-        if (adj.waitMultiplier > 1.5) return { label: 'Long Wait Time', type: 'wait' };
-        if (adj.riskBoost > 0) return { label: 'Security Alert', type: 'risk' };
-        if (adj.congestionPenalty > 0) return { label: 'Heavy Traffic', type: 'traffic' };
-
-        return null;
     }
 }

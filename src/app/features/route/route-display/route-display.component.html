@@ -62,6 +62,11 @@
             <span class="summary-icon">📏</span>
             <span class="summary-value">{{ (route.totalDistance / 1000).toFixed(1) }}km</span>
         </div>
+        <div class="summary-divider" *ngIf="getDynamicBadge(route.dynamicAdjustment)"></div>
+        <div class="summary-item night-safe-badge" *ngIf="getDynamicBadge(route.dynamicAdjustment) as badge" [class]="badge.type">
+            <span class="summary-icon"><i class="fas" [ngClass]="{'fa-shield-alt': badge.type === 'security', 'fa-bolt': badge.type === 'fare'}"></i></span>
+            <span class="summary-value">{{ badge.label }}</span>
+        </div>
     </div>
 
 
@@ -211,7 +216,12 @@
 
                         <div class="mode-header">
                             <div class="mode-icon" [style.background-color]="getSegmentColor(segment)">
-                                {{ getSegmentEmoji(segment) }}
+                                <ng-container *ngIf="segment.portalType === 'PEDESTRIAN_BRIDGE'; else normalIcon">
+                                    🌉
+                                </ng-container>
+                                <ng-template #normalIcon>
+                                    {{ getSegmentEmoji(segment) }}
+                                </ng-template>
                             </div>
                             <div class="mode-info">
                                 <div class="mode-title">
@@ -221,7 +231,8 @@
                                 <div class="mode-meta">
                                     <span *ngIf="segment.distance">{{ segment.distance }}m</span>
                                     <span *ngIf="segment.estimatedTime">• {{ segment.estimatedTime }} min</span>
-                                    <span class="bridge-tag" *ngIf="segment.bridgeEnabled">🌉 Bridge</span>
+                                    <span class="bridge-tag" *ngIf="segment.portalType === 'PEDESTRIAN_BRIDGE'">🌉 Pedestrian Bridge</span>
+                                    <span class="bridge-tag flyover" *ngIf="segment.portalType === 'VEHICULAR_FLYOVER'">🚗 Flyover</span>
                                 </div>
 
                                 <!-- Dynamic Adjustment Indicator for Segment -->
@@ -321,6 +332,10 @@
                         <div class="point-marker small"></div>
                         <div class="point-label" *ngIf="segment.toStop">
                             {{ getStopName(segment.toStop) }}
+                            <div class="terminal-alert" *ngIf="isTerminalArrival(segment)">
+                                <span class="alert-icon">🏁</span>
+                                <span class="alert-text">Last Bus/Along Stop. Switch to Keke/Okada here.</span>
+                            </div>
                         </div>
                     </div>
                 </div>

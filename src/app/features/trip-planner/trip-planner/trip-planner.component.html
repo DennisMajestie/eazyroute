@@ -263,7 +263,7 @@
         <div class="timeline-container"
           *ngIf="selectedRoute && selectedRoute.segments && selectedRoute.segments.length > 0; else noSegments">
           <div *ngFor="let segment of selectedRoute.segments; let j = index" class="timeline-item"
-            [class.walk]="segment.mode.type === 'walk' || (segment.mode | lowercase) === 'walking'">
+            [class.walk]="segment.mode.type === 'walk' || (segment.mode.type | lowercase) === 'walking'">
             <div class="timeline-marker">
               <div class="marker-dot"></div>
               <div class="marker-line" *ngIf="j < selectedRoute.segments.length - 1"></div>
@@ -338,7 +338,6 @@
           {{ isStartingTrip ? 'Starting Trip...' : 'Start This Route' }}
         </button>
       </div>
-    </section>
     </section>
 
     <!-- Loading State with Coverage Dashboard -->

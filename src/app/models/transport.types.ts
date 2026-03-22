@@ -6,6 +6,12 @@ export enum TransportMode {
     WALKING = 'walking'
 }
 
+export enum PortalType {
+    VEHICULAR_FLYOVER = 'VEHICULAR_FLYOVER',
+    PEDESTRIAN_BRIDGE = 'PEDESTRIAN_BRIDGE',
+    LEVEL_JUNCTION = 'LEVEL_JUNCTION'
+}
+
 export enum BoardingStrength {
     WEAK = 'weak',
     MEDIUM = 'medium',
@@ -84,6 +90,8 @@ export interface AlongSegment {
         roadType?: string;
         surface?: string;
     };
+    portalType?: PortalType | string;
+    isTerminalNode?: boolean;
     dynamicAdjustment?: IDynamicAdjustment;
 }
 

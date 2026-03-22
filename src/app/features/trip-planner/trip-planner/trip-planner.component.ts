@@ -1210,7 +1210,31 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
     selectRoute(route: GeneratedRoute) {
         this.selectedRoute = route;
-        console.log('[TripPlanner] Selected route:', route);
+        this.updateRoutePolylines();
+        this.addMarkersForRoute(route);
+    }
+
+    private addMarkersForRoute(route: GeneratedRoute) {
+        const segments = route.legs || route.segments;
+        if (!segments || segments.length === 0) return;
+
+        // Origin
+        const first = segments[0];
+        const startLat = first.fromStop.latitude || (first as any).fromLat;
+        const startLng = first.fromStop.longitude || (first as any).fromLng;
+
+        if (startLat && startLng) {
+            this.addMarker(startLat, startLng, 'Origin', 'primary');
+        }
+
+        // Destination
+        const last = segments[segments.length - 1];
+        const endLat = last.toStop.latitude || (last as any).toLat;
+        const endLng = last.toStop.longitude || (last as any).toLng;
+
+        if (endLat && endLng) {
+            this.addMarker(endLat, endLng, 'Destination', 'primary');
+        }
     }
 
     async startTripWithRoute(route: GeneratedRoute) {
