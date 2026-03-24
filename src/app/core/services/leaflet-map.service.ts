@@ -20,7 +20,8 @@ export class LeafletMapService {
             const iconUrl = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png';
             const shadowUrl = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png';
 
-            const defaultIcon = this.L.icon({
+            const L = (window as any).L || this.L;
+            const defaultIcon = L.icon({
                 iconRetinaUrl,
                 iconUrl,
                 shadowUrl,

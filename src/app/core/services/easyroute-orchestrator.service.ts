@@ -77,19 +77,22 @@ export class EasyrouteOrchestratorService {
     // Check for active trip from backend
     try {
       const response = await firstValueFrom(this.tripHttpService.getActiveTrip());
+      const hasData = response.success && response.data && (!Array.isArray(response.data) || response.data.length > 0);
 
-      if (response.success && response.data) {
+      if (hasData) {
+        const tripData = Array.isArray(response.data) ? response.data[0] : response.data;
+        
         // Check if trip is stale (not updated recently)
-        const tripUpdatedAt = new Date(response.data.updatedAt || response.data.createdAt).getTime();
+        const tripUpdatedAt = new Date(tripData.updatedAt || tripData.createdAt).getTime();
         const now = Date.now();
         const isStale = (now - tripUpdatedAt) > this.STALE_TRIP_THRESHOLD_MS;
 
         if (isStale) {
-          console.log('[Orchestrator] Found stale trip (older than 2 hours), auto-cancelling:', response.data._id || response.data.id);
+          console.log('[Orchestrator] Found stale trip (older than 2 hours), auto-cancelling:', tripData._id || tripData.id);
           // Auto-cancel stale trip to prevent zombie trips
           try {
             await firstValueFrom(this.tripHttpService.cancelTrip(
-              response.data._id || response.data.id,
+              tripData._id || tripData.id,
               'Auto-cancelled: Stale trip from previous session'
             ));
             console.log('[Orchestrator] Stale trip cancelled successfully');
@@ -97,9 +100,11 @@ export class EasyrouteOrchestratorService {
             console.warn('[Orchestrator] Failed to auto-cancel stale trip:', cancelError);
           }
         } else {
-          console.log('[Orchestrator] Found recent active trip, resuming:', response.data);
-          await this.resumeTrip(response.data);
+          console.log('[Orchestrator] Found recent active trip, resuming:', tripData);
+          await this.resumeTrip(tripData);
         }
+      } else {
+        console.log('[Orchestrator] No active trip found (Initial)');
       }
     } catch (error: any) {
       console.log('[Orchestrator] No active trip found or auth error');
@@ -540,7 +545,7 @@ export class EasyrouteOrchestratorService {
     const tripId = tripData._id || tripData.id || (tripData.data?._id) || (tripData.data?.id);
 
     if (!tripId) {
-      console.error('[Orchestrator] Failed to resume trip: No ID found in data', tripData);
+      console.log('[Orchestrator] No active trip found in resume data');
       return;
     }
 

@@ -151,15 +151,29 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
                 })
             };
 
-            const getIcon = (mode: string | undefined) => {
+            const getSafeIcon = (mode: string | undefined): any => {
                 const key = mode?.toLowerCase() || 'node';
-                if (key === 'node' || key === 'sub-landmark') return undefined; // Use default Leaflet icon
-                return iconMap[key] || iconMap['taxi']; // Fallback to avoid 'undefined' crashes for new modes like keke/okada
+                
+                if (key === 'node' || key === 'sub-landmark') return undefined;
+
+                // 🏗️ Production Hardening: Explicit Keke/Okada Support
+                const icon = iconMap[key] || iconMap['taxi'] || iconMap['cab'];
+                
+                // Nuclear Fallback: If Leaflet namespace is unstable, try to generate a raw divIcon or return default
+                if (!icon && L.icon) {
+                    return L.icon({
+                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+                        iconSize: [25, 41],
+                        iconAnchor: [12, 41]
+                    });
+                }
+
+                return icon;
             };
 
             this.markers.forEach(m => {
                 const options: any = {};
-                const icon = getIcon(m.tier);
+                const icon = getSafeIcon(m.tier);
                 if (icon) {
                     options.icon = icon;
                 }
