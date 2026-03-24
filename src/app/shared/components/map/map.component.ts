@@ -40,7 +40,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
     async ngAfterViewInit() {
         if (isPlatformBrowser(this.platformId)) {
             await this.mapService.loadLeaflet();
-            this.initMap();
+            // Task 5: Component Lifecycle Delay
+            // Give the browser 100ms to ensure the div for the map is actually rendered
+            setTimeout(() => {
+                this.initMap();
+            }, 100);
         }
     }
 
@@ -119,53 +123,68 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
         if (!this.map || !this.markers.length) return;
 
         this.mapService.loadLeaflet().then(L => {
-            const primaryIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
+            // Task 4: Global Namespace Guard at marker level
+            const _L = (window as any).L || L;
 
-            const taxiIcon = L.icon({
-                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
-                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-                iconSize: [25, 41],
-                iconAnchor: [12, 41],
-                popupAnchor: [1, -34],
-                shadowSize: [41, 41]
-            });
+            // Task 6: Icon Fallback Safety via try-catch
+            let primaryIcon, taxiIcon, busIcon;
+            
+            try {
+                primaryIcon = _L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                });
 
-            const iconMap: Record<string, any> = {
-                'primary': primaryIcon,
-                'taxi': taxiIcon,
-                'cab': taxiIcon,
-                'bus': L.icon({
+                taxiIcon = _L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                });
+
+                busIcon = _L.icon({
                     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
                     shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
                     iconSize: [25, 41],
                     iconAnchor: [12, 41],
                     popupAnchor: [1, -34],
                     shadowSize: [41, 41]
-                })
+                });
+            } catch (e) {
+                console.warn('[Map] Icon generation failed, using defaults', e);
+            }
+
+            const iconMap: Record<string, any> = {
+                'primary': primaryIcon,
+                'taxi': taxiIcon,
+                'cab': taxiIcon,
+                'bus': busIcon
             };
 
             const getSafeIcon = (mode: string | undefined): any => {
                 const key = mode?.toLowerCase() || 'node';
-                
                 if (key === 'node' || key === 'sub-landmark') return undefined;
 
                 // 🏗️ Production Hardening: Explicit Keke/Okada Support
                 const icon = iconMap[key] || iconMap['taxi'] || iconMap['cab'];
                 
-                // Nuclear Fallback: If Leaflet namespace is unstable, try to generate a raw divIcon or return default
-                if (!icon && L.icon) {
-                    return L.icon({
-                        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
-                        iconSize: [25, 41],
-                        iconAnchor: [12, 41]
-                    });
+                // Nuclear Fallback: If Leaflet namespace is unstable or icon generation failed
+                if (!icon && _L.icon) {
+                    try {
+                        return _L.icon({
+                            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+                            iconSize: [25, 41],
+                            iconAnchor: [12, 41]
+                        });
+                    } catch (innerError) {
+                        return undefined; // Use default Leaflet icon
+                    }
                 }
 
                 return icon;
@@ -178,7 +197,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
                     options.icon = icon;
                 }
 
-                const marker = L.marker([m.lat, m.lng], options)
+                const marker = _L.marker([m.lat, m.lng], options)
                     .addTo(this.map)
                     .bindPopup(m.title || '');
             });

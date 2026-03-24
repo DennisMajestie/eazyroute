@@ -43,9 +43,11 @@ export class LeafletMapService {
     initMap(elementId: string, center: { lat: number; lng: number }, zoom: number): any {
         if (!this.isBrowser() || !this.L) return null;
 
-        const map = this.L.map(elementId).setView([center.lat, center.lng], zoom);
+        // Task 4: Leaflet Global Namespace Guard
+        const L = (window as any).L || this.L;
+        const map = L.map(elementId).setView([center.lat, center.lng], zoom);
 
-        this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
