@@ -24,7 +24,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
 
     @Input() center: { lat: number, lng: number } = { lat: 9.0765, lng: 7.3986 }; // Abuja default
     @Input() zoom: number = 13;
-    @Input() markers: Array<{ lat: number, lng: number, title?: string, tier?: 'primary' | 'sub-landmark' | 'node' }> = [];
+    @Input() markers: Array<{ lat: number, lng: number, title?: string, tier?: 'primary' | 'sub-landmark' | 'node' | string }> = [];
     @Input() polylines: Array<{ path: any[], color?: string, weight?: number, isBackbone?: boolean, isWalking?: boolean, portalType?: string }> = [];
 
     @Output() mapClick = new EventEmitter<{ lat: number, lng: number }>();
@@ -128,10 +128,40 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
                 shadowSize: [41, 41]
             });
 
+            const taxiIcon = L.icon({
+                iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            });
+
+            const iconMap: Record<string, any> = {
+                'primary': primaryIcon,
+                'taxi': taxiIcon,
+                'cab': taxiIcon,
+                'bus': L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            };
+
+            const getIcon = (mode: string | undefined) => {
+                const key = mode?.toLowerCase() || 'node';
+                if (key === 'node' || key === 'sub-landmark') return undefined; // Use default Leaflet icon
+                return iconMap[key] || iconMap['taxi']; // Fallback to avoid 'undefined' crashes for new modes like keke/okada
+            };
+
             this.markers.forEach(m => {
                 const options: any = {};
-                if (m.tier === 'primary') {
-                    options.icon = primaryIcon;
+                const icon = getIcon(m.tier);
+                if (icon) {
+                    options.icon = icon;
                 }
 
                 const marker = L.marker([m.lat, m.lng], options)
