@@ -20,8 +20,8 @@ export class LeafletMapService {
             const iconUrl = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png';
             const shadowUrl = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png';
 
-            const L = (window as any).L || this.L;
-            const defaultIcon = L.icon({
+            const L_Namespace = (window as any).L || this.L;
+            const defaultIcon = L_Namespace.icon({
                 iconRetinaUrl,
                 iconUrl,
                 shadowUrl,
@@ -31,7 +31,9 @@ export class LeafletMapService {
                 shadowSize: [41, 41]
             });
 
-            this.L.Marker.prototype.options.icon = defaultIcon;
+            if (this.L && this.L.Marker && this.L.Marker.prototype) {
+                this.L.Marker.prototype.options.icon = defaultIcon;
+            }
         }
         return this.L;
     }
@@ -44,10 +46,12 @@ export class LeafletMapService {
         if (!this.isBrowser() || !this.L) return null;
 
         // Task 4: Leaflet Global Namespace Guard
-        const L = (window as any).L || this.L;
-        const map = L.map(elementId).setView([center.lat, center.lng], zoom);
+        const L_Namespace = (window as any).L || this.L;
+        if (!L_Namespace) return null;
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        const map = ((window as any).L || this.L).map(elementId).setView([center.lat, center.lng], zoom);
+
+        L_Namespace.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);

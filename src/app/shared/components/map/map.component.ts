@@ -66,11 +66,23 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
     private initMap() {
         if (!this.mapContainer) return;
 
-        this.map = this.mapService.initMap(
-            this.mapContainer.nativeElement,
-            this.center,
-            this.zoom
-        );
+        // The "Abuja Soul" Map Guard
+        const Leaflet = (window as any).L || (this.mapService as any).L;
+        
+        if (!Leaflet || typeof Leaflet.map !== 'function') {
+            console.error("Critical: Leaflet library not found on window. Check script loading.");
+            return; 
+        }
+
+        this.map = Leaflet.map(this.mapContainer.nativeElement, {
+            zoomControl: false,
+            dragging: true
+        }).setView([this.center.lat, this.center.lng], this.zoom);
+
+        Leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(this.map);
 
         // Handle Map Click
         this.map.on('click', (e: any) => {
@@ -175,7 +187,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
                 const icon = iconMap[key] || iconMap['taxi'] || iconMap['cab'];
                 
                 // Nuclear Fallback: If Leaflet namespace is unstable or icon generation failed
-                if (!icon && _L.icon) {
+                if (!icon && _L?.icon) {
                     try {
                         return _L.icon({
                             iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png',
