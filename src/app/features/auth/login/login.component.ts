@@ -1,4 +1,4 @@
-import { Component, OnDestroy, effect } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,48 +26,12 @@ export class LoginComponent implements OnDestroy {
     isGoogleAuthenticating: boolean = false;
     isAppleAuthenticating: boolean = false;
 
-    /** Cold-start wakeup state */
-    isServerWakingUp: boolean = false;
-    wakeupCountdown: number = 0;
-    private countdownInterval: any = null;
-
     constructor(
         private router: Router,
         private authService: AuthService
-    ) {
-        // Mirror the service's serverWakingUp signal into local state
-        effect(() => {
-            const waking = this.authService.serverWakingUp();
-            this.isServerWakingUp = waking;
-            if (waking) {
-                this.startWakeupCountdown();
-            } else {
-                this.stopWakeupCountdown();
-            }
-        });
-    }
+    ) { }
 
-    ngOnDestroy(): void {
-        this.stopWakeupCountdown();
-    }
-
-    private startWakeupCountdown(): void {
-        this.stopWakeupCountdown();
-        this.wakeupCountdown = 30;
-        this.countdownInterval = setInterval(() => {
-            this.wakeupCountdown--;
-            if (this.wakeupCountdown <= 0) {
-                this.stopWakeupCountdown();
-            }
-        }, 1000);
-    }
-
-    private stopWakeupCountdown(): void {
-        if (this.countdownInterval) {
-            clearInterval(this.countdownInterval);
-            this.countdownInterval = null;
-        }
-    }
+    ngOnDestroy(): void { }
 
     togglePasswordVisibility(): void {
         this.showPassword = !this.showPassword;
@@ -130,10 +94,6 @@ export class LoginComponent implements OnDestroy {
                             }
                         });
                     }, 2000);
-                } else if (error.status === 0) {
-                    this.errorMessage = 'Cannot connect to server. Please check your internet connection.';
-                } else if (error.status === 504) {
-                    this.errorMessage = 'Server is starting up after a period of inactivity. Retrying automatically…';
                 } else {
                     this.errorMessage = error.error?.message || 'Login failed. Please try again.';
                 }

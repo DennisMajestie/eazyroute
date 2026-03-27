@@ -167,21 +167,8 @@
                     </button>
                 </div>
 
-                <!-- Cold-Start Wakeup Banner -->
-                <div class="wakeup-banner" *ngIf="isServerWakingUp">
-                    <div class="wakeup-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-                        </svg>
-                    </div>
-                    <div class="wakeup-text">
-                        <strong>Server waking up…</strong>
-                        <span>Our server was asleep. Retrying in <b>{{ wakeupCountdown }}s</b></span>
-                    </div>
-                </div>
-
                 <!-- Submit Button -->
-                <button type="submit" class="btn-primary" [disabled]="isAuthenticating || isServerWakingUp || !email || !password"
+                <button type="submit" class="btn-primary" [disabled]="isAuthenticating || !email || !password"
                     [class.is-loading]="isAuthenticating">
                     <span class="btn-content" *ngIf="!isAuthenticating">
                         <span>Sign In</span>
