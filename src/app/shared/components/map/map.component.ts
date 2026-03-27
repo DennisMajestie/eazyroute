@@ -74,7 +74,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
             return; 
         }
 
-
         this.map = Leaflet.map(this.mapContainer.nativeElement, {
             zoomControl: false,
             dragging: true

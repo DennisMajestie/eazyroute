@@ -25,23 +25,26 @@ export class LoginComponent implements OnDestroy {
     successMessage: string = '';
     isGoogleAuthenticating: boolean = false;
     isAppleAuthenticating: boolean = false;
+    isWakeUpWaiting: boolean = false;
+    private wakeUpTimer: any;
 
     constructor(
         private router: Router,
         private authService: AuthService
     ) { }
 
-    ngOnDestroy(): void { }
+    ngOnDestroy(): void {
+        if (this.wakeUpTimer) clearTimeout(this.wakeUpTimer);
+    }
 
     togglePasswordVisibility(): void {
         this.showPassword = !this.showPassword;
     }
 
-    // In login.component.ts
-
     onSubmit(): void {
         this.errorMessage = '';
         this.successMessage = '';
+        this.isWakeUpWaiting = false;
 
         if (!this.email || !this.password) {
             this.errorMessage = 'Please enter email and password';
@@ -55,15 +58,23 @@ export class LoginComponent implements OnDestroy {
 
         this.isAuthenticating = true;
 
+        // Render Cold Start Warning: Show message if request takes > 10s
+        this.wakeUpTimer = setTimeout(() => {
+            if (this.isAuthenticating) {
+                this.isWakeUpWaiting = true;
+            }
+        }, 10000);
+
         const loginRequest: LoginRequest = {
             email: this.email,
             password: this.password
         };
 
-        // ⬅️ Use AuthService.login()
         this.authService.login(loginRequest).subscribe({
             next: (response) => {
                 this.isAuthenticating = false;
+                this.isWakeUpWaiting = false;
+                if (this.wakeUpTimer) clearTimeout(this.wakeUpTimer);
 
                 if (response.success) {
                     console.log('✅ Login successful');
@@ -81,6 +92,8 @@ export class LoginComponent implements OnDestroy {
             },
             error: (error) => {
                 this.isAuthenticating = false;
+                this.isWakeUpWaiting = false;
+                if (this.wakeUpTimer) clearTimeout(this.wakeUpTimer);
 
                 if (error.status === 401) {
                     this.errorMessage = 'Invalid email or password';

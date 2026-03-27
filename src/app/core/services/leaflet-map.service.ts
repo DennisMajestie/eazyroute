@@ -47,9 +47,9 @@ export class LeafletMapService {
 
         // Task 4: Leaflet Global Namespace Guard
         const L_Namespace = (window as any).L || this.L;
-        if (!L_Namespace) return null;
+        if (!L_Namespace || typeof L_Namespace.map !== 'function') return null;
 
-        const map = ((window as any).L || this.L).map(elementId).setView([center.lat, center.lng], zoom);
+        const map = L_Namespace.map(elementId).setView([center.lat, center.lng], zoom);
 
         L_Namespace.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
