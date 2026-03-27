@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, effect } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +13,7 @@ import { LoginRequest } from '../../../models/user.model'; // ⬅️ Use correct
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss']
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
     email: string = '';
     password: string = '';
     rememberMe: boolean = false;
@@ -26,10 +26,48 @@ export class LoginComponent {
     isGoogleAuthenticating: boolean = false;
     isAppleAuthenticating: boolean = false;
 
+    /** Cold-start wakeup state */
+    isServerWakingUp: boolean = false;
+    wakeupCountdown: number = 0;
+    private countdownInterval: any = null;
+
     constructor(
         private router: Router,
-        private authService: AuthService // ⬅️ Change this
-    ) { }
+        private authService: AuthService
+    ) {
+        // Mirror the service's serverWakingUp signal into local state
+        effect(() => {
+            const waking = this.authService.serverWakingUp();
+            this.isServerWakingUp = waking;
+            if (waking) {
+                this.startWakeupCountdown();
+            } else {
+                this.stopWakeupCountdown();
+            }
+        });
+    }
+
+    ngOnDestroy(): void {
+        this.stopWakeupCountdown();
+    }
+
+    private startWakeupCountdown(): void {
+        this.stopWakeupCountdown();
+        this.wakeupCountdown = 30;
+        this.countdownInterval = setInterval(() => {
+            this.wakeupCountdown--;
+            if (this.wakeupCountdown <= 0) {
+                this.stopWakeupCountdown();
+            }
+        }, 1000);
+    }
+
+    private stopWakeupCountdown(): void {
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+            this.countdownInterval = null;
+        }
+    }
 
     togglePasswordVisibility(): void {
         this.showPassword = !this.showPassword;
@@ -93,11 +131,11 @@ export class LoginComponent {
                         });
                     }, 2000);
                 } else if (error.status === 0) {
-                    this.errorMessage = 'Cannot connect to server. Please check your connection.';
-                    alert('Network Error: Cannot connect to server at ' + environment.apiUrl);
+                    this.errorMessage = 'Cannot connect to server. Please check your internet connection.';
+                } else if (error.status === 504) {
+                    this.errorMessage = 'Server is starting up after a period of inactivity. Retrying automatically…';
                 } else {
                     this.errorMessage = error.error?.message || 'Login failed. Please try again.';
-                    alert('Login Error: ' + this.errorMessage);
                 }
 
                 console.error('❌ Login error:', error);

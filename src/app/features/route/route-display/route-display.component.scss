@@ -388,7 +388,55 @@
   }
 }
 
+/* Fuel Alert Banner - March 2026 */
+.fuel-alert-banner {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  border: 1.5px solid #fcd34d;
+  margin: 0 16px 16px 16px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.15);
+  animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  .warning-icon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+  }
+
+  .warning-text {
+    strong {
+      display: block;
+      color: #92400e;
+      font-size: 0.95rem;
+      margin-bottom: 2px;
+      font-weight: 800;
+    }
+    font-size: 0.85rem;
+    color: #b45309;
+    line-height: 1.5;
+    font-weight: 500;
+
+    .timestamp {
+      margin: 6px 0 0 0;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #d97706;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+  }
+}
+
+@keyframes slide-down {
+  from { transform: translateY(-10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 /* Summary Bar */
+
 .route-summary {
   display: flex;
   align-items: center;

@@ -46,7 +46,17 @@
         </div>
     </div>
 
+    <!-- Fuel Alert Banner (March 2026 Conflict Adjustment) -->
+    <div class="fuel-alert-banner" *ngIf="route">
+        <span class="warning-icon">⚠️</span>
+        <div class="warning-text">
+            <strong>Notice:</strong> Due to the fuel crisis, some fares may be 30-50% higher than usual.
+            <p class="timestamp">Estimates updated March 2026.</p>
+        </div>
+    </div>
+
     <!-- Route Summary Bar -->
+
     <div class="route-summary" *ngIf="route">
         <div class="summary-item">
             <span class="summary-icon">⏱️</span>

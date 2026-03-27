@@ -5,8 +5,9 @@
 
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { catchError, map, tap, finalize } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, throwError, timer } from 'rxjs';
+import { catchError, map, tap, finalize, retryWhen, mergeMap, take } from 'rxjs/operators';
+
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import {
@@ -37,6 +38,12 @@ export class AuthService {
 
     /** Authentication status */
     readonly isAuthenticated = signal<boolean>(false);
+
+    /**
+     * True while we are waiting for the Render cold-start wake-up.
+     * The login component reads this to show a countdown banner.
+     */
+    readonly serverWakingUp = signal<boolean>(false);
 
     /** Computed: Check if user is admin */
     readonly isAdmin = computed(() => {
@@ -111,9 +118,33 @@ export class AuthService {
     }
 
     login(credentials: LoginRequest): Observable<AuthResponse> {
+        this.serverWakingUp.set(false);
         return this.http.post<AuthResponse>(`${this.API_URL}/login`, credentials)
-            .pipe(tap(response => this.handleAuth(response)));
+            .pipe(
+                retryWhen(errors =>
+                    errors.pipe(
+                        mergeMap((error, attempt) => {
+                            const isColdStart = error.status === 504 || error.status === 0;
+                            if (isColdStart && attempt < 2) {
+                                // Signal the UI that we are in a cold-start wait
+                                this.serverWakingUp.set(true);
+                                // Wait 5 s then retry
+                                return timer(5000);
+                            }
+                            // Non-cold-start error or exhausted retries — stop retrying
+                            this.serverWakingUp.set(false);
+                            return throwError(() => error);
+                        }),
+                        take(2) // maximum 2 retries
+                    )
+                ),
+                tap(response => {
+                    this.serverWakingUp.set(false);
+                    this.handleAuth(response);
+                })
+            );
     }
+
 
     /**
      * Google Sign-In Implementation

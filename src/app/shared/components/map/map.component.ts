@@ -67,12 +67,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
         if (!this.mapContainer) return;
 
         // The "Abuja Soul" Map Guard
-        const Leaflet = (window as any).L || (this.mapService as any).L;
+        const Leaflet = (window as any).L || (this as any).L || (this.mapService as any).L;
         
         if (!Leaflet || typeof Leaflet.map !== 'function') {
-            console.error("Critical: Leaflet library not found on window. Check script loading.");
+            console.error("Critical: Leaflet library not found. Check script loading in index.html");
             return; 
         }
+
 
         this.map = Leaflet.map(this.mapContainer.nativeElement, {
             zoomControl: false,

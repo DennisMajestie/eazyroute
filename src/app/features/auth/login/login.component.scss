@@ -237,3 +237,62 @@
 @keyframes social-spinner {
   to { transform: rotate(360deg); }
 }
+
+/* ─── Cold-Start Wakeup Banner ─────────────────────────────────────── */
+.wakeup-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, rgba(255, 183, 0, 0.12), rgba(255, 140, 0, 0.08));
+  border: 1px solid rgba(255, 183, 0, 0.35);
+  border-radius: 0.75rem;
+  padding: 0.85rem 1rem;
+  margin-bottom: 0.75rem;
+  animation: wakeup-fade-in 0.35s ease;
+
+  .wakeup-icon {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #f59e0b;
+    animation: wakeup-spin 2s linear infinite;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .wakeup-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    line-height: 1.3;
+
+    strong {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #92400e;
+    }
+
+    span {
+      font-size: 0.78rem;
+      color: #78350f;
+      opacity: 0.85;
+
+      b {
+        font-weight: 700;
+        color: #92400e;
+      }
+    }
+  }
+}
+
+@keyframes wakeup-fade-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes wakeup-spin {
+  to { transform: rotate(360deg); }
+}

@@ -29,6 +29,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                     errorMessage = 'Resource not found.';
                 } else if (error.status === 500) {
                     errorMessage = 'Server error. Please try again later.';
+                } else if (error.status === 504 || error.status === 0) {
+                    // Render free-tier cold start — server is waking up
+                    errorMessage = 'Server is starting up. Please wait a moment and try again.';
                 }
             }
 
