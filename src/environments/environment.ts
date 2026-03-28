@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://eazyroute-backend.onrender.com/api/v1',
-  socketUrl: 'https://eazyroute-backend.onrender.com',
+  apiUrl: 'https://along-backend-lo8n.onrender.com/api/v1',
+  socketUrl: 'https://along-backend-lo8n.onrender.com',
   mapboxToken: '',
   googleMapsApiKey: '',
   googleClientId: '',
