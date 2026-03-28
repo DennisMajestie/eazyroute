@@ -818,20 +818,34 @@ export class RouteDisplayComponent implements OnInit {
         this.isSubmittingReport = true;
 
         const report: CommunityReport = {
-            type: this.reportType,
+            reportType: this.reportType === 'risk_alert' ? 'risk_alert' : (this.reportType as any),
             location: {
                 lat: (this.currentReportingSegment.fromStop as any)?.latitude || 0,
                 lng: (this.currentReportingSegment.fromStop as any)?.longitude || 0
             },
-            stopId: this.currentReportingSegment.fromStopId || (this.currentReportingSegment as any).fromId,
+            mode: this.getSegmentMode(this.currentReportingSegment).toLowerCase(),
+            nodeId: this.currentReportingSegment.fromStopId || (this.currentReportingSegment as any).fromId,
+            corridorId: this.currentReportingSegment.backboneName ? undefined : (this.currentReportingSegment as any).corridorId, // Use ID if available
+            payload: {},
             timestamp: new Date()
         };
 
-        // Add type-specific data
-        if (this.reportType === 'fare') report.fare = this.reportValue.fare;
-        if (this.reportType === 'wait_time') report.waitTime = this.reportValue.waitTime;
-        if (this.reportType === 'risk_alert') report.riskAlert = this.reportValue.riskAlert;
-        if (this.reportType === 'stop_alias') report.stopAlias = this.reportValue.stopAlias;
+        // Add type-specific data to payload
+        if (this.reportType === 'fare') {
+            report.payload.fareMin = this.reportValue.fare;
+            report.payload.fareMax = this.reportValue.fare;
+        }
+        if (this.reportType === 'wait_time') {
+            const waitMap: { [key: string]: number } = { 'short': 5, 'medium': 15, 'long': 30 };
+            report.payload.waitTime = waitMap[this.reportValue.waitTime] || 15;
+        }
+        if (this.reportType === 'risk_alert') {
+            report.payload.riskLevel = 0.8;
+            report.payload.riskDescription = this.reportValue.riskAlert;
+        }
+        if (this.reportType === 'stop_alias') {
+            report.payload.aliasName = this.reportValue.stopAlias;
+        }
 
         this.communityService.submitReport(report).subscribe({
             next: (res) => {

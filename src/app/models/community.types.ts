@@ -1,14 +1,20 @@
 export interface CommunityReport {
-    type: 'fare' | 'wait_time' | 'risk_alert' | 'stop_alias';
-    fare?: number;
-    waitTime?: 'short' | 'medium' | 'long';
-    riskAlert?: string;
-    stopAlias?: string;
+    reportType: 'fare' | 'wait_time' | 'stop_alias' | 'risk_alert' | 'congestion';
     location: {
         lat: number;
         lng: number;
     };
-    stopId?: string;
+    mode: 'bus' | 'keke' | 'taxi' | 'okada' | string;
+    payload: {
+        fareMin?: number;
+        fareMax?: number;
+        waitTime?: number;        // minutes
+        aliasName?: string;
+        riskLevel?: number;       // 0-1
+        riskDescription?: string;
+        congestionLevel?: number; // 0-1
+    };
+    nodeId?: string;
     corridorId?: string;
     timestamp?: Date;
 }
