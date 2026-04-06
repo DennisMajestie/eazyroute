@@ -111,7 +111,7 @@
         <div class="map-section">
             <app-map [center]="mapCenter" [zoom]="13" [markers]="mapMarkers" [polylines]="mapPolylines">
             </app-map>
-            <div class="map-overlay-badge" *ngIf="route?.metadata?.backbonePriority">
+            <div class="map-overlay-badge" *ngIf="route.metadata?.backbonePriority">
                 <i class="fas fa-road"></i> Expressway Backbone
             </div>
         </div>

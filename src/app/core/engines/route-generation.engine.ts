@@ -11,7 +11,9 @@
 
 
 import { Injectable, Inject } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { BusStop } from '../../models/bus-stop.model';
 import {
     Location,
@@ -49,7 +51,8 @@ export class RouteGenerationEngine {
         @Inject(ROUTING_SERVICE) private routingService: IRoutingService,
         @Inject(FARE_CALCULATOR) private fareCalculator: IFareCalculator,
         @Inject(LOCATION_SERVICE) private locationService: ILocationService,
-        private storageService: StorageService
+        private storageService: StorageService,
+        private http: HttpClient
     ) { }
 
 
@@ -99,6 +102,13 @@ export class RouteGenerationEngine {
         if (startStops.length === 0 || endStops.length === 0) {
             console.warn('[RouteGen] No stops found near start or end location');
             return await this.generateDirectRoute(startLocation, endLocation);
+        }
+
+        // Mandatory Hub Check: Intercept specific corridors
+        const mandatoryRoute = await this.checkMandatoryCorridors(startLocation, endLocation, startStops[0], endStops[0]);
+        if (mandatoryRoute) {
+            console.log('[RouteGen] Mandatory corridor triggered, enforcing hubs...');
+            return [mandatoryRoute];
         }
 
         // Step 2: Generate path combinations in PARALLEL
@@ -614,6 +624,110 @@ export class RouteGenerationEngine {
      * UTILITY HELPERS
      * ═══════════════════════════════════════════════════════════════
      */
+
+    /**
+     * ═══════════════════════════════════════════════════════════════
+     * MANDATORY HUB SYSTEM
+     * ═══════════════════════════════════════════════════════════════
+     */
+
+    private async checkMandatoryCorridors(
+        startLoc: Location,
+        endLoc: Location,
+        startStop: BusStop,
+        endStop: BusStop
+    ): Promise<GeneratedRoute | null> {
+        try {
+            const registry: any = await firstValueFrom(
+                this.http.get('/assets/data/terminal-registry.json').pipe(
+                    catchError(() => of(null))
+                )
+            );
+
+            if (!registry || !registry.corridors) return null;
+
+            // Simplified detection: does the path roughly match a corridor?
+            // In a real app, we'd use area tagging or geofencing.
+            for (const corridor of registry.corridors) {
+                const originMatch = corridor.origins.some((o: string) => 
+                    startStop.name.toLowerCase().includes(o.toLowerCase()) || 
+                    startStop.area.toLowerCase().includes(o.toLowerCase())
+                );
+                const destMatch = corridor.destinations.some((d: string) => 
+                    endStop.name.toLowerCase().includes(d.toLowerCase()) || 
+                    endStop.area.toLowerCase().includes(d.toLowerCase())
+                );
+
+                if (originMatch && destMatch) {
+                    return await this.generateMultiHubRoute(startLoc, endLoc, startStop, endStop, corridor, registry.hubs);
+                }
+            }
+        } catch (e) {
+            console.error('[RouteGen] Error checking mandatory corridors:', e);
+        }
+        return null;
+    }
+
+    private async generateMultiHubRoute(
+        startLoc: Location,
+        endLoc: Location,
+        startStop: BusStop,
+        endStop: BusStop,
+        corridor: any,
+        allHubs: any[]
+    ): Promise<GeneratedRoute> {
+        const segments: RouteSegment[] = [];
+
+        // 1. Walk to start
+        segments.push(await this.createWalkingSegment(startLoc, this.busStopToLocation(startStop), 'walk-to-start'));
+
+        // 2. Identify and resolve hub stops
+        const hubStops: BusStop[] = [];
+        for (const hubId of corridor.mandatoryHubs) {
+            const hubData = allHubs.find(h => h.id === hubId);
+            if (hubData) {
+                hubStops.push(this.createHubStop(hubData));
+            }
+        }
+
+        // 3. Chain segments through hubs
+        let currentStop = startStop;
+        const chain = [...hubStops, endStop];
+
+        for (let i = 0; i < chain.length; i++) {
+            const nextStop = chain[i];
+            segments.push(await this.createTransitSegment(currentStop, nextStop, corridor.modeLock || 'bus', `hub-segment-${i}`));
+            currentStop = nextStop;
+        }
+
+        // 4. Walk to destination
+        segments.push(await this.createWalkingSegment(this.busStopToLocation(endStop), endLoc, 'walk-to-end'));
+
+        return this.buildRoute(segments, 'recommended');
+    }
+
+    private createHubStop(hubData: any): BusStop {
+        return {
+            id: hubData.id,
+            name: hubData.name,
+            type: 'landmark',
+            localNames: [],
+            latitude: hubData.latitude,
+            longitude: hubData.longitude,
+            address: '',
+            city: 'Abuja',
+            area: hubData.name,
+            verificationStatus: 'verified',
+            upvotes: 100,
+            downvotes: 0,
+            transportModes: ['bus', 'keke', 'taxi'],
+            photos: [],
+            usageCount: 0,
+            isActive: true,
+            verified: true,
+            createdAt: new Date()
+        };
+    }
 
     private busStopToLocation(stop: BusStop): Location {
         return {

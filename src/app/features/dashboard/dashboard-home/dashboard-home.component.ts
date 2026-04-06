@@ -26,6 +26,7 @@ import { BusStopService } from '../../../core/services/bus-stop.service';
 import { RouteHttpService } from '../../../core/services/route-http.service';
 import { TagAlongService } from '../../../core/services/tag-along.service';
 import { EventService, EasyRouteEvent } from '../../../core/services/event.service';
+import { DashboardService } from '../../../core/services/dashboard.service';
 import { environment } from '../../../../environments/environment';
 import { BusStop } from '../../../models/bus-stop.model';
 import { NotificationCenterComponent } from '../../../shared/components/notification-center/notification-center.component';
@@ -152,7 +153,8 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     private routeHttpService: RouteHttpService,
     private tagAlongService: TagAlongService,
     private eventService: EventService,
-    private notificationService: NotificationHttpService
+    private notificationService: NotificationHttpService,
+    private dashboardService: DashboardService
   ) {
     this.orchestratorState$ = this.orchestrator.state$;
     this.unreadCount$ = this.notificationService.unreadCount$;
@@ -188,15 +190,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       this.resetUserInfo();
     }
 
-    // Load nearby stops IMMEDIATELY (will use city center fallback if location not ready)
-    this.loadNearbyStops();
+    // Get user location first, then load unified dashboard data
+    await this.getCurrentLocation();
 
-    // Get user location & Re-load data from APIs if location found
-    this.getCurrentLocation().then(() => {
-      this.loadNearbyStops();
-    });
+    // 🚀 Use unified Dashboard API for initial data load
+    await this.loadDashboardHome();
 
-    await this.loadPopularRoutes();
+    // Load supplementary data that the dashboard API doesn't cover
     this.loadTagAlongRides();
     this.loadUpcomingEvents();
 
@@ -206,6 +206,102 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     } else {
       console.log('[Dashboard] User not authenticated - skipping active trip check');
       this.hasActiveTrip = false;
+    }
+  }
+
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * UNIFIED DASHBOARD API LOAD
+   * ═══════════════════════════════════════════════════════════════
+   */
+  private async loadDashboardHome(): Promise<void> {
+    this.isLoadingStops = true;
+    this.isLoadingRoutes = true;
+    try {
+      const response = await firstValueFrom(
+        this.dashboardService.getHomeDashboard(
+          this.currentUserLocation?.lat,
+          this.currentUserLocation?.lng
+        ).pipe(
+          catchError((err) => {
+            console.warn('[Dashboard] Unified API failed, falling back to individual calls:', err);
+            return of(null);
+          })
+        )
+      );
+
+      if (response?.success && response.data) {
+        const { userContext, activeTrip, nearbyStops, trendingRoutes } = response.data;
+
+        // Update user context if returned
+        if (userContext) {
+          this.updateUserInfo(userContext);
+        }
+
+        // Map active trip
+        if (activeTrip) {
+          this.hasActiveTrip = true;
+          this.activeTripId = activeTrip._id || activeTrip.id;
+          if (activeTrip.selectedRoute?.segments) {
+            const lastSegment = activeTrip.selectedRoute.segments[
+              activeTrip.selectedRoute.segments.length - 1
+            ];
+            this.activeTripDestination = lastSegment?.toStop?.name || 'Unknown';
+          }
+          this.activeTripProgress = this.calculateTripProgress(activeTrip);
+        }
+
+        // Map nearby stops
+        if (Array.isArray(nearbyStops)) {
+          this.nearbyStops = nearbyStops.map((stop: any) => ({
+            id: stop._id || stop.id,
+            name: stop.name,
+            distance: stop.dist?.calculated ? `${stop.dist.calculated}m` : this.calculateDistance(stop),
+            routes: stop.routes || [],
+            travelTime: this.calculateTravelTime(stop.dist?.calculated || this.calculateDistanceMeters(stop)),
+            status: this.determineStopStatus(stop),
+            type: stop.type || 'bus_stop',
+            latitude: stop.lat ?? stop.location?.coordinates?.[1] ?? stop.latitude,
+            longitude: stop.lng ?? stop.location?.coordinates?.[0] ?? stop.longitude,
+            source: 'dashboard_api',
+            zone: stop.zone
+          })).slice(0, 5);
+        }
+
+        // Map trending routes
+        if (Array.isArray(trendingRoutes)) {
+          this.popularRoutes = trendingRoutes.map((route: any) => ({
+            id: route._id || route.id,
+            name: route.name,
+            from: route.origin?.name || 'Unknown',
+            to: route.destination?.name || 'Unknown',
+            duration: this.formatDuration(route.estimatedDuration || 0),
+            fare: this.formatFare(route.fare || 0),
+            buses: route.activeBuses || 0,
+            trending: true,
+            fromLocation: route.origin?.location ? {
+              lat: route.origin.location.coordinates[1],
+              lng: route.origin.location.coordinates[0]
+            } : undefined,
+            toLocation: route.destination?.location ? {
+              lat: route.destination.location.coordinates[1],
+              lng: route.destination.location.coordinates[0]
+            } : undefined
+          }));
+        }
+      } else {
+        // Fallback: use individual API calls
+        console.log('[Dashboard] Falling back to individual API calls');
+        await this.loadNearbyStops();
+        await this.loadPopularRoutes();
+      }
+    } catch (error) {
+      console.error('[Dashboard] Dashboard home load error, using fallbacks:', error);
+      await this.loadNearbyStops();
+      await this.loadPopularRoutes();
+    } finally {
+      this.isLoadingStops = false;
+      this.isLoadingRoutes = false;
     }
   }
 
@@ -615,19 +711,39 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
       this.searchResults = [];
       return;
     }
-    this.busStopService.searchBusStops(query).subscribe({
+    // 🚀 Use unified Dashboard search API
+    this.dashboardService.globalSearch(query).subscribe({
       next: (response: any) => {
-        if (response?.success && Array.isArray(response?.data)) {
-          this.searchResults = response.data
-            .filter((stop: any) => stop != null)
-            .map((stop: any) => ({
-              ...stop,
-              name: stop?.name || 'Unknown',
-              location: stop?.location || { coordinates: [0, 0] }
-            }));
-        } else this.searchResults = [];
+        if (response?.success && response?.data) {
+          const { busStops = [], routes = [], tagAlongs = [] } = response.data;
+          // Merge all result types with a category tag
+          this.searchResults = [
+            ...busStops.map((s: any) => ({ ...s, _resultType: 'stop', name: s.name || 'Unknown', location: s.location || { coordinates: [0, 0] } })),
+            ...routes.map((r: any) => ({ ...r, _resultType: 'route', name: r.name || 'Unknown' })),
+            ...tagAlongs.map((t: any) => ({ ...t, _resultType: 'tagAlong', name: t.title || 'Unknown' }))
+          ];
+        } else {
+          this.searchResults = [];
+        }
       },
-      error: () => this.searchResults = []
+      error: () => {
+        // Fallback to bus-stop-only search
+        this.busStopService.searchBusStops(query).subscribe({
+          next: (response: any) => {
+            if (response?.success && Array.isArray(response?.data)) {
+              this.searchResults = response.data
+                .filter((stop: any) => stop != null)
+                .map((stop: any) => ({
+                  ...stop,
+                  _resultType: 'stop',
+                  name: stop?.name || 'Unknown',
+                  location: stop?.location || { coordinates: [0, 0] }
+                }));
+            } else this.searchResults = [];
+          },
+          error: () => this.searchResults = []
+        });
+      }
     });
   }
 

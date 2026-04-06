@@ -44,6 +44,8 @@ export interface IBusStop {
     parentZoneId?: string;
     allowedModes?: TransportMode[]; // Modes allowed in this zone (e.g., only OKADA in VILLAGE)
     isVillageExit?: boolean;
+    isMandatoryGate?: boolean;
+    isMandatoryTransferHub?: boolean;
     // 🏠 Street Realism Fields
     boardingProfile?: { [key in TransportMode]?: BoardingStrength | string };
 }

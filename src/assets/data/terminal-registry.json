@@ -1,0 +1,30 @@
+{
+  "hubs": [
+    {
+      "id": "hub-efab-junction",
+      "name": "Efab Junction",
+      "latitude": 8.991,
+      "longitude": 7.482,
+      "type": "major_hub",
+      "priority": 1
+    },
+    {
+      "id": "hub-gudu",
+      "name": "Gudu Junction",
+      "latitude": 9.016,
+      "longitude": 7.473,
+      "type": "mandatory_stop",
+      "priority": 2
+    }
+  ],
+  "corridors": [
+    {
+      "id": "lokogoma-wuse-spine",
+      "name": "Lokogoma - Wuse Spine",
+      "origins": ["Dogongada", "Lokogoma", "Efab"],
+      "destinations": ["Banex", "Wuse 2", "Wuse"],
+      "mandatoryHubs": ["hub-efab-junction", "hub-gudu"],
+      "modeLock": "bus"
+    }
+  ]
+}

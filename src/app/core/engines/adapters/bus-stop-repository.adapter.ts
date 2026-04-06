@@ -235,7 +235,9 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { Injectable } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { firstValueFrom, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { BusStopService } from '../../services/bus-stop.service';
 import { BusStop } from '../../../models/bus-stop.model';
 import { IBusStopRepository, Location } from '../types/easyroute.types';
@@ -244,10 +246,19 @@ import { IBusStopRepository, Location } from '../types/easyroute.types';
   providedIn: 'root'
 })
 export class BusStopRepositoryAdapter implements IBusStopRepository {
-  constructor(private busStopService: BusStopService) { }
+  constructor(
+    private busStopService: BusStopService,
+    private http: HttpClient
+  ) { }
 
-  async findById(id: number): Promise<BusStop | null> {
+  async findById(id: any): Promise<BusStop | null> {
     try {
+      // Check virtual hubs first
+      if (typeof id === 'string' && id.startsWith('hub-')) {
+        const hubs = await this.getVirtualHubs();
+        return hubs.find(h => h.id === id) || null;
+      }
+
       const allStops = await firstValueFrom(this.busStopService.getAllStops());
       return allStops.find(stop => stop.id === id) || null;
     } catch (error) {
@@ -328,6 +339,42 @@ export class BusStopRepositoryAdapter implements IBusStopRepository {
     } catch (error) {
       console.error('[BusStopRepo] Error updating stop:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Helper to load virtual hubs from terminal-registry.json
+   */
+  private async getVirtualHubs(): Promise<BusStop[]> {
+    try {
+      const registry: any = await firstValueFrom(
+        this.http.get('/assets/data/terminal-registry.json').pipe(
+          catchError(() => of({ hubs: [] }))
+        )
+      );
+
+      return (registry.hubs || []).map((h: any) => ({
+        id: h.id,
+        name: h.name,
+        type: h.type || 'landmark',
+        localNames: [],
+        latitude: h.latitude,
+        longitude: h.longitude,
+        address: '',
+        city: 'Abuja',
+        area: h.name,
+        verificationStatus: 'verified',
+        upvotes: 100,
+        downvotes: 0,
+        transportModes: ['bus', 'keke', 'taxi'],
+        photos: [],
+        usageCount: 0,
+        isActive: true,
+        verified: true,
+        createdAt: new Date()
+      }));
+    } catch (e) {
+      return [];
     }
   }
 }
