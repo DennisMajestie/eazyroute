@@ -1,8 +1,10 @@
 // src/app/app.routes.ts
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 import { onboardingGuard } from './core/guards/onboarding.guard';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 
 export const routes: Routes = [
     // Redirect root to splash
@@ -91,6 +93,28 @@ export const routes: Routes = [
             {
                 path: 'profile',
                 loadChildren: () => import('./features/profile/profile.routes').then(m => m.PROFILE_ROUTES)
+            }
+        ]
+    },
+    
+    // Admin routes with dedicated layout
+    {
+        path: 'admin',
+        component: AdminLayoutComponent,
+        canActivate: [authGuard, adminGuard],
+        children: [
+            { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+            {
+                path: 'dashboard',
+                loadComponent: () => import('./features/admin/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)
+            },
+            {
+                path: 'graph',
+                loadComponent: () => import('./features/admin/graph-diagnostics/graph-diagnostics.component').then(m => m.GraphDiagnosticsComponent)
+            },
+            {
+                path: 'moderation',
+                loadComponent: () => import('./features/admin/moderation-queue/moderation-queue.component').then(m => m.ModerationQueueComponent)
             }
         ]
     },

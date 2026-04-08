@@ -1431,3 +1431,107 @@
     }
   }
 }
+
+/* 💰 PRICING TRANSPARENCY & SURGE BRANDING (April 2026 Update) */
+
+.fare-breakdown-section {
+  margin: 0 16px 20px 16px;
+  
+  .btn-breakdown-toggle {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+  }
+}
+
+.breakdown-content {
+  margin-top: 8px;
+  animation: slide-down 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.breakdown-card {
+  background: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 8px;
+
+    &.surge {
+      color: #ef4444;
+      font-weight: 600;
+    }
+    &.village {
+      color: #f59e0b;
+      font-weight: 600;
+    }
+  }
+
+  .breakdown-total {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #0f172a;
+  }
+
+  .private-estimate {
+    margin-top: 12px;
+    padding: 10px;
+    background: #f0fdfa;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: #0d9488;
+
+    i { font-size: 0.9rem; }
+    strong { font-weight: 800; color: #115e59; }
+  }
+}
+
+.village-indicator {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #fef3c7;
+  color: #92400e;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  border: 1px solid #fcd34d;
+}
+
+.segment-dynamic-hint {
+  color: #f59e0b;
+  font-size: 0.8rem;
+  margin-left: auto;
+}

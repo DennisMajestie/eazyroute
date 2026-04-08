@@ -1,0 +1,64 @@
+<div class="admin-container">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" [class.collapsed]="isSidebarCollapsed">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">🛡️</span>
+                <span class="logo-text" *ngIf="!isSidebarCollapsed">Admin Portal</span>
+            </div>
+            <button class="collapse-btn" (click)="toggleSidebar()">
+                {{ isSidebarCollapsed ? '→' : '←' }}
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-item">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label" *ngIf="!isSidebarCollapsed">Dashboard</span>
+            </a>
+            <a routerLink="/admin/graph" routerLinkActive="active" class="nav-item">
+                <span class="nav-icon">🕸️</span>
+                <span class="nav-label" *ngIf="!isSidebarCollapsed">Graph Health</span>
+            </a>
+            <a routerLink="/admin/moderation" routerLinkActive="active" class="nav-item">
+                <span class="nav-icon">⚖️</span>
+                <span class="nav-label" *ngIf="!isSidebarCollapsed">Moderation</span>
+            </a>
+            <div class="nav-divider"></div>
+            <a routerLink="/home" class="nav-item return-link">
+                <span class="nav-icon">🏠</span>
+                <span class="nav-label" *ngIf="!isSidebarCollapsed">User Portal</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer" *ngIf="!isSidebarCollapsed">
+            <div class="user-chip">
+                <div class="avatar">{{ getUserInitials() }}</div>
+                <div class="user-info">
+                    <span class="name">Admin</span>
+                    <span class="role">Superuser</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+        <header class="admin-header">
+            <div class="header-left">
+                <h2 class="page-title">{{ getPageTitle() }}</h2>
+            </div>
+            <div class="header-right">
+                <div class="system-status">
+                    <span class="status-dot"></span>
+                    System: Operational
+                </div>
+                <button class="icon-btn">🔔</button>
+            </div>
+        </header>
+
+        <div class="admin-content">
+            <router-outlet></router-outlet>
+        </div>
+    </main>
+</div>

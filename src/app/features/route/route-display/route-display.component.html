@@ -72,10 +72,43 @@
             <span class="summary-icon">📏</span>
             <span class="summary-value">{{ (route.totalDistance / 1000).toFixed(1) }}km</span>
         </div>
-        <div class="summary-divider" *ngIf="getDynamicBadge(route.dynamicAdjustment)"></div>
-        <div class="summary-item night-safe-badge" *ngIf="getDynamicBadge(route.dynamicAdjustment) as badge" [class]="badge.type">
+        <div class="summary-divider" *ngIf="getDynamicBadge(route)"></div>
+        <div class="summary-item night-safe-badge" *ngIf="getDynamicBadge(route) as badge" [class]="badge.type">
             <span class="summary-icon"><i class="fas" [ngClass]="{'fa-shield-alt': badge.type === 'security', 'fa-bolt': badge.type === 'fare'}"></i></span>
             <span class="summary-value">{{ badge.label }}</span>
+        </div>
+    </div>
+
+    <!-- Fare Breakdown Card (Transparency Update) -->
+    <div class="fare-breakdown-section" *ngIf="route">
+        <button class="btn-breakdown-toggle" (click)="toggleBreakdown()">
+            <span>Why this price?</span>
+            <i class="fas" [ngClass]="showBreakdown ? 'fa-chevron-up' : 'fa-info-circle'"></i>
+        </button>
+        
+        <div class="breakdown-content" *ngIf="showBreakdown">
+            <div class="breakdown-card">
+                <div class="breakdown-row">
+                    <span>Base Fare (Shared Along)</span>
+                    <span>₦{{ formatCost(route.pricingMetadata?.baseFare || route.totalCost) }}</span>
+                </div>
+                <div class="breakdown-row surge" *ngIf="route.pricingMetadata?.isSurge">
+                    <span>{{ route.pricingMetadata?.surgeLabel || 'Peak Hour Surge' }}</span>
+                    <span>+₦{{ route.pricingMetadata?.surgeAmount || 200 }}</span>
+                </div>
+                <div class="breakdown-row village" *ngIf="route.metadata?.ribExitApplied">
+                    <span>Village Connectivity Fee</span>
+                    <span>+₦{{ route.metadata?.ribExitFee || 300 }}</span>
+                </div>
+                <div class="breakdown-total">
+                    <span>Total Estimated Fare</span>
+                    <span>{{ getCostDisplay() }}</span>
+                </div>
+                <div class="private-estimate">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Private Drop Estimate: <strong>{{ getPrivateCost(route.totalCost) }}</strong></span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -126,7 +159,7 @@
                 </span>
 
                 <!-- Dynamic Intelligence Badge -->
-                <div class="dynamic-badge" *ngIf="getDynamicBadge(recommendedRoute.dynamicAdjustment) as badge"
+                <div class="dynamic-badge" *ngIf="getDynamicBadge(recommendedRoute) as badge"
                     [class]="badge.type">
                     <span class="badge-icon">
                         <i class="fas" [ngClass]="{
@@ -175,7 +208,7 @@
                     <div class="alt-header">
                         <span class="alt-strategy">{{ r.classification || 'Alternative' }}</span>
                         <!-- Dynamic Badge for Alt -->
-                        <div class="dynamic-badge mini" *ngIf="getDynamicBadge(r.dynamicAdjustment) as badge"
+                        <div class="dynamic-badge mini" *ngIf="getDynamicBadge(r) as badge"
                             [class]="badge.type">
                             {{ badge.label }}
                         </div>
@@ -248,6 +281,10 @@
                                 <!-- Dynamic Adjustment Indicator for Segment -->
                                 <div class="segment-dynamic-hint" *ngIf="segment.dynamicAdjustment">
                                     <i class="fas fa-bolt"></i>
+                                </div>
+                                <!-- Village Connection Badge -->
+                                <div class="village-indicator" *ngIf="hasVillageSurcharge(segment)">
+                                    <i class="fas fa-home"></i> Last-Mile
                                 </div>
                             </div>
                             <div class="mode-expand">

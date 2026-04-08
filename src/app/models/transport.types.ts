@@ -27,6 +27,16 @@ export interface IDynamicAdjustment {
     rationale?: string;
 }
 
+export interface IPricingMetadata {
+    isSurge: boolean;
+    surgeLabel?: string;
+    fuelBaseLabel?: string;
+    alongDiscountApplied?: boolean;
+    villageSurcharge?: number;
+    baseFare?: number;
+    surgeAmount?: number;
+}
+
 export interface IBusStop {
     id: string;
     name: string;
@@ -95,6 +105,7 @@ export interface AlongSegment {
     portalType?: PortalType | string;
     isTerminalNode?: boolean;
     dynamicAdjustment?: IDynamicAdjustment;
+    pricingMetadata?: IPricingMetadata;
 }
 
 
@@ -130,6 +141,7 @@ export interface AlongRoute {
         stressScore?: number;          // Comfort metric (0-100, lower is better)
     };
     dynamicAdjustment?: IDynamicAdjustment;
+    pricingMetadata?: IPricingMetadata;
 }
 
 export interface Corridor {

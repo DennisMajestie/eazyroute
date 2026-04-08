@@ -1,0 +1,109 @@
+<div class="moderation-container">
+    <!-- Tabs Header -->
+    <div class="moderation-tabs">
+        <button class="tab-btn" [class.active]="activeTab === 'all'" (click)="setTab('all')">
+            All Submissions
+            <span class="count-badge">{{ queue.length }}</span>
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'bus_stop'" (click)="setTab('bus_stop')">Bus Stops</button>
+        <button class="tab-btn" [class.active]="activeTab === 'pricing'" (click)="setTab('pricing')">Pricing</button>
+        <button class="tab-btn" [class.active]="activeTab === 'safety'" (click)="setTab('safety')">Safety</button>
+    </div>
+
+    <!-- Main Table -->
+    <div class="moderation-card">
+        <div class="table-wrapper">
+            <table class="moderation-table">
+                <thead>
+                    <tr>
+                        <th>Submission</th>
+                        <th>Contributor</th>
+                        <th>Type</th>
+                        <th>Flags</th>
+                        <th>Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of filteredQueue" [class.flagged]="item.flags.length > 0">
+                        <td>
+                            <div class="submission-data">
+                                <span class="data-title">{{ item.data.name || item.data.title || 'Draft Submission' }}</span>
+                                <span class="data-subtitle">{{ item.data.location?.name || item.data.category || 'No location' }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="contributor">
+                                <span class="contributor-name">{{ item.submittedBy }}</span>
+                                <span class="loyalty-badge">Loyal</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="type-tag" [class]="item.type">{{ item.type | uppercase }}</span>
+                        </td>
+                        <td>
+                            <div class="flags">
+                                <span class="flag-icon" *ngFor="let flag of item.flags" [title]="flag">🚩</span>
+                                <span class="auto-flag" *ngIf="item.autoFlags.suspiciousActivity" title="Suspicious Activity">🤖</span>
+                                <span *ngIf="item.flags.length === 0 && !item.autoFlags.suspiciousActivity" class="no-flags">Clean</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="time-stamp">{{ item.submittedAt | date:'short' }}</span>
+                        </td>
+                        <td>
+                            <div class="action-group">
+                                <button class="action-btn approve" (click)="approve(item)" title="Approve">✓</button>
+                                <button class="action-btn reject" (click)="reject(item)" title="Reject">✕</button>
+                                <button class="action-btn details" (click)="viewDetails(item)" title="View Details">👁️</button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="filteredQueue.length === 0 && !isLoading">
+                        <td colspan="6" class="empty-row">
+                            <div class="empty-state">
+                                <span class="empty-icon">📂</span>
+                                <p>Queue is empty. Everything is up to date!</p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <tr *ngIf="isLoading">
+                        <td colspan="6" class="loading-row">
+                             <div class="spinner"></div>
+                             <span>Refreshing queue...</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Detail Sidebar (Mock) -->
+    <div class="detail-overlay" *ngIf="selectedItem" (click)="selectedItem = null">
+        <div class="detail-panel" (click)="$event.stopPropagation()">
+            <header class="panel-header">
+                <h3>Submission Details</h3>
+                <button class="close-btn" (click)="selectedItem = null">✕</button>
+            </header>
+            <div class="panel-body">
+                <div class="data-preview">
+                    <pre>{{ selectedItem.data | json }}</pre>
+                </div>
+                <div class="audit-log">
+                    <h4>Auto-Intelligence Report</h4>
+                    <ul>
+                        <li><span class="status-pass">PASS</span> Geolocation within city bounds</li>
+                        <li><span class="status-pass">PASS</span> Unique entry detected</li>
+                        <li *ngIf="selectedItem.autoFlags.suspiciousActivity"><span class="status-fail">FAIL</span> High submission rate from this IP</li>
+                    </ul>
+                </div>
+            </div>
+            <footer class="panel-footer">
+                <button class="reject-btn" (click)="reject(selectedItem)">Reject</button>
+                <button class="approve-btn" (click)="approve(selectedItem)">Verify & Approve</button>
+            </footer>
+        </div>
+    </div>
+</div>

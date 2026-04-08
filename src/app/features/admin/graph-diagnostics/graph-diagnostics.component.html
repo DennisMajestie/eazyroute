@@ -1,0 +1,82 @@
+<div class="diagnostics-container">
+    <!-- Header Actions -->
+    <div class="header-actions">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search orphaned terminals..." (input)="filterNodes($event)">
+        </div>
+        <button class="repair-btn" (click)="triggerAutoRepair()" [disabled]="isRepairing">
+            <span class="btn-icon">⚡</span>
+            {{ isRepairing ? 'Repairing Graph...' : 'Run Auto-Repair (Class D Snapping)' }}
+        </button>
+    </div>
+
+    <div class="diagnostics-layout">
+        <!-- Main List -->
+        <div class="nodes-section">
+            <div class="section-badge">
+                Isolated Terminals ({{ filteredNodes.length }})
+            </div>
+            
+            <div class="node-list">
+                <div class="node-card" *ngFor="let node of filteredNodes">
+                    <div class="node-main">
+                        <div class="node-icon">📍</div>
+                        <div class="node-details">
+                            <h4 class="node-name">{{ node.name }}</h4>
+                            <p class="node-meta">
+                                ID: {{ node._id }} • City: {{ node.city || 'Abuja' }}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="node-actions">
+                        <button class="action-btn secondary" (click)="viewOnMap(node)">Map</button>
+                        <button class="action-btn primary" (click)="manualRepair(node)">Repair</button>
+                    </div>
+                </div>
+
+                <div class="empty-state" *ngIf="filteredNodes.length === 0 && !isLoading">
+                    <span>🎉 No isolated nodes found! The graph is fully connected.</span>
+                </div>
+
+                <div class="loading-state" *ngIf="isLoading">
+                    <div class="spinner"></div>
+                    <span>Fetching isolated nodes...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar / Suggestions -->
+        <div class="suggestions-section">
+             <div class="section-badge">
+                Connection Suggestions
+            </div>
+
+            <div class="suggestion-list">
+                <div class="suggestion-card" *ngFor="let suggestion of suggestions">
+                    <div class="suggestion-header">
+                        <span class="priority-badge" [class]="suggestion.priority">
+                            {{ suggestion.priority | uppercase }}
+                        </span>
+                        <span class="distance">{{ adminService.formatDistance(suggestion.distance) }}</span>
+                    </div>
+                    <div class="suggestion-route">
+                        <div class="stop">
+                            <span class="dot"></span>
+                            {{ suggestion.fromStop.name }}
+                        </div>
+                        <div class="connector"></div>
+                        <div class="stop">
+                            <span class="dot end"></span>
+                            {{ suggestion.toStop.name }}
+                        </div>
+                    </div>
+                    <p class="reason">{{ suggestion.reason }}</p>
+                    <button class="apply-suggestion-btn" (click)="applySuggestion(suggestion)">
+                        Apply Connection
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
