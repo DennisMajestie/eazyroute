@@ -1,0 +1,249 @@
+@import "../../../../styles/variables";
+
+.cil-container {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 80px); // Adjust based on admin layout header
+    display: flex;
+    overflow: hidden;
+    background: #f1f5f9;
+}
+
+.map-viewport {
+    flex: 1;
+    z-index: 1;
+}
+
+/* Header Overlay */
+.header-overlay {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    z-index: 10;
+    pointer-events: none;
+
+    .title-wrap {
+        background: white;
+        padding: 12px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 16px;
+        pointer-events: auto;
+
+        h2 {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: #0f172a;
+            white-space: nowrap;
+        }
+
+        .live-pulse {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: $primary;
+            text-transform: uppercase;
+
+            .dot {
+                width: 8px;
+                height: 8px;
+                background: $primary;
+                border-radius: 50%;
+                animation: pulse 2s infinite;
+            }
+        }
+    }
+
+    .map-filters {
+        display: flex;
+        gap: 8px;
+        pointer-events: auto;
+
+        button {
+            background: white;
+            border: 1px solid #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+            &:hover {
+                background: #f8fafc;
+                border-color: $primary;
+            }
+
+            &.active {
+                background: $primary;
+                color: white;
+                border-color: $primary;
+            }
+        }
+    }
+}
+
+/* Side Panel */
+.side-panel {
+    width: 360px;
+    background: white;
+    border-left: 1px solid #e2e8f0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    overflow-y: auto;
+    box-shadow: -4px 0 15px -3px rgba(0, 0, 0, 0.05);
+
+    .panel-section {
+        margin-bottom: 32px;
+
+        h3 {
+            font-size: 0.85rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin: 0 0 16px 0;
+        }
+    }
+
+    .trust-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+
+        .trust-card {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+
+            .label { font-size: 0.65rem; color: #64748b; text-transform: uppercase; display: block; }
+            .value { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+        }
+    }
+
+    .leaderboard-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        .contributor-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            .avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: #e2e8f0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 700;
+                color: #64748b;
+
+                &[data-tier="captain"] {
+                    background: #fef3c7;
+                    color: #d97706;
+                    border: 2px solid #fbbf24;
+                }
+            }
+
+            .details {
+                flex: 1;
+                .name-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    .name { font-size: 0.9rem; font-weight: 700; color: #1e293b; }
+                    .tier-badge {
+                        font-size: 0.6rem;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-weight: 800;
+                        text-transform: uppercase;
+                        
+                        &.captain { background: #fef3c7; color: #d97706; }
+                        &.trusted { background: #dcfce7; color: #15803d; }
+                    }
+                }
+                .stats-row {
+                    font-size: 0.7rem;
+                    color: #64748b;
+                    margin-top: 2px;
+                    .separator { margin: 0 4px; opacity: 0.5; }
+                }
+            }
+        }
+    }
+
+    .report-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+
+        &[data-type="fare"] { border-left: 4px solid #ef4444; }
+        &[data-type="congestion"] { border-left: 4px solid #f59e0b; }
+        &[data-type="risk_alert"] { border-left: 4px solid #dc2626; }
+
+        .report-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 0.8rem;
+        }
+
+        .report-body {
+            font-size: 0.9rem;
+            color: #4b5563;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            p { margin: 0; }
+        }
+
+        .report-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #94a3b8;
+        }
+    }
+}
+
+/* Pulsing Animations for Markers */
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 0 0 rgba($primary, 0.4); }
+    70% { transform: scale(1.5); opacity: 0.2; box-shadow: 0 0 0 10px rgba($primary, 0); }
+    100% { transform: scale(1); opacity: 0.8; box-shadow: 0 0 0 0 rgba($primary, 0); }
+}
+
+/* Specific pulsing marker classes that will be injected by Leaflet */
+::ng-deep .pulsing-marker-fare { animation: marker-pulse-red 3s infinite; }
+::ng-deep .pulsing-marker-congestion { animation: marker-pulse-amber 3s infinite; }
+
+@keyframes marker-pulse-red {
+    0% { fill-opacity: 0.7; stroke-width: 2px; }
+    50% { fill-opacity: 0.3; stroke-width: 10px; }
+    100% { fill-opacity: 0.7; stroke-width: 2px; }
+}
+
+@keyframes marker-pulse-amber {
+    0% { fill-opacity: 0.7; stroke-width: 2px; }
+    50% { fill-opacity: 0.3; stroke-width: 10px; }
+    100% { fill-opacity: 0.7; stroke-width: 2px; }
+}

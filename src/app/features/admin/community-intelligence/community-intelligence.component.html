@@ -1,0 +1,87 @@
+<div class="cil-container">
+    <div class="header-overlay">
+        <div class="title-wrap">
+            <h2>Community Intelligence Layer (CIL)</h2>
+            <div class="live-pulse">
+                <span class="dot"></span>
+                <span>Active Monitoring</span>
+            </div>
+        </div>
+        
+        <div class="map-filters">
+            <button [class.active]="activeFilter === 'all'" (click)="setFilter('all')">All Reports</button>
+            <button [class.active]="activeFilter === 'congestion'" (click)="setFilter('congestion')">Traffic</button>
+            <button [class.active]="activeFilter === 'fare'" (click)="setFilter('fare')">Fare Hikes</button>
+            <button [class.active]="activeFilter === 'risk_alert'" (click)="setFilter('risk_alert')">Risk Alerts</button>
+        </div>
+    </div>
+
+    <div id="cil-map" class="map-viewport"></div>
+
+    <div class="side-panel">
+        <!-- Trust Metrics -->
+        <section class="panel-section trust-metrics">
+            <h3>Trust Intelligence</h3>
+            <div class="trust-grid">
+                <div class="trust-card">
+                    <span class="label">Accuracy</span>
+                    <span class="value">94.2%</span>
+                </div>
+                <div class="trust-card">
+                    <span class="label">Verifications</span>
+                    <span class="value">1.8K</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contributor Leaderboard -->
+        <section class="panel-section leaderboard">
+            <h3>Top Contributors (Captains)</h3>
+            <div class="leaderboard-list">
+                <div class="contributor-item" *ngFor="let c of contributors">
+                    <div class="avatar" [attr.data-tier]="c.tier">{{ c.name.charAt(0) }}</div>
+                    <div class="details">
+                        <div class="name-row">
+                            <span class="name">{{ c.name }}</span>
+                            <span class="tier-badge" [class]="c.tier">{{ c.tier }}</span>
+                        </div>
+                        <div class="stats-row">
+                            <span>{{ c.totalReports }} Reports</span>
+                            <span class="separator">•</span>
+                            <span>{{ Math.round(c.accuracyRate * 100) }}% Accuracy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Report Details (if selected) -->
+        <section class="panel-section report-inspector" *ngIf="selectedReport">
+            <h3>Report Inspector</h3>
+            <div class="report-card" [attr.data-type]="selectedReport.reportType">
+                <div class="report-header">
+                    <span class="type-icon">{{ selectedReport.reportType === 'fare' ? '💰' : '🚥' }}</span>
+                    <strong>{{ selectedReport.reportType | uppercase }}</strong>
+                </div>
+                <div class="report-body">
+                    <p *ngIf="selectedReport.reportType === 'fare'">
+                        <strong>{{ selectedReport.mode | uppercase }} Fare:</strong> 
+                        ₦{{ selectedReport.payload.fareMin }} - ₦{{ selectedReport.payload.fareMax }}
+                    </p>
+                    <p *ngIf="selectedReport.reportType === 'congestion'">
+                        <strong>Traffic Density:</strong> 
+                        {{ (selectedReport.payload.congestionLevel || 0) * 100 }}%
+                    </p>
+                    <p *ngIf="selectedReport.reportType === 'risk_alert'">
+                         <strong>Risk Alert:</strong> 
+                         {{ selectedReport.payload.riskDescription }}
+                    </p>
+                </div>
+                <div class="report-footer">
+                    <span>Source: Captain Verified</span>
+                    <span>{{ selectedReport.timestamp | date:'short' }}</span>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

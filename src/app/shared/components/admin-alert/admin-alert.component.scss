@@ -1,0 +1,119 @@
+@import "../../../../styles/variables";
+
+.alert-stack {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 380px;
+    pointer-events: none;
+}
+
+.notif-card {
+    background: white;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+    pointer-events: auto;
+    border-left: 6px solid #64748b;
+    animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+    /* Severity Variants */
+    &[data-severity="sos"] {
+        border-left-color: #ef4444;
+        background: #fef2f2;
+        animation: slideIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), shake 0.5s infinite;
+    }
+    &[data-severity="critical"] { border-left-color: #f97316; }
+    &[data-severity="warning"] { border-left-color: #f59e0b; }
+    &[data-severity="success"] { border-left-color: #10b981; }
+    &[data-severity="info"] { border-left-color: #3b82f6; }
+
+    .notif-icon {
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .notif-content {
+        flex: 1;
+
+        .notif-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+
+            strong { font-size: 0.95rem; color: #1e293b; }
+            .time { font-size: 0.75rem; color: #64748b; }
+        }
+
+        p {
+            font-size: 0.85rem;
+            color: #475569;
+            margin: 0 0 12px 0;
+            line-height: 1.4;
+        }
+
+        .action-btn {
+            display: inline-block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            background: #1e293b;
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            transition: opacity 0.2s;
+
+            &:hover { opacity: 0.9; }
+        }
+    }
+
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.25rem;
+        color: #94a3b8;
+        cursor: pointer;
+        padding: 0;
+        line-height: 1;
+        transition: color 0.2s;
+        
+        &:hover { color: #475569; }
+    }
+
+    .countdown-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 3px;
+        background: rgba(0,0,0,0.1);
+        width: 100%;
+        animation: countdown linear forwards;
+    }
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes countdown {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+}

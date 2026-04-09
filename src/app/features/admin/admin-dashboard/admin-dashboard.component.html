@@ -1,19 +1,113 @@
 <div class="dashboard-grid">
     <!-- Stat Cards -->
-    <div class="stat-card" *ngFor="let stat of statCards">
+    <div class="stat-card" *ngFor="let stat of statCards; let i = index">
         <div class="stat-icon" [style.background-color]="stat.color + '20'" [style.color]="stat.color">
             {{ stat.icon }}
         </div>
         <div class="stat-info">
             <span class="stat-label">{{ stat.label }}</span>
-            <h3 class="stat-value">{{ stat.value | number }}</h3>
+            <h3 class="stat-value">
+                <ng-container *ngIf="i === 2 && pricing?.activeSurgeMultiplier">
+                    {{ pricing?.activeSurgeMultiplier }}x
+                </ng-container>
+                <ng-container *ngIf="i !== 2 || !pricing?.activeSurgeMultiplier">
+                    {{ stat.value | number }}
+                </ng-container>
+            </h3>
             <span class="stat-trend" [class.positive]="stat.trend > 0" [class.negative]="stat.trend < 0">
-                {{ stat.trend > 0 ? '↑' : '↓' }} {{ Math.abs(stat.trend) }}% from last week
+                {{ stat.trend > 0 ? '↑' : '↓' }} {{ Math.abs(stat.trend) }}% {{ i === 2 ? 'Surge Impact' : 'from last week' }}
             </span>
         </div>
     </div>
 
-    <!-- Health Overview -->
+    <!-- Soul Engine Diagnostics (New) -->
+    <div class="overview-section diagnostics-section">
+        <div class="section-header">
+            <h3>Abuja Soul Engine Diagnostics</h3>
+            <span class="status-badge" [class]="health?.status">
+                {{ health?.status || 'checking' | uppercase }}
+            </span>
+        </div>
+        <div class="diagnostics-content" *ngIf="health">
+            <div class="metric-row">
+                <div class="metric-item">
+                    <span class="label">Uptime</span>
+                    <span class="value">{{ health.uptime }}</span>
+                </div>
+                <div class="metric-item">
+                    <span class="label">Last Sync</span>
+                    <span class="value">{{ health.lastSyncAt | date:'shortTime' }}</span>
+                </div>
+            </div>
+
+            <div class="memory-usage">
+                <div class="usage-header">
+                    <span>RAM Heap Usage</span>
+                    <span>{{ formatMemory(health.memoryUsage.heapUsed) }} / {{ formatMemory(health.memoryUsage.heapTotal) }}</span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" [style.width.%]="getMemoryPercentage()" [class.warning]="getMemoryPercentage() > 70" [class.danger]="getMemoryPercentage() > 90"></div>
+                </div>
+            </div>
+
+            <div class="entity-counts">
+                <div class="count-box">
+                    <span class="count">{{ health.counts.nodes }}</span>
+                    <span class="label">Nodes</span>
+                </div>
+                <div class="count-box">
+                    <span class="count">{{ health.counts.edges }}</span>
+                    <span class="label">Segments</span>
+                </div>
+                <div class="count-box">
+                    <span class="count">{{ health.counts.hubs }}</span>
+                    <span class="label">Hubs</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Economic & Surge Intelligence (New) -->
+    <div class="overview-section economics-section">
+        <div class="section-header">
+            <h3>Economic & Surge Intelligence</h3>
+            <div class="live-indicator">
+                <span class="pulse"></span> LIVE
+            </div>
+        </div>
+        <div class="economics-content" *ngIf="pricing">
+            <div class="surge-overview">
+                <div class="multiplier-display">
+                    <h2 [class.active-surge]="pricing.activeSurgeMultiplier > 1.0">
+                        {{ pricing.activeSurgeMultiplier }}x
+                    </h2>
+                    <p>{{ pricing.surgeLabel }}</p>
+                </div>
+                <div class="fare-averages">
+                    <div class="fare-pill" *ngFor="let fare of pricing.avgDailyFares | keyvalue">
+                        <span class="mode">{{ fare.key | uppercase }}</span>
+                        <span class="price">₦{{ fare.value }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="corridors-table">
+                <div class="table-header">
+                    <span>Active Corridor</span>
+                    <span>Daily Revenue (Est)</span>
+                </div>
+                <div class="corridor-row" *ngFor="let corridor of pricing.topCorridors">
+                    <span class="corridor-name">{{ corridor.name }}</span>
+                    <div class="revenue-metric">
+                        <div class="revenue-bar" [style.width.%]="(corridor.revenue / 250000) * 100"></div>
+                        <span class="revenue-val">₦{{ corridor.revenue / 1000 }}K</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Health Overview (Existing) -->
     <div class="overview-section health-section">
         <div class="section-header">
             <h3>Graph Health Status</h3>

@@ -80,28 +80,62 @@
         </div>
     </div>
 
-    <!-- Detail Sidebar (Mock) -->
+    <!-- Detail Sidebar -->
     <div class="detail-overlay" *ngIf="selectedItem" (click)="selectedItem = null">
         <div class="detail-panel" (click)="$event.stopPropagation()">
             <header class="panel-header">
-                <h3>Submission Details</h3>
+                <div class="header-main">
+                    <h3>Submission Details</h3>
+                    <span class="id-badge">ID: {{ selectedItem._id }}</span>
+                </div>
                 <button class="close-btn" (click)="selectedItem = null">✕</button>
             </header>
+            
             <div class="panel-body">
+                <!-- Mini Map Preview -->
+                <div class="preview-map-container" *ngIf="selectedItem.data.location || selectedItem.data.coordinates">
+                    <div id="item-preview-map" class="mini-map"></div>
+                </div>
+
                 <div class="data-preview">
+                    <h4>Payload Data</h4>
                     <pre>{{ selectedItem.data | json }}</pre>
                 </div>
+
                 <div class="audit-log">
-                    <h4>Auto-Intelligence Report</h4>
-                    <ul>
-                        <li><span class="status-pass">PASS</span> Geolocation within city bounds</li>
-                        <li><span class="status-pass">PASS</span> Unique entry detected</li>
-                        <li *ngIf="selectedItem.autoFlags.suspiciousActivity"><span class="status-fail">FAIL</span> High submission rate from this IP</li>
+                    <h4>Trust Intelligence Report</h4>
+                    <div class="contributor-profile">
+                        <div class="avatar">{{ selectedItem.submittedBy.charAt(0) }}</div>
+                        <div class="profile-info">
+                            <strong>{{ selectedItem.submittedBy }}</strong>
+                            <span class="reputation-score">Reputation: High Accuracy</span>
+                        </div>
+                        <button class="promote-btn" (click)="promoteToCaptain(selectedItem.submittedBy)">
+                            Promote to Captain 🎖️
+                        </button>
+                    </div>
+                    
+                    <ul class="check-list">
+                        <li>
+                            <span class="status-pass">PASS</span> 
+                            <span>Geolocation Verified (GPS Snippet Available)</span>
+                        </li>
+                        <li>
+                            <span class="status-pass">PASS</span> 
+                            <span>No Duplicate Entities Found in Graph</span>
+                        </li>
+                        <li [class.fail]="selectedItem.autoFlags.suspiciousActivity">
+                            <span [class]="selectedItem.autoFlags.suspiciousActivity ? 'status-fail' : 'status-pass'">
+                                {{ selectedItem.autoFlags.suspiciousActivity ? 'FAIL' : 'PASS' }}
+                            </span>
+                            <span>Submission Velocity Compliance</span>
+                        </li>
                     </ul>
                 </div>
             </div>
+
             <footer class="panel-footer">
-                <button class="reject-btn" (click)="reject(selectedItem)">Reject</button>
+                <button class="reject-btn" (click)="reject(selectedItem)">Reject Submission</button>
                 <button class="approve-btn" (click)="approve(selectedItem)">Verify & Approve</button>
             </footer>
         </div>

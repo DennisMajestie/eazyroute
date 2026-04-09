@@ -117,6 +117,14 @@ export const routes: Routes = [
                 loadComponent: () => import('./features/admin/moderation-queue/moderation-queue.component').then(m => m.ModerationQueueComponent)
             },
             {
+                path: 'community',
+                loadComponent: () => import('./features/admin/community-intelligence/community-intelligence.component').then(m => m.CommunityIntelligenceComponent)
+            },
+            {
+                path: 'safety',
+                loadComponent: () => import('./features/admin/safety-analytics/safety-analytics.component').then(m => m.SafetyAnalyticsComponent)
+            },
+            {
                 path: 'seeder',
                 loadComponent: () => import('./features/admin/admin-route-seeder/admin-route-seeder.component').then(m => m.AdminRouteSeederComponent)
             }

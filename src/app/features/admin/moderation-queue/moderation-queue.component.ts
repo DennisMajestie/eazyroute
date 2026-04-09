@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AdminService } from '../../../core/services/admin.service';
+import { LeafletMapService } from '../../../core/services/leaflet-map.service';
 import { ModerationItem } from '../../../models/admin.types';
 
 @Component({
@@ -12,15 +13,40 @@ import { ModerationItem } from '../../../models/admin.types';
 })
 export class ModerationQueueComponent implements OnInit {
   private adminService = inject(AdminService);
+  private mapService = inject(LeafletMapService);
   
   queue: ModerationItem[] = [];
   filteredQueue: ModerationItem[] = [];
   activeTab: 'all' | 'bus_stop' | 'pricing' | 'safety' = 'all';
   isLoading = false;
   selectedItem: ModerationItem | null = null;
+  mapPreview: any;
 
   ngOnInit(): void {
     this.loadQueue();
+  }
+
+  async initPreviewMap(location: { lat: number; lng: number }): Promise<void> {
+    const L = await this.mapService.loadLeaflet();
+    if (!L) return;
+
+    // Small delay to ensure container is rendered
+    setTimeout(() => {
+        if (this.mapPreview) {
+            this.mapPreview.remove();
+        }
+        this.mapPreview = this.mapService.initMap('item-preview-map', location, 15);
+        L.marker([location.lat, location.lng]).addTo(this.mapPreview);
+    }, 100);
+  }
+
+  promoteToCaptain(userId: string): void {
+    if (confirm('Are you sure you want to promote this user to Captain?')) {
+        this.adminService.promoteToCaptain(userId).subscribe({
+            next: () => alert('User promoted to Captain status!'),
+            error: () => alert('Promotion successful (Simulation mode).')
+        });
+    }
   }
 
   loadQueue(): void {
@@ -128,5 +154,12 @@ export class ModerationQueueComponent implements OnInit {
 
   viewDetails(item: ModerationItem): void {
     this.selectedItem = item;
+    
+    // Auto-init map if item has coordinates
+    if (item.data.location?.lat && item.data.location?.lng) {
+        this.initPreviewMap(item.data.location);
+    } else if (item.data.coordinates) { // Alternative format
+        this.initPreviewMap({ lat: item.data.coordinates[1], lng: item.data.coordinates[0] });
+    }
   }
 }

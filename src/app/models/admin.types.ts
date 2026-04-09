@@ -86,3 +86,90 @@ export interface ModerationItem {
         rapidUpvotes: boolean;
     };
 }
+
+/**
+ * Abuja Soul Engine - Integration Health
+ */
+export interface EngineHealth {
+    uptime: string;
+    memoryUsage: {
+        heapTotal: number;
+        heapUsed: number;
+        external: number;
+    };
+    counts: {
+        nodes: number;
+        edges: number;
+        hubs: number;
+    };
+    status: 'healthy' | 'warning' | 'degraded';
+    lastSyncAt: Date;
+}
+
+/**
+ * Economic & Surge Statistics
+ */
+export interface PricingAnalytics {
+    activeSurgeMultiplier: number;
+    surgeLabel: string;
+    avgDailyFares: {
+        keke: number;
+        okada: number;
+        taxi: number;
+        bus: number;
+    };
+    trends: {
+        label: string;
+        value: number;
+    }[];
+    topCorridors: {
+        name: string;
+        traffic: number;
+        revenue: number;
+    }[];
+}
+
+/**
+ * Contributor Performance Stats (Captains)
+ */
+export interface ContributorStats {
+    userId: string;
+    name: string;
+    totalReports: number;
+    accuracyRate: number;      // 0-1
+    tier: 'captain' | 'trusted' | 'new';
+    lastActive: Date;
+    flaggedReports: number;
+}
+
+/**
+ * SOS & Safety Analytics
+ */
+export interface SafetyIncident {
+    _id: string;
+    type: 'SOS_SILENT' | 'PANIC_BUTTON' | 'RISK_ALERT' | 'FAKE_CALL';
+    location: {
+        lat: number;
+        lng: number;
+    };
+    timestamp: Date;
+    severity: 'low' | 'medium' | 'high';
+    description?: string;
+    status: 'active' | 'resolved' | 'investigating';
+}
+
+export interface SafetyAnalytics {
+    hotspots: {
+        lat: number;
+        lng: number;
+        intensity: number; // 0-1
+        radius: number;    // meters
+        label: string;
+    }[];
+    incidentTrends: {
+        hour: number;
+        count: number;
+    }[];
+    totalAlerts24h: number;
+    activePanicTriggers: number;
+}

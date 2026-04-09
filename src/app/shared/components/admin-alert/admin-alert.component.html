@@ -1,0 +1,26 @@
+<div class="alert-stack">
+    <div class="notif-card" *ngFor="let n of activeNotifications" 
+         [attr.data-severity]="n.severity" 
+         [@fadeInOut]>
+        
+        <div class="notif-icon">{{ getIcon(n.severity) }}</div>
+        
+        <div class="notif-content">
+            <div class="notif-header">
+                <strong>{{ n.title }}</strong>
+                <span class="time">{{ n.timestamp | date:'shortTime' }}</span>
+            </div>
+            <p>{{ n.message }}</p>
+            
+            <div class="notif-actions" *ngIf="n.actionLink">
+                <a [routerLink]="n.actionLink" (click)="dismiss(n.id)" class="action-btn">
+                    View Impact
+                </a>
+            </div>
+        </div>
+
+        <button class="close-btn" (click)="dismiss(n.id)">&times;</button>
+        
+        <div class="countdown-bar" [style.animation-duration.ms]="n.severity === 'sos' ? 20000 : 8000"></div>
+    </div>
+</div>

@@ -1,0 +1,80 @@
+<div class="safety-container">
+    <div class="header-overlay">
+        <div class="safety-stats">
+            <div class="stat-box panic" *ngIf="analytics?.activePanicTriggers">
+                <span class="pulsing-icon">🚨</span>
+                <div class="info">
+                    <span class="val">{{ analytics?.activePanicTriggers }}</span>
+                    <span class="lbl">Active SOS</span>
+                </div>
+            </div>
+            <div class="stat-box">
+                <span class="icon">🛡️</span>
+                <div class="info">
+                    <span class="val">{{ analytics?.totalAlerts24h }}</span>
+                    <span class="lbl">Alerts (24h)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-controls">
+            <div class="title-section">
+                <h2>Safety Intelligence Dashboard</h2>
+                <span class="mode-badge" [class.night]="analytics?.activePanicTriggers">
+                    {{ analytics?.activePanicTriggers ? 'CRITICAL ALERT' : 'SURVEILLANCE ACTIVE' }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div id="safety-map" class="map-viewport"></div>
+
+    <div class="analytics-drawer">
+        <!-- Hotspot List -->
+        <section class="drawer-section">
+            <h3>Risk Hotspots</h3>
+            <div class="hotspot-list">
+                <div class="hotspot-item" *ngFor="let spot of analytics?.hotspots">
+                    <div class="intensity-bar" [style.height.%]="spot.intensity * 100"></div>
+                    <div class="spot-info">
+                        <span class="name">{{ spot.label }}</span>
+                        <span class="risk">{{ Math.round(spot.intensity * 100) }}% Risk Score</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Time of Day Trends -->
+        <section class="drawer-section">
+            <h3>Incident Trends (Time of Day)</h3>
+            <div class="bar-chart">
+                <div class="chart-bar" *ngFor="let trend of analytics?.incidentTrends" 
+                     [style.height.%]="(trend.count / getMaxTrendCount()) * 100"
+                     [class.peak]="trend.hour >= 20 || trend.hour < 5">
+                    <span class="bar-val">{{ trend.count }}</span>
+                    <span class="bar-lbl">{{ trend.hour }}h</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Logs -->
+        <section class="drawer-section logs">
+            <h3>Recent Safety Triggers</h3>
+            <div class="log-list">
+                <div class="log-item" *ngFor="let log of incidents" [class.selected]="selectedIncident?._id === log._id">
+                    <div class="severity-indicator" [class]="log.severity"></div>
+                    <div class="log-content">
+                        <div class="log-head">
+                            <strong>{{ log.type.replace('_', ' ') }}</strong>
+                            <span class="time">{{ log.timestamp | date:'shortTime' }}</span>
+                        </div>
+                        <p>{{ log.description }}</p>
+                        <div class="log-status" [class]="log.status">
+                            {{ log.status | uppercase }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>

@@ -265,10 +265,25 @@
     justify-content: space-between;
     align-items: center;
 
-    h3 {
-        margin: 0;
-        font-family: $font-display;
-        font-size: 1.25rem;
+    .header-main {
+        display: flex;
+        align-items: center;
+        gap: $space-lg;
+
+        h3 {
+            margin: 0;
+            font-family: $font-display;
+            font-size: 1.25rem;
+        }
+
+        .id-badge {
+            font-size: 0.65rem;
+            color: #94a3b8;
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: $radius-full;
+            font-weight: 800;
+        }
     }
 
     .close-btn {
@@ -286,28 +301,95 @@
     overflow-y: auto;
     padding: $space-2xl;
 
+    .preview-map-container {
+        margin-bottom: $space-xl;
+        border-radius: $radius-lg;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+        
+        .mini-map {
+            height: 180px;
+            width: 100%;
+        }
+    }
+
     .data-preview {
         background: #f8fafc;
         border-radius: $radius-lg;
         padding: $space-xl;
         font-size: 0.85rem;
-        margin-bottom: $space-2xl;
+        margin-bottom: $space-xl;
         border: 1px solid #e2e8f0;
         
         pre {
             margin: 0;
             white-space: pre-wrap;
             word-wrap: break-word;
+            max-height: 150px;
+            overflow-y: auto;
         }
     }
 
     .audit-log {
+        background: #fff;
+        border: 1px solid $primary-light;
+        padding: $space-xl;
+        border-radius: $radius-lg;
+
         h4 {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
             margin-bottom: $space-lg;
         }
 
-        ul {
+        .contributor-profile {
+            display: flex;
+            align-items: center;
+            gap: $space-lg;
+            padding: $space-md;
+            background: #fdfdfd;
+            border-radius: $radius-md;
+            margin-bottom: $space-xl;
+
+            .avatar {
+                width: 40px;
+                height: 40px;
+                background: $primary;
+                color: white;
+                border-radius: $radius-full;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 800;
+            }
+
+            .profile-info {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                
+                strong { font-size: 0.9rem; color: $night-bg; }
+                .reputation-score { font-size: 0.7rem; color: #10B981; font-weight: 600; }
+            }
+
+            .promote-btn {
+                background: $night-bg;
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 0.7rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: transform 0.2s;
+                
+                &:hover { transform: scale(1.05); }
+            }
+        }
+
+        .check-list {
             list-style: none;
             padding: 0;
             display: flex;
@@ -318,25 +400,27 @@
                 display: flex;
                 align-items: center;
                 gap: $space-md;
-                font-size: 0.85rem;
+                font-size: 0.8rem;
                 color: #4b5563;
+
+                &.fail span:last-child { color: $danger; font-weight: 600; }
             }
         }
 
         .status-pass {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 800;
-            background: rgba($primary, 0.1);
-            color: $primary-dark;
+            background: #dcfce7;
+            color: #166534;
             padding: 2px 6px;
             border-radius: 4px;
         }
 
         .status-fail {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             font-weight: 800;
-            background: rgba($danger, 0.1);
-            color: $danger;
+            background: #fee2e2;
+            color: #991b1b;
             padding: 2px 6px;
             border-radius: 4px;
         }
@@ -360,15 +444,16 @@
     }
 
     .reject-btn {
-        background: #f1f5f9;
-        color: #475569;
-        &:hover { background: #e2e8f0; }
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+        &:hover { background: #f1f5f9; color: $danger; border-color: $danger; }
     }
 
     .approve-btn {
         background: $primary;
         color: white;
-        &:hover { background: $primary-dark; }
+        &:hover { background: $primary-dark; transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
     }
 }
 

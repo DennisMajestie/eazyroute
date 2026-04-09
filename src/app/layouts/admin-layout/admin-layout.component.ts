@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
+import { AdminAlertComponent } from '../../shared/components/admin-alert/admin-alert.component';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, AdminAlertComponent],
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.scss']
 })
@@ -40,6 +41,8 @@ export class AdminLayoutComponent {
     if (this.currentUrl.includes('/admin/dashboard')) return 'Dashboard Overview';
     if (this.currentUrl.includes('/admin/graph')) return 'Graph Diagnostics';
     if (this.currentUrl.includes('/admin/moderation')) return 'Moderation Queue';
+    if (this.currentUrl.includes('/admin/community')) return 'Community Intelligence';
+    if (this.currentUrl.includes('/admin/safety')) return 'Safety Intelligence';
     if (this.currentUrl.includes('/admin/seeder')) return 'Route Seeder';
     return 'Admin Console';
   }

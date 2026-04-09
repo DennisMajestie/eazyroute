@@ -20,8 +20,14 @@ import {
     IsolatedNode,
     ConnectionSuggestion,
     GraphValidation,
-    ModerationItem
+    ModerationItem,
+    EngineHealth,
+    PricingAnalytics,
+    ContributorStats,
+    SafetyIncident,
+    SafetyAnalytics
 } from '../../models/admin.types';
+import { CommunityReport } from '../../models/community.types';
 
 @Injectable({
     providedIn: 'root'
@@ -30,6 +36,76 @@ export class AdminService {
     private apiUrl = `${environment.apiUrl}`;
 
     constructor(private http: HttpClient) { }
+
+    // ═══════════════════════════════════════════════════════════════
+    // SYSTEM DIAGNOSTICS & ANALYTICS
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Get real-time engine health and RAM diagnostics
+     */
+    getEngineDiagnostics(): Observable<EngineHealth> {
+        return this.http.get<{ success: boolean; data: EngineHealth }>(
+            `${this.apiUrl}/health` // This typically points to the health endpoint
+        ).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Get pricing analytics and surge status
+     */
+    getPricingAnalytics(): Observable<PricingAnalytics> {
+        return this.http.get<{ success: boolean; data: PricingAnalytics }>(
+            `${this.apiUrl}/pricing/admin/list` // Pointing to the requested analytics endpoint
+        ).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Get all active community reports for map visualization
+     */
+    getCommunityReports(): Observable<CommunityReport[]> {
+        return this.http.get<{ success: boolean; data: CommunityReport[] }>(
+            `${this.apiUrl}/community/reports/all`
+        ).pipe(
+            map(response => response.data || [])
+        );
+    }
+
+    /**
+     * Get top community contributors (Captains) and their trust metrics
+     */
+    getTopContributors(): Observable<ContributorStats[]> {
+        return this.http.get<{ success: boolean; data: ContributorStats[] }>(
+            `${this.apiUrl}/community/contributors/top`
+        ).pipe(
+            map(response => response.data || [])
+        );
+    }
+
+    /**
+     * Get safety analytics, hotspots, and incident trends
+     */
+    getSafetyAnalytics(): Observable<SafetyAnalytics> {
+        return this.http.get<{ success: boolean; data: SafetyAnalytics }>(
+            `${this.apiUrl}/safety/admin/analytics`
+        ).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Get detailed history of recent safety incidents (SOS triggers)
+     */
+    getIncidentHistory(): Observable<SafetyIncident[]> {
+        return this.http.get<{ success: boolean; data: SafetyIncident[] }>(
+            `${this.apiUrl}/safety/admin/history`
+        ).pipe(
+            map(response => response.data || [])
+        );
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // GRAPH DIAGNOSTICS
@@ -137,6 +213,13 @@ export class AdminService {
      */
     rejectItem(id: string, reason: string): Observable<void> {
         return this.http.post<void>(`${this.apiUrl}/moderation/${id}/reject`, { reason });
+    }
+
+    /**
+     * Explicitly promote a high-performing contributor to 'Captain' status
+     */
+    promoteToCaptain(userId: string): Observable<void> {
+        return this.http.post<void>(`${this.apiUrl}/community/promote/${userId}`, {});
     }
 
     // ═══════════════════════════════════════════════════════════════
