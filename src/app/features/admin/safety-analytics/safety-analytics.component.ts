@@ -5,6 +5,7 @@ import { LeafletMapService } from '../../../core/services/leaflet-map.service';
 import { SafetyIncident, SafetyAnalytics } from '../../../models/admin.types';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-safety-analytics',
@@ -66,9 +67,13 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
         this.renderHotspots();
       },
       error: (err) => {
-        console.warn('[Safety] Using mock analytics');
-        this.analytics = this.getMockAnalytics();
-        this.renderHotspots();
+        if (environment.useMockAdminData) {
+            console.warn('[Safety] Using mock analytics');
+            this.analytics = this.getMockAnalytics();
+            this.renderHotspots();
+        } else {
+            console.error('[Safety] Analytics failed:', err);
+        }
       }
     });
   }
@@ -82,9 +87,13 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
         this.isLoading = false;
       },
       error: (err) => {
-        console.warn('[Safety] Using mock incident history');
-        this.incidents = this.getMockHistory();
-        this.renderIncidents();
+        if (environment.useMockAdminData) {
+            console.warn('[Safety] Using mock incident history');
+            this.incidents = this.getMockHistory();
+            this.renderIncidents();
+        } else {
+            console.error('[Safety] Incident history failed:', err);
+        }
         this.isLoading = false;
       }
     });

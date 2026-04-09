@@ -8,6 +8,7 @@ import {
     EngineHealth, 
     PricingAnalytics 
 } from '../../../models/admin.types';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -25,6 +26,7 @@ export class AdminDashboardComponent implements OnInit {
   suggestions: ConnectionSuggestion[] = [];
   
   isLoading = false;
+  isLoadingPricing = false;
   Math = Math;
 
   statCards = [
@@ -38,25 +40,67 @@ export class AdminDashboardComponent implements OnInit {
     this.loadReport();
     this.loadSuggestions();
     this.loadDiagnostics();
-    this.loadPricingAnalytics();
+    this.loadPricing();
   }
 
   loadDiagnostics(): void {
     this.adminService.getEngineDiagnostics().subscribe({
-      next: (data) => {
-        this.health = data;
-      },
+      next: (data) => this.health = data,
       error: (err) => {
-        console.warn('[AdminDashboard] Using mock health data');
-        this.health = {
-          uptime: '4d 12h 30m',
-          memoryUsage: { heapTotal: 1024 * 1024 * 512, heapUsed: 1024 * 1024 * 342, external: 1024 * 1024 * 12 },
-          counts: { nodes: 1242, edges: 3841, hubs: 12 },
-          status: 'healthy',
-          lastSyncAt: new Date()
-        };
+        if (environment.useMockAdminData) {
+            console.warn('[Admin] Using mock engine status');
+            this.health = this.getMockDiagnostics();
+        } else {
+            console.error('[Admin] Engine diagnostics failed:', err);
+        }
       }
     });
+  }
+
+  loadPricing(): void {
+    this.isLoadingPricing = true;
+    this.adminService.getPricingAnalytics().subscribe({
+      next: (data) => {
+        this.pricing = data;
+        this.isLoadingPricing = false;
+      },
+      error: (err) => {
+        if (environment.useMockAdminData) {
+            console.warn('[Admin] Using mock pricing analytics');
+            this.pricing = this.getMockPricing();
+        } else {
+            console.error('[Admin] Pricing analytics failed:', err);
+        }
+        this.isLoadingPricing = false;
+      }
+    });
+  }
+
+  getMockDiagnostics(): EngineHealth {
+    return {
+      uptime: '4d 12h 30m',
+      memoryUsage: { heapTotal: 1024 * 1024 * 512, heapUsed: 1024 * 1024 * 342, external: 1024 * 1024 * 12 },
+      counts: { nodes: 1242, edges: 3841, hubs: 12 },
+      status: 'healthy',
+      lastSyncAt: new Date()
+    };
+  }
+
+  getMockPricing(): PricingAnalytics {
+    return {
+      activeSurgeMultiplier: 1.85,
+      surgeLabel: '🔥 Evening Rush (April 2026)',
+      avgDailyFares: { keke: 150, okada: 200, taxi: 800, bus: 300 },
+      trends: [
+        { label: 'Mon', value: 420 }, { label: 'Tue', value: 440 }, { label: 'Wed', value: 450 },
+        { label: 'Thu', value: 480 }, { label: 'Fri', value: 520 }, { label: 'Sat', value: 380 }, { label: 'Sun', value: 350 }
+      ],
+      topCorridors: [
+        { name: 'Southern Feeder', traffic: 1240, revenue: 154000 },
+        { name: 'Main Expressway', traffic: 980, revenue: 210000 },
+        { name: 'Village Rib Connect', traffic: 450, revenue: 85000 }
+      ]
+    };
   }
 
   loadPricingAnalytics(): void {

@@ -4,8 +4,10 @@ export interface Environment {
     production: boolean;
     apiUrl: string;
     appName: 'Along_9ja' | 'EazyRoute' | string;
-    useMockSockets?: boolean; // Optional, defaults to false if undefined
-    socketUrl?: string;        // Optional WebSocket URL (defaults to apiUrl base)
+    useMockAdminData?: boolean;
+    useMockSockets?: boolean;
+    socketUrl?: string;
+    mapboxToken?: string;
     googleClientId?: string;
     appleClientId?: string;
 

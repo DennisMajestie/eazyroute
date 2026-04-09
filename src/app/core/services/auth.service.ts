@@ -42,7 +42,15 @@ export class AuthService {
     /** Computed: Check if user is admin */
     readonly isAdmin = computed(() => {
         const user = this.currentUser();
-        return true; // MOCK: Temporarily enabled for dashboard verification
+        // 1. Check real role from backend
+        const isRealAdmin = user?.role === 'admin' || user?.userType === 'admin' || (user as any)?.isAdmin === true;
+        
+        // 2. Allow mock admin access ONLY if configured in environment (Localhost)
+        if (environment.useMockAdminData) {
+            return true;
+        }
+
+        return isRealAdmin;
     });
 
     /** Computed: User's full name */

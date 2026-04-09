@@ -6,6 +6,7 @@ import { CommunityReport } from '../../../models/community.types';
 import { ContributorStats } from '../../../models/admin.types';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-community-intelligence',
@@ -68,9 +69,13 @@ export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, On
         this.isLoading = false;
       },
       error: (err) => {
-        console.warn('[CIL] Using mock reports');
-        this.reports = this.getMockReports();
-        this.renderMarkers();
+        if (environment.useMockAdminData) {
+            console.warn('[CIL] Using mock reports');
+            this.reports = this.getMockReports();
+            this.renderMarkers();
+        } else {
+            console.error('[CIL] Community reports failed:', err);
+        }
         this.isLoading = false;
       }
     });
@@ -82,12 +87,16 @@ export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, On
         this.contributors = data;
       },
       error: (err) => {
-        console.warn('[CIL] Using mock contributors');
-        this.contributors = [
-          { userId: 'c1', name: 'Captain Ibrahim', totalReports: 142, accuracyRate: 0.98, tier: 'captain', lastActive: new Date(), flaggedReports: 1 },
-          { userId: 'c2', name: 'Wuse Connector', totalReports: 89, accuracyRate: 0.94, tier: 'trusted', lastActive: new Date(), flaggedReports: 0 },
-          { userId: 'c3', name: 'Amina Garki', totalReports: 56, accuracyRate: 0.88, tier: 'new', lastActive: new Date(), flaggedReports: 2 }
-        ];
+        if (environment.useMockAdminData) {
+            console.warn('[CIL] Using mock contributors');
+            this.contributors = [
+              { userId: 'c1', name: 'Captain Ibrahim', totalReports: 142, accuracyRate: 0.98, tier: 'captain', lastActive: new Date(), flaggedReports: 1 },
+              { userId: 'c2', name: 'Wuse Connector', totalReports: 89, accuracyRate: 0.94, tier: 'trusted', lastActive: new Date(), flaggedReports: 0 },
+              { userId: 'c3', name: 'Amina Garki', totalReports: 56, accuracyRate: 0.88, tier: 'new', lastActive: new Date(), flaggedReports: 2 }
+            ];
+        } else {
+            console.error('[CIL] Top contributors failed:', err);
+        }
       }
     });
   }

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { AdminService } from '../../../core/services/admin.service';
 import { LeafletMapService } from '../../../core/services/leaflet-map.service';
 import { ModerationItem } from '../../../models/admin.types';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-moderation-queue',
@@ -44,7 +45,14 @@ export class ModerationQueueComponent implements OnInit {
     if (confirm('Are you sure you want to promote this user to Captain?')) {
         this.adminService.promoteToCaptain(userId).subscribe({
             next: () => alert('User promoted to Captain status!'),
-            error: () => alert('Promotion successful (Simulation mode).')
+            error: (err) => {
+                if (environment.useMockAdminData) {
+                    alert('Promotion successful (Simulation mode).');
+                } else {
+                    console.error('[Moderation] Promotion failed:', err);
+                    alert('Failed to promote user. Please try again later.');
+                }
+            }
         });
     }
   }
@@ -58,44 +66,51 @@ export class ModerationQueueComponent implements OnInit {
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error loading moderation queue:', err);
-        // Mock data for demo
-        this.queue = [
-          {
-            _id: 'q1',
-            type: 'bus_stop',
-            data: { name: 'New Gwarinpa Junction', location: { name: 'Gwarinpa Phase 2' } },
-            submittedBy: 'Danladi K.',
-            submittedAt: new Date(),
-            status: 'pending',
-            flags: [],
-            autoFlags: { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false }
-          },
-          {
-            _id: 'q2',
-            type: 'pricing',
-            data: { title: 'Wuse to Berger Update', category: 'Keke Napep' },
-            submittedBy: 'Chidi O.',
-            submittedAt: new Date(Date.now() - 3600000),
-            status: 'pending',
-            flags: ['rapid_submissions'],
-            autoFlags: { suspiciousActivity: true, duplicateSubmission: false, rapidUpvotes: false }
-          },
-          {
-            _id: 'q3',
-            type: 'safety',
-            data: { title: 'Area 1 Construction Alert', category: 'Road Closure' },
-            submittedBy: 'Amina B.',
-            submittedAt: new Date(Date.now() - 7200000),
-            status: 'pending',
-            flags: [],
-            autoFlags: { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false }
-          }
-        ];
-        this.applyFilter();
+        if (environment.useMockAdminData) {
+            console.warn('[Moderation] Using mock queue');
+            this.queue = this.getMockQueue();
+            this.applyFilter();
+        } else {
+            console.error('[Moderation] Queue failed:', err);
+        }
         this.isLoading = false;
       }
     });
+  }
+
+  private getMockQueue(): ModerationItem[] {
+      return [
+        {
+          _id: 'q1',
+          type: 'bus_stop',
+          data: { name: 'New Gwarinpa Junction', location: { name: 'Gwarinpa Phase 2' } },
+          submittedBy: 'Danladi K.',
+          submittedAt: new Date(),
+          status: 'pending',
+          flags: [],
+          autoFlags: { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false }
+        },
+        {
+          _id: 'q2',
+          type: 'pricing',
+          data: { title: 'Wuse to Berger Update', category: 'Keke Napep' },
+          submittedBy: 'Chidi O.',
+          submittedAt: new Date(Date.now() - 3600000),
+          status: 'pending',
+          flags: ['rapid_submissions'],
+          autoFlags: { suspiciousActivity: true, duplicateSubmission: false, rapidUpvotes: false }
+        },
+        {
+          _id: 'q3',
+          type: 'safety',
+          data: { title: 'Area 1 Construction Alert', category: 'Road Closure' },
+          submittedBy: 'Amina B.',
+          submittedAt: new Date(Date.now() - 7200000),
+          status: 'pending',
+          flags: [],
+          autoFlags: { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false }
+        }
+      ];
   }
 
   setTab(tab: any): void {
@@ -120,12 +135,16 @@ export class ModerationQueueComponent implements OnInit {
           this.selectedItem = null;
           alert('Submission approved successfully!');
         },
-        error: () => {
-          // Mock success for demo
-          this.queue = this.queue.filter(q => q._id !== item._id);
-          this.applyFilter();
-          this.selectedItem = null;
-          alert('Submission approved successfully (Simulation)!');
+        error: (err) => {
+          if (environment.useMockAdminData) {
+              this.queue = this.queue.filter(q => q._id !== item._id);
+              this.applyFilter();
+              this.selectedItem = null;
+              alert('Submission approved successfully (Simulation)!');
+          } else {
+              console.error('[Moderation] Approval failed:', err);
+              alert('Failed to approve submission.');
+          }
         }
       });
     }
@@ -141,12 +160,16 @@ export class ModerationQueueComponent implements OnInit {
           this.selectedItem = null;
           alert('Submission rejected.');
         },
-        error: () => {
-          // Mock success for demo
-          this.queue = this.queue.filter(q => q._id !== item._id);
-          this.applyFilter();
-          this.selectedItem = null;
-          alert('Submission rejected (Simulation).');
+        error: (err) => {
+          if (environment.useMockAdminData) {
+              this.queue = this.queue.filter(q => q._id !== item._id);
+              this.applyFilter();
+              this.selectedItem = null;
+              alert('Submission rejected (Simulation).');
+          } else {
+              console.error('[Moderation] Rejection failed:', err);
+              alert('Failed to reject submission.');
+          }
         }
       });
     }

@@ -7,6 +7,7 @@ export const environment = {
     googleClientId: '',
     appName: 'EazyRoute',
     useMockSockets: false,
+    useMockAdminData: false,
     storageKeys: {
         token: 'eazyroute_token',
         user: 'eazyroute_user',
