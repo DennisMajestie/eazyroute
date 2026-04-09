@@ -1,264 +1,432 @@
 @import "../../../../styles/variables";
 
+:host {
+    display: block;
+    background: #0f172a; // Deep Command Center Slate
+    min-height: 100vh;
+    padding: $space-2xl;
+    color: #f1f5f9;
+}
+
 .dashboard-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    grid-template-rows: auto auto auto;
+    grid-auto-rows: auto;
     gap: $space-2xl;
 }
 
+// --- Digital Stat Cards ---
 .stat-card {
-    background: white;
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     padding: $space-xl;
-    border-radius: $radius-xl;
-    display: flex;
-    align-items: center;
-    gap: $space-xl;
-    box-shadow: $shadow-sm;
-    transition: transform $transition-fast, box-shadow $transition-fast;
+    border-radius: $radius-2xl;
+    position: relative;
+    overflow: hidden;
+    transition: all $transition-normal;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    }
 
     &:hover {
-        transform: translateY(-4px);
-        box-shadow: $shadow-md;
+        transform: translateY(-5px);
+        background: rgba(30, 41, 59, 0.9);
+        border-color: rgba($primary, 0.3);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
     }
 
-    .stat-icon {
-        width: 54px;
-        height: 54px;
-        border-radius: $radius-lg;
+    .stat-header {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: $space-lg;
+
+        .stat-icon-box {
+            width: 42px;
+            height: 42px;
+            border-radius: $radius-xl;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            background: rgba($primary, 0.1);
+            border: 1px solid rgba($primary, 0.1);
+        }
+
+        .stat-trend-chip {
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: $radius-full;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+
+            &.positive {
+                background: rgba(16, 185, 129, 0.1);
+                color: #10b981;
+            }
+            &.negative {
+                background: rgba(239, 68, 68, 0.1);
+                color: #ef4444;
+            }
+        }
     }
 
-    .stat-info {
-        display: flex;
-        flex-direction: column;
-
+    .stat-main {
         .stat-label {
             font-size: 0.85rem;
-            color: #6b7280;
+            color: #94a3b8;
             font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
+            font-size: 2rem;
+            font-weight: 800;
             margin: $space-xs 0;
-            color: $night-bg;
-        }
-
-        .stat-trend {
-            font-size: 0.75rem;
-            font-weight: 600;
-
-            &.positive { color: $primary; }
-            &.negative { color: $danger; }
+            font-family: $font-display;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
     }
 }
 
+// --- Operational Sections ---
 .overview-section {
-    background: white;
-    border-radius: $radius-xl;
+    background: rgba(30, 41, 59, 0.5);
+    backdrop-filter: blur(8px);
+    border-radius: $radius-2xl;
+    border: 1px solid rgba(255, 255, 255, 0.05);
     padding: $space-2xl;
-    box-shadow: $shadow-sm;
+    position: relative;
 
     .section-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: $space-xl;
+        margin-bottom: $space-2xl;
+        padding-bottom: $space-lg;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #94a3b8;
+
+            .status-dot {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                background: #64748b;
+                
+                &.healthy { background: #10b981; box-shadow: 0 0 10px #10b981; }
+                &.warning { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+                &.critical { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
+                
+                animation: pulse-glow 2s infinite;
+            }
+        }
 
         h3 {
             font-family: $font-display;
             font-weight: 700;
-            font-size: 1.15rem;
-            margin: 0;
+            font-size: 1.1rem;
+            letter-spacing: 0.01em;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: $space-md;
+
+            &::before {
+                content: '';
+                width: 4px;
+                height: 18px;
+                background: $primary;
+                border-radius: $radius-full;
+                box-shadow: 0 0 10px $primary;
+            }
         }
 
-        .refresh-btn, .view-all {
-            font-size: 0.85rem;
+        .action-link, .refresh-btn {
+            font-size: 0.8rem;
             font-weight: 600;
             color: $primary;
-            background: rgba($primary, 0.05);
-            border: 1px solid rgba($primary, 0.1);
-            padding: $space-sm $space-lg;
-            border-radius: $radius-md;
-            cursor: pointer;
             text-decoration: none;
-            transition: $transition-fast;
+            padding: $space-sm $space-lg;
+            border-radius: $radius-lg;
+            background: rgba($primary, 0.1);
+            border: 1px solid rgba($primary, 0.2);
+            transition: all 0.2s;
 
             &:hover {
-                background: rgba($primary, 0.1);
+                background: $primary;
+                color: white;
+                box-shadow: 0 0 15px rgba($primary, 0.4);
             }
         }
     }
 }
 
-.health-section {
+// --- Node Diagnostics (The Glow Ring) ---
+.diagnostics-section {
     grid-column: span 2;
 
-    .health-content {
-        display: flex;
+    .diagnostics-grid {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
         gap: $space-2xl;
-        align-items: flex-start;
     }
 
-    .health-meter {
-        flex: 1;
+    .gauge-container {
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center;
         gap: $space-xl;
-        text-align: center;
 
-        .meter-ring {
-            width: 140px;
-            height: 140px;
-            border: 12px solid #e5e7eb;
-            border-radius: 50%;
+        .glow-ring {
+            width: 160px;
+            height: 160px;
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
 
-            .health-label {
-                font-family: $font-display;
-                font-weight: 800;
-                font-size: 1.25rem;
+            svg {
+                transform: rotate(-90deg);
+                filter: drop-shadow(0 0 8px rgba($primary, 0.4));
             }
-        }
 
-        .meter-info {
-            font-size: 0.9rem;
-            color: #4b5563;
-            line-height: 1.5;
+            .ring-track { fill: none; stroke: rgba(255, 255, 255, 0.05); stroke-width: 12; }
+            .ring-fill {
+                fill: none;
+                stroke: $primary;
+                stroke-width: 12;
+                stroke-linecap: round;
+                transition: stroke-dashoffset 1s ease-out;
+            }
 
-            strong {
-                color: $night-bg;
-                font-weight: 700;
+            .gauge-data {
+                position: absolute;
+                text-align: center;
+                .percent { font-size: 2rem; font-weight: 800; display: block; color: white; }
+                .label { font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; }
             }
         }
     }
 
-    .issue-list {
-        flex: 1.2;
-        display: flex;
-        flex-direction: column;
-        gap: $space-md;
-
-        h4 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin: 0 0 $space-sm 0;
-            color: $night-bg;
+    .metrics-pane {
+        .metric-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: $space-lg;
+            margin-top: $space-lg;
         }
 
-        .issue-item {
-            padding: $space-md;
-            background: #fff8f8;
-            border-radius: $radius-lg;
-            border-left: 4px solid $danger;
-            display: flex;
-            gap: $space-md;
-            font-size: 0.85rem;
-            color: #4b5563;
+        .mini-stat {
+            background: rgba(15, 23, 42, 0.3);
+            padding: $space-lg;
+            border-radius: $radius-xl;
+            border: 1px solid rgba(255, 255, 255, 0.03);
 
-            .issue-bullet {
-                font-size: 1rem;
+            .label { font-size: 0.75rem; color: #64748b; margin-bottom: 4px; display: block; }
+            .value { font-size: 1.1rem; font-weight: 700; color: #cbd5e1; }
+        }
+    }
+}
+
+// --- Pricing Intelligence (Tiles) ---
+.economics-section {
+    grid-column: span 2;
+
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: $space-xl;
+    }
+
+    .pricing-tiles {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: $space-md;
+
+        .price-tile {
+            background: rgba(15, 23, 42, 0.6);
+            padding: $space-lg;
+            border-radius: $radius-xl;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+
+            &:hover { background: rgba(15, 23, 42, 0.8); }
+
+            &.keke { border-color: #f59e0b; }
+            &.bus { border-color: #10b981; }
+            &.taxi { border-color: #3b82f6; }
+            &.okada { border-color: #ef4444; }
+
+            .mode { font-size: 0.7rem; font-weight: 700; color: #64748b; display: block; }
+            .amt { font-size: 1.25rem; font-weight: 800; color: #f1f5f9; }
+        }
+    }
+
+    .market-heat {
+        .heat-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: $space-lg;
+            color: #94a3b8;
+        }
+
+        .corridor-volume {
+            display: flex;
+            flex-direction: column;
+            gap: $space-lg;
+
+            .volume-bar-row {
+                .bar-label { font-size: 0.8rem; margin-bottom: 6px; display: flex; justify-content: space-between; }
+                .track {
+                    height: 8px;
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: $radius-full;
+                    overflow: hidden;
+
+                    .fill {
+                        height: 100%;
+                        background: linear-gradient(90deg, $primary, #10b981);
+                        box-shadow: 0 0 10px rgba($primary, 0.3);
+                        transition: width 1s ease-in-out;
+                    }
+                }
             }
         }
     }
 }
 
+// --- Health Status (Digital Dial) ---
+.health-section {
+    grid-column: span 2;
+
+    .health-layout {
+        display: grid;
+        grid-template-columns: 1fr 1.5fr;
+        gap: $space-2xl;
+    }
+
+    .status-dial {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: $space-xl;
+
+        .dial-outer {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: rotate 20s linear infinite;
+
+            .dial-inner {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+                animation: rotate-reverse 20s linear infinite;
+
+                .health-val { font-size: 1.25rem; font-weight: 900; letter-spacing: 0.1em; }
+                .health-perc { font-size: 0.8rem; color: #94a3b8; }
+            }
+        }
+    }
+
+    .alerts-feed {
+        h4 { font-size: 0.9rem; color: #94a3b8; margin-bottom: $space-lg; display: flex; align-items: center; gap: 8px; }
+        
+        .alert-item {
+            background: rgba(239, 68, 68, 0.05);
+            border: 1px solid rgba(239, 68, 68, 0.1);
+            padding: $space-md $space-lg;
+            border-radius: $radius-xl;
+            margin-bottom: $space-sm;
+            display: flex;
+            align-items: center;
+            gap: $space-md;
+            font-size: 0.85rem;
+            color: #fca5a5;
+
+            .dot { width: 6px; height: 6px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+        }
+    }
+}
+
+// --- Live Activity Feed ---
 .actions-section {
     grid-column: span 2;
 
-    .actions-list {
+    .feed-container {
         display: flex;
         flex-direction: column;
-        gap: $space-md;
+        gap: $space-sm;
+    }
 
-        .action-item {
-            display: flex;
-            align-items: center;
-            padding: $space-md;
-            border-radius: $radius-lg;
-            background: #f9fafb;
-            gap: $space-lg;
+    .feed-item {
+        display: flex;
+        align-items: center;
+        padding: $space-lg;
+        background: rgba(15, 23, 42, 0.4);
+        border-radius: $radius-xl;
+        gap: $space-xl;
+        border-left: 2px solid $primary;
 
-            .action-time {
-                font-size: 0.75rem;
-                color: #9ca3af;
-                min-width: 60px;
-            }
-
-            .action-desc {
-                flex: 1;
-                font-size: 0.85rem;
-                color: #4b5563;
-
-                strong {
-                    color: $night-bg;
-                    font-weight: 600;
-                }
-            }
-
-            .action-status {
-                font-size: 0.75rem;
-                font-weight: 700;
-                padding: 4px $space-md;
-                border-radius: $radius-full;
-                
-                &.status-success {
-                    background: rgba($primary, 0.1);
-                    color: $primary-dark;
-                }
-            }
+        .time { font-size: 0.75rem; color: #64748b; font-family: monospace; }
+        .log { flex: 1; font-size: 0.85rem; color: #cbd5e1; }
+        .chip {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba($primary, 0.1);
+            color: $primary;
+            text-transform: uppercase;
         }
     }
 }
 
-.loading-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: $space-2xl;
-    gap: $space-xl;
-    color: #6b7280;
-
-    .spinner {
-        width: 30px;
-        height: 30px;
-        border: 3px solid #e5e7eb;
-        border-top-color: $primary;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-    }
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
+// --- Animations ---
+@keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes rotate-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+@keyframes pulse-glow {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 @media (max-width: 1200px) {
-    .dashboard-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+    .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
-    .dashboard-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .health-section, .actions-section {
-        grid-column: span 1;
-    }
-
-    .health-section .health-content {
-        flex-direction: column;
-    }
+    .dashboard-grid { grid-template-columns: 1fr; }
+    .diagnostics-section, .economics-section, .health-section, .actions-section { grid-column: span 1; }
+    .diagnostics-grid, .health-layout { grid-template-columns: 1fr; }
 }
