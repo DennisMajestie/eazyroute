@@ -96,6 +96,20 @@ export class AdminService {
         });
     }
 
+    /**
+     * Seed a new connection between stops manually
+     * Automatically calculates distance and time on the backend
+     */
+    seedRoute(payload: {
+        fromStopId: string;
+        toStopId: string;
+        transportMode: string;
+        priceRange: { min: number; max: number };
+        isOneWay?: boolean;
+    }): Observable<any> {
+        return this.http.post(`${this.apiUrl}/route-segments/admin/seed`, payload);
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // MODERATION QUEUE
     // ═══════════════════════════════════════════════════════════════

@@ -115,6 +115,10 @@ export const routes: Routes = [
             {
                 path: 'moderation',
                 loadComponent: () => import('./features/admin/moderation-queue/moderation-queue.component').then(m => m.ModerationQueueComponent)
+            },
+            {
+                path: 'seeder',
+                loadComponent: () => import('./features/admin/admin-route-seeder/admin-route-seeder.component').then(m => m.AdminRouteSeederComponent)
             }
         ]
     },

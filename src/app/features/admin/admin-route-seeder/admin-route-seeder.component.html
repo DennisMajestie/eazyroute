@@ -1,0 +1,110 @@
+<div class="seeder-container">
+    <div class="header-section">
+        <h2>Manual Route Seeding</h2>
+        <p>Bind two isolated graph nodes together. Haversine distance and pathing are handled on the backend.</p>
+    </div>
+
+    <!-- Feedback Alerts -->
+    <div class="alert success-alert" *ngIf="submitSuccess">
+        <i class="fas fa-check-circle"></i> Connection successfully seeded into the active graph!
+    </div>
+    <div class="alert error-alert" *ngIf="submitError">
+        <i class="fas fa-exclamation-triangle"></i> {{ submitError }}
+    </div>
+
+    <form [formGroup]="seederForm" (ngSubmit)="onSubmit()" class="seeder-form">
+        <!-- Route Nodes -->
+        <div class="form-grid">
+            <!-- From Stop Autocomplete -->
+            <div class="form-group autocomplete-container">
+                <label>Origin Node (From Stop) *</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-map-marker-alt text-brand"></i>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        placeholder="Search origin bus stop..." 
+                        [value]="selectedFromStopName"
+                        (input)="onFromSearch($event)">
+                </div>
+                <!-- Dropdown -->
+                <ul class="dropdown-list" *ngIf="fromResults.length > 0">
+                    <li *ngFor="let stop of fromResults" (click)="selectFromStop(stop)">
+                        <i class="fas fa-bus-alt"></i> {{ stop.name }}
+                        <span class="sub-text">{{ stop.type || 'bus_stop' }}</span>
+                    </li>
+                </ul>
+                <div class="error-msg" *ngIf="seederForm.get('fromStopId')?.touched && seederForm.get('fromStopId')?.invalid">
+                    Origin stop is required. Please select from search list.
+                </div>
+            </div>
+
+            <!-- To Stop Autocomplete -->
+            <div class="form-group autocomplete-container">
+                <label>Destination Node (To Stop) *</label>
+                <div class="input-wrapper">
+                    <i class="fas fa-flag-checkered text-brand"></i>
+                    <input 
+                        type="text" 
+                        class="form-control" 
+                        placeholder="Search destination bus stop..." 
+                        [value]="selectedToStopName"
+                        (input)="onToSearch($event)">
+                </div>
+                <!-- Dropdown -->
+                <ul class="dropdown-list" *ngIf="toResults.length > 0">
+                    <li *ngFor="let stop of toResults" (click)="selectToStop(stop)">
+                        <i class="fas fa-bus-alt"></i> {{ stop.name }}
+                        <span class="sub-text">{{ stop.type || 'bus_stop' }}</span>
+                    </li>
+                </ul>
+                <div class="error-msg" *ngIf="seederForm.get('toStopId')?.touched && seederForm.get('toStopId')?.invalid">
+                    Destination stop is required. Please select from search list.
+                </div>
+            </div>
+        </div>
+
+        <!-- Mode & Constraints -->
+        <div class="form-grid compact">
+            <div class="form-group">
+                <label>Transport Mode *</label>
+                <select formControlName="transportMode" class="form-control">
+                    <option *ngFor="let mode of transportModes" [value]="mode">{{ mode }}</option>
+                </select>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label class="toggle-wrap">
+                    <input type="checkbox" formControlName="isOneWay">
+                    <span class="toggle-slider"></span>
+                    <span class="label-text">Strictly One-Way Constraint</span>
+                </label>
+                <small class="hint-text">Leave unchecked to automatically link the return trip.</small>
+            </div>
+        </div>
+
+        <!-- Base Pricing Range -->
+        <div class="form-grid price-grid">
+            <div class="form-group">
+                <label>Baseline Min Price (₦) *</label>
+                <input type="number" formControlName="minPrice" class="form-control" min="0" step="50">
+            </div>
+            
+            <div class="form-group">
+                <label>Baseline Max Price (₦) *</label>
+                <input type="number" formControlName="maxPrice" class="form-control" min="0" step="50">
+            </div>
+        </div>
+        <div class="error-msg range-err" *ngIf="seederForm.errors?.['priceRangeInvalid'] && (seederForm.get('minPrice')?.touched || seederForm.get('maxPrice')?.touched)">
+            Maximum price must be greater than or equal to minimum price.
+        </div>
+
+        <div class="action-footer">
+            <button type="submit" class="btn btn-primary btn-submit" [disabled]="seederForm.invalid || isSubmitting">
+                <i class="fas fa-magic" *ngIf="!isSubmitting"></i>
+                <i class="fas fa-circle-notch fa-spin" *ngIf="isSubmitting"></i>
+                {{ isSubmitting ? 'Seeding to Graph...' : 'Seed Connective Route' }}
+            </button>
+        </div>
+    </form>
+</div>

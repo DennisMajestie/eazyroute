@@ -40,6 +40,7 @@ export class AdminLayoutComponent {
     if (this.currentUrl.includes('/admin/dashboard')) return 'Dashboard Overview';
     if (this.currentUrl.includes('/admin/graph')) return 'Graph Diagnostics';
     if (this.currentUrl.includes('/admin/moderation')) return 'Moderation Queue';
+    if (this.currentUrl.includes('/admin/seeder')) return 'Route Seeder';
     return 'Admin Console';
   }
 }

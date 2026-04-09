@@ -73,13 +73,6 @@ export class OnboardingComponent {
       description: 'Events & advertising',
       icon: 'building',
       gradient: 'gradient-orange'
-    },
-    {
-      type: 'admin',
-      label: 'Community Admin',
-      description: 'Verify landmarks & manage data',
-      icon: 'shield',
-      gradient: 'gradient-green'
     }
   ];
 
