@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import Swal from 'sweetalert2';
 import { AdminService } from '../../../core/services/admin.service';
 import { IsolatedNode, ConnectionSuggestion } from '../../../models/admin.types';
 
@@ -70,15 +71,27 @@ export class GraphDiagnosticsComponent implements OnInit {
   }
 
   triggerAutoRepair(): void {
-    if (confirm('Initiate Class D Snapping Strategy? This will attempt to automatically connect isolated nodes to the nearest major hubs.')) {
-      this.isRepairing = true;
-      // Simulate repair process
-      setTimeout(() => {
-        alert('Repair strategy executed! 14 connection segments identified and staged for syncing.');
-        this.isRepairing = false;
-        this.loadIsolatedNodes();
-      }, 2500);
-    }
+    Swal.fire({
+      title: 'Initiate Class D Snapping Strategy?',
+      text: 'This will attempt to automatically connect isolated nodes to the nearest major hubs.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, initiate strategy'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.isRepairing = true;
+        // Simulate repair process
+        setTimeout(() => {
+          Swal.fire(
+            'Success!',
+            'Repair strategy executed! 14 connection segments identified and staged for syncing.',
+            'success'
+          );
+          this.isRepairing = false;
+          this.loadIsolatedNodes();
+        }, 2500);
+      }
+    });
   }
 
   viewOnMap(node: IsolatedNode): void {
@@ -93,23 +106,31 @@ export class GraphDiagnosticsComponent implements OnInit {
   }
 
   applySuggestion(suggestion: ConnectionSuggestion): void {
-    if (confirm(`Approve connection between ${suggestion.fromStop.name} and ${suggestion.toStop.name}?`)) {
-      this.adminService.createConnection(suggestion.fromStop._id, suggestion.toStop._id, {
-        transportModes: ['bus', 'taxi'],
-        estimatedTime: Math.round(suggestion.distance / 400),
-        priceRange: { min: 200, max: 400 }
-      }).subscribe({
-        next: () => {
-          alert('Connection successfuly created!');
-          this.loadSuggestions();
-          this.loadIsolatedNodes();
-        },
-        error: () => {
-          // Mock success if API fails for demo
-          alert('Connection successfuly created (Simulation)!');
-          this.suggestions = this.suggestions.filter(s => s !== suggestion);
-        }
-      });
-    }
+    Swal.fire({
+      title: 'Confirm Connection',
+      text: `Approve connection between ${suggestion.fromStop.name} and ${suggestion.toStop.name}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, approve'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.adminService.createConnection(suggestion.fromStop._id, suggestion.toStop._id, {
+          transportModes: ['bus', 'taxi'],
+          estimatedTime: Math.round(suggestion.distance / 400),
+          priceRange: { min: 200, max: 400 }
+        }).subscribe({
+          next: () => {
+            Swal.fire('Created!', 'Connection successfuly created!', 'success');
+            this.loadSuggestions();
+            this.loadIsolatedNodes();
+          },
+          error: () => {
+            // Mock success if API fails for demo
+            Swal.fire('Simulated Creation', 'Connection successfuly created (Simulation)!', 'info');
+            this.suggestions = this.suggestions.filter(s => s !== suggestion);
+          }
+        });
+      }
+    });
   }
 }
