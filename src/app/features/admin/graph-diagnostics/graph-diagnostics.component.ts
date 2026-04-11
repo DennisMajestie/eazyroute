@@ -73,23 +73,36 @@ export class GraphDiagnosticsComponent implements OnInit {
   triggerAutoRepair(): void {
     Swal.fire({
       title: 'Initiate Class D Snapping Strategy?',
-      text: 'This will attempt to automatically connect isolated nodes to the nearest major hubs.',
+      text: 'This will attempt to automatically connect isolated nodes to the nearest major hubs based on core route skeleton.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes, initiate strategy'
+      confirmButtonText: 'Yes, initiate strategy',
+      confirmButtonColor: '#22c55e',
+      cancelButtonColor: '#64748b'
     }).then((result) => {
       if (result.isConfirmed) {
         this.isRepairing = true;
-        // Simulate repair process
-        setTimeout(() => {
-          Swal.fire(
-            'Success!',
-            'Repair strategy executed! 14 connection segments identified and staged for syncing.',
-            'success'
-          );
-          this.isRepairing = false;
-          this.loadIsolatedNodes();
-        }, 2500);
+        this.adminService.repairGraph().subscribe({
+          next: (res) => {
+            Swal.fire(
+              'Repair Complete!',
+              `Strategy executed successfully: ${res.data.orphansConnected} orphans connected via ${res.data.segmentsCreated} segments.`,
+              'success'
+            );
+            this.isRepairing = false;
+            this.loadIsolatedNodes();
+            this.loadSuggestions();
+          },
+          error: (err) => {
+            console.error('Repair failed:', err);
+            Swal.fire(
+              'Repair Failed',
+              err.error?.message || 'The server encountered an error while executing the snapping strategy.',
+              'error'
+            );
+            this.isRepairing = false;
+          }
+        });
       }
     });
   }

@@ -159,6 +159,16 @@ export class AdminService {
     }
 
     /**
+     * Trigger Class D Graph Repair (Snapping Strategy)
+     */
+    repairGraph(): Observable<any> {
+        return this.http.post<{ success: boolean; data: any }>(
+            `${this.apiUrl}/graph/repair`,
+            {}
+        );
+    }
+
+    /**
      * Validate graph integrity
      */
     validateGraph(): Observable<GraphValidation> {
