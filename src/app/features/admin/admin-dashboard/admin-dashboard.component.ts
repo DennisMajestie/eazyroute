@@ -51,7 +51,11 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.getUserStats().subscribe({
       next: (data) => {
         this.userStats = data;
-        this.statCards[0].value = data.total;
+        const card = this.statCards.find(c => c.label === 'Active Users');
+        if (card) card.value = data.total;
+        
+        const contribCard = this.statCards.find(c => c.label === 'User Contributions');
+        if (contribCard) contribCard.value = data.totalContributions || 0;
       },
       error: (err) => {
         console.warn('[Admin] Could not load user stats:', err);
@@ -123,6 +127,13 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.getPricingAnalytics().subscribe({
       next: (data) => {
         this.pricing = data;
+        
+        // Bind real-time avg fare to card
+        const fareCard = this.statCards.find(c => c.label === 'Avg Fare');
+        if (fareCard && (data as any).avgBaseFare) {
+          fareCard.value = (data as any).avgBaseFare;
+        }
+
         if (data.activeSurgeMultiplier) {
           this.statCards[3].trend = Math.round((data.activeSurgeMultiplier - 1) * 100);
         }

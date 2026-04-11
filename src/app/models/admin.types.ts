@@ -9,6 +9,8 @@ export interface GraphReport {
     totalNodes: number;            // Total bus stops in graph
     totalEdges: number;            // Total route segments
     isolatedCount: number;         // Stops with no connections
+    semanticOrphanCount: number;   // Nodes not in core skeleton
+    semanticOrphans: Array<{ id: string; name: string }>;
     health: 'good' | 'moderate' | 'poor';
     issues: string[];              // List of identified issues
     suggestions: ConnectionSuggestion[];
@@ -127,6 +129,7 @@ export interface PricingAnalytics {
         traffic: number;
         revenue: number;
     }[];
+    avgBaseFare?: number;
 }
 
 /**
@@ -179,6 +182,7 @@ export interface SafetyAnalytics {
  */
 export interface UserStats {
     total: number;
+    totalContributions: number;
     verified: number;
     byRole: { _id: string; count: number; }[];
     byStatus: { _id: string; count: number; }[];

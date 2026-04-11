@@ -132,7 +132,8 @@
                     </div>
                 </div>
                 <p style="font-size: 0.8rem; text-align: center; color: #94a3b8; line-height: 1.4;">
-                    <strong>{{ report.isolatedCount }}</strong> terminals isolated<br>from the primary mesh.
+                    <strong>{{ report?.isolatedCount || 0 }}</strong> structural orphans<br>
+                    <strong>{{ report?.semanticOrphanCount || 0 }}</strong> skeleton gaps
                 </p>
             </div>
             
@@ -157,7 +158,7 @@
                 <div class="time">11:04 AM</div>
                 <div class="log">
                     <span style="color:#d1d5db; font-weight: 600;">Node Recovery:</span> 
-                    {{ suggestion.fromStop.name }} snapped to Hub
+                    {{ suggestion?.fromStop?.name || 'Unknown' }} snapped to Hub
                 </div>
                 <div class="chip">AUTO</div>
             </div>

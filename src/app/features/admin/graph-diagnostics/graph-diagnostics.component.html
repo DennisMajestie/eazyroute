@@ -63,12 +63,12 @@
                     <div class="suggestion-route">
                         <div class="stop">
                             <span class="dot"></span>
-                            {{ suggestion.fromStop.name }}
+                            {{ suggestion?.fromStop?.name || '...' }}
                         </div>
                         <div class="connector"></div>
                         <div class="stop">
                             <span class="dot end"></span>
-                            {{ suggestion.toStop.name }}
+                            {{ suggestion?.toStop?.name || '...' }}
                         </div>
                     </div>
                     <p class="reason">{{ suggestion.reason }}</p>
