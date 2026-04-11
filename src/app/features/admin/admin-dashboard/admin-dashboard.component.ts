@@ -6,7 +6,8 @@ import {
     GraphReport, 
     ConnectionSuggestion, 
     EngineHealth, 
-    PricingAnalytics 
+    PricingAnalytics,
+    UserStats
 } from '../../../models/admin.types';
 import { environment } from '../../../../environments/environment';
 
@@ -23,6 +24,7 @@ export class AdminDashboardComponent implements OnInit {
   report: GraphReport | null = null;
   health: EngineHealth | null = null;
   pricing: PricingAnalytics | null = null;
+  userStats: UserStats | null = null;
   suggestions: ConnectionSuggestion[] = [];
   
   isLoading = false;
@@ -30,7 +32,7 @@ export class AdminDashboardComponent implements OnInit {
   Math = Math;
 
   statCards = [
-    { label: 'Active Users', value: 15420, icon: '👥', color: '#EAB308', trend: 8 },
+    { label: 'Active Users', value: 0, icon: '👥', color: '#EAB308', trend: 8 },
     { label: 'Total Terminals', value: 0, icon: '📍', color: '#3B82F6', trend: 12 },
     { label: 'Active Routes', value: 0, icon: '🛣️', color: '#10B981', trend: 5 },
     { label: 'Avg Fare', value: 450, icon: '₦', color: '#F59E0B', trend: -2 },
@@ -38,10 +40,23 @@ export class AdminDashboardComponent implements OnInit {
   ];
 
   ngOnInit(): void {
+    this.loadUserStats();
     this.loadReport();
     this.loadSuggestions();
     this.loadDiagnostics();
     this.loadPricing();
+  }
+
+  loadUserStats(): void {
+    this.adminService.getUserStats().subscribe({
+      next: (data) => {
+        this.userStats = data;
+        this.statCards[0].value = data.total;
+      },
+      error: (err) => {
+        console.warn('[Admin] Could not load user stats:', err);
+      }
+    });
   }
 
   loadDiagnostics(): void {

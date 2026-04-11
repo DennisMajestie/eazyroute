@@ -25,7 +25,8 @@ import {
     PricingAnalytics,
     ContributorStats,
     SafetyIncident,
-    SafetyAnalytics
+    SafetyAnalytics,
+    UserStats
 } from '../../models/admin.types';
 import { CommunityReport } from '../../models/community.types';
 
@@ -104,6 +105,17 @@ export class AdminService {
             `${this.apiUrl}/safety/admin/history`
         ).pipe(
             map(response => response.data || [])
+        );
+    }
+
+    /**
+     * Get real-time user statistics from the database
+     */
+    getUserStats(): Observable<UserStats> {
+        return this.http.get<{ success: boolean; data: UserStats }>(
+            `${this.apiUrl}/users/admin/stats`
+        ).pipe(
+            map(response => response.data)
         );
     }
 

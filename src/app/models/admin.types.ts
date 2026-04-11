@@ -173,3 +173,20 @@ export interface SafetyAnalytics {
     totalAlerts24h: number;
     activePanicTriggers: number;
 }
+
+/**
+ * User Statistics (Admin)
+ */
+export interface UserStats {
+    total: number;
+    verified: number;
+    byRole: { _id: string; count: number; }[];
+    byStatus: { _id: string; count: number; }[];
+    recentUsers: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        role: string;
+        createdAt: Date;
+    }[];
+}
