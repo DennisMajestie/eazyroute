@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
@@ -9,7 +9,8 @@ import {
     PricingAnalytics,
     UserStats
 } from '../../../models/admin.types';
-import { environment } from '../../../../environments/environment';
+import { interval, Subject } from 'rxjs';
+import { takeUntil, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -18,8 +19,9 @@ import { environment } from '../../../../environments/environment';
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit, OnDestroy {
   public adminService = inject(AdminService);
+  private destroy$ = new Subject<void>();
   
   report: GraphReport | null = null;
   health: EngineHealth | null = null;
@@ -31,15 +33,43 @@ export class AdminDashboardComponent implements OnInit {
   isLoadingPricing = false;
   Math = Math;
 
+  nextSyncSeconds = 30;
+
   statCards = [
     { label: 'Active Users', value: 0, icon: '👥', color: '#EAB308', trend: 8 },
     { label: 'Total Terminals', value: 0, icon: '📍', color: '#3B82F6', trend: 12 },
     { label: 'Active Routes', value: 0, icon: '🛣️', color: '#10B981', trend: 5 },
     { label: 'Avg Fare', value: 450, icon: '₦', color: '#F59E0B', trend: -2 },
-    { label: 'User Contributions', value: 124, icon: '🙌', color: '#8B5CF6', trend: 18 }
+    { label: 'User Contributions', value: 0, icon: '🙌', color: '#8B5CF6', trend: 18 }
   ];
 
   ngOnInit(): void {
+    // Start automated 30s polling
+    interval(30000)
+      .pipe(
+        startWith(0),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        this.loadAllData();
+      });
+
+    // Countdown timer for UI
+    interval(1000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.nextSyncSeconds--;
+        if (this.nextSyncSeconds < 0) this.nextSyncSeconds = 30;
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadAllData(): void {
+    this.nextSyncSeconds = 30;
     this.loadUserStats();
     this.loadReport();
     this.loadSuggestions();

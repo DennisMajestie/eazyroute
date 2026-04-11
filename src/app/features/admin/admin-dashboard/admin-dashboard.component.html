@@ -1,4 +1,27 @@
 <div class="dashboard-grid">
+    <!-- Live Meta Header -->
+    <div class="system-live-header">
+        <div class="sync-countdown">
+            <span class="pulse-dot"></span>
+            Auto-Sync in: <span class="sec">{{ nextSyncSeconds }}s</span>
+        </div>
+
+        <div class="global-conditions" *ngIf="pricing?.globalConditions">
+            <div class="condition-badge" [class.active]="pricing?.globalConditions?.isFuelScarcity">
+                <span class="icon">⛽</span> 
+                Fuel Status: {{ pricing?.globalConditions?.isFuelScarcity ? 'Scarcity Surge' : 'Normal' }}
+            </div>
+            <div class="condition-badge" [class.warning]="pricing?.globalConditions?.hasCommunalClash">
+                <span class="icon">⚠️</span> 
+                Hazard Level: {{ pricing?.globalConditions?.hasCommunalClash ? 'High Risk' : 'Safe' }}
+            </div>
+            <div class="condition-badge">
+                <span class="icon">📅</span> 
+                Market Day: {{ pricing?.globalConditions?.isHoliday ? 'Holiday' : 'Standard' }}
+            </div>
+        </div>
+    </div>
+
     <!-- Operational Stat Cards -->
     <div class="stat-cards-container">
         <div class="stat-card" *ngFor="let stat of statCards; let i = index">

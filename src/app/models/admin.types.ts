@@ -109,6 +109,17 @@ export interface EngineHealth {
 }
 
 /**
+ * 🌍 Global System Conditions
+ */
+export interface GlobalConditions {
+    isFuelScarcity: boolean;
+    isHoliday: boolean;
+    hasCommunalClash: boolean;
+    activeEvent?: string;
+    lastUpdated: Date;
+}
+
+/**
  * Economic & Surge Statistics
  */
 export interface PricingAnalytics {
@@ -130,6 +141,7 @@ export interface PricingAnalytics {
         revenue: number;
     }[];
     avgBaseFare?: number;
+    globalConditions?: GlobalConditions;
 }
 
 /**
