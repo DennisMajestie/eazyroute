@@ -1,4 +1,4 @@
-@import "../../../../styles/variables";
+@use "../../../../styles/variables" as *;
 
 :host {
     display: block;
@@ -24,7 +24,7 @@
     border-radius: $radius-2xl;
     position: relative;
     overflow: hidden;
-    transition: all $transition-normal;
+    transition: all $transition-base;
 
     &::before {
         content: '';
