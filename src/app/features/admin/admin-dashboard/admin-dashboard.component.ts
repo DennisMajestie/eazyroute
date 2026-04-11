@@ -9,6 +9,7 @@ import {
     PricingAnalytics,
     UserStats
 } from '../../../models/admin.types';
+import { environment } from '../../../../environments/environment';
 import { interval, Subject } from 'rxjs';
 import { takeUntil, startWith } from 'rxjs/operators';
 
@@ -210,10 +211,12 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         console.error('Error loading report:', err);
         this.isLoading = false;
         // Mock data for demo if API fails
-        this.report = {
+        const mockReport: GraphReport = {
           totalNodes: 1242,
           totalEdges: 3841,
           isolatedCount: 42,
+          semanticOrphanCount: 33,
+          semanticOrphans: [],
           health: 'moderate',
           issues: [
             '42 isolated bus stops found in Gwarinpa area.',
@@ -222,8 +225,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           ],
           suggestions: []
         };
-        this.statCards[1].value = this.report.totalNodes;
-        this.statCards[2].value = this.report.totalEdges;
+        this.report = mockReport;
+        this.statCards[1].value = mockReport.totalNodes;
+        this.statCards[2].value = mockReport.totalEdges;
       }
     });
   }
