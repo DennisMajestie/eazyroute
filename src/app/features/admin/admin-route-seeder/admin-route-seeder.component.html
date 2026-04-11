@@ -14,52 +14,89 @@
 
     <form [formGroup]="seederForm" (ngSubmit)="onSubmit()" class="seeder-form">
         <!-- Route Nodes -->
-        <div class="form-grid">
-            <!-- From Stop Autocomplete -->
-            <div class="form-group autocomplete-container">
-                <label>Origin Node (From Stop) *</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-map-marker-alt text-brand"></i>
-                    <input 
-                        type="text" 
-                        class="form-control" 
-                        placeholder="Search origin bus stop..." 
-                        [value]="selectedFromStopName"
-                        (input)="onFromSearch($event)">
+        <div class="nodes-journey-stack">
+            <!-- Starting Point -->
+            <div class="stop-node origin">
+                <div class="node-marker">
+                    <span class="dot"></span>
+                    <span class="line"></span>
                 </div>
-                <!-- Dropdown -->
-                <ul class="dropdown-list" *ngIf="fromResults.length > 0">
-                    <li *ngFor="let stop of fromResults" (click)="selectFromStop(stop)">
-                        <i class="fas fa-bus-alt"></i> {{ stop.name }}
-                        <span class="sub-text">{{ stop.type || 'bus_stop' }}</span>
-                    </li>
-                </ul>
-                <div class="error-msg" *ngIf="seederForm.get('fromStopId')?.touched && seederForm.get('fromStopId')?.invalid">
-                    Origin stop is required. Please select from search list.
+                <div class="form-group autocomplete-container">
+                    <label>Origin Node *</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            placeholder="Start of journey..." 
+                            [value]="selectedFromStopName"
+                            (input)="onFromSearch($event)">
+                    </div>
+                    <ul class="dropdown-list" *ngIf="fromResults.length > 0">
+                        <li *ngFor="let stop of fromResults" (click)="selectFromStop(stop)">
+                            <i class="fas fa-bus-alt"></i> {{ stop.name }}
+                        </li>
+                    </ul>
                 </div>
             </div>
 
-            <!-- To Stop Autocomplete -->
-            <div class="form-group autocomplete-container">
-                <label>Destination Node (To Stop) *</label>
-                <div class="input-wrapper">
-                    <i class="fas fa-flag-checkered text-brand"></i>
-                    <input 
-                        type="text" 
-                        class="form-control" 
-                        placeholder="Search destination bus stop..." 
-                        [value]="selectedToStopName"
-                        (input)="onToSearch($event)">
+            <!-- Intermediate Legs -->
+            <div formArrayName="legs" class="legs-section">
+                <div *ngFor="let leg of legs.controls; let i=index" [formGroupName]="i" class="stop-node leg">
+                    <div class="node-marker">
+                        <span class="dot"></span>
+                        <span class="line"></span>
+                    </div>
+                    <div class="form-group autocomplete-container">
+                        <div class="leg-header">
+                            <label>Leg #{{ i + 1 }} Stop</label>
+                            <button type="button" class="remove-leg" (click)="removeLeg(i)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="input-wrapper">
+                            <i class="fas fa-ellipsis-v"></i>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                placeholder="Intermediate stop..." 
+                                formControlName="stopName"
+                                (input)="onLegSearch($event, i)">
+                        </div>
+                        <ul class="dropdown-list" *ngIf="legResults[i] && legResults[i].length > 0">
+                            <li *ngFor="let stop of legResults[i]" (click)="selectLegStop(stop, i)">
+                                <i class="fas fa-bus-alt"></i> {{ stop.name }}
+                            </li>
+                        </ul>
+                    </div>
                 </div>
-                <!-- Dropdown -->
-                <ul class="dropdown-list" *ngIf="toResults.length > 0">
-                    <li *ngFor="let stop of toResults" (click)="selectToStop(stop)">
-                        <i class="fas fa-bus-alt"></i> {{ stop.name }}
-                        <span class="sub-text">{{ stop.type || 'bus_stop' }}</span>
-                    </li>
-                </ul>
-                <div class="error-msg" *ngIf="seederForm.get('toStopId')?.touched && seederForm.get('toStopId')?.invalid">
-                    Destination stop is required. Please select from search list.
+
+                <button type="button" class="btn-add-leg" (click)="addLeg()">
+                    <i class="fas fa-plus-circle"></i> Add Intermediate Stop
+                </button>
+            </div>
+
+            <!-- Destination Point -->
+            <div class="stop-node destination">
+                <div class="node-marker">
+                    <span class="dot"></span>
+                </div>
+                <div class="form-group autocomplete-container">
+                    <label>Destination Node *</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-flag-checkered"></i>
+                        <input 
+                            type="text" 
+                            class="form-control" 
+                            placeholder="Final destination..." 
+                            [value]="selectedToStopName"
+                            (input)="onToSearch($event)">
+                    </div>
+                    <ul class="dropdown-list" *ngIf="toResults.length > 0">
+                        <li *ngFor="let stop of toResults" (click)="selectToStop(stop)">
+                            <i class="fas fa-bus-alt"></i> {{ stop.name }}
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -100,10 +137,13 @@
         </div>
 
         <div class="action-footer">
+            <div class="seeding-progress" *ngIf="isSubmitting && totalSegmentsToSeed > 1">
+                Seeding segment {{ processedLegsCount + 1 }} of {{ totalSegmentsToSeed }}...
+            </div>
             <button type="submit" class="btn btn-primary btn-submit" [disabled]="seederForm.invalid || isSubmitting">
                 <i class="fas fa-magic" *ngIf="!isSubmitting"></i>
                 <i class="fas fa-circle-notch fa-spin" *ngIf="isSubmitting"></i>
-                {{ isSubmitting ? 'Seeding to Graph...' : 'Seed Connective Route' }}
+                {{ isSubmitting ? 'Seeding Multi-Leg Route...' : 'Seed Journey Route' }}
             </button>
         </div>
     </form>
