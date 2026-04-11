@@ -1,3 +1,4 @@
+@use "sass:color";
 @import "../../../styles/variables";
 
 .admin-container {
@@ -119,7 +120,7 @@
             
             &:hover {
                 background: rgba($info, 0.1);
-                color: lighten($info, 10%);
+                color: color.adjust($info, $lightness: 10%);
             }
         }
     }

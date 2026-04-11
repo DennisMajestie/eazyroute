@@ -1,3 +1,4 @@
+@use "sass:color";
 @import "../../../../styles/variables";
 
 .diagnostics-container {
@@ -61,7 +62,7 @@
         }
 
         &:hover:not(:disabled) {
-            background: lighten($night-bg, 10%);
+            background: color.adjust($night-bg, $lightness: 10%);
             transform: translateY(-1px);
         }
 
@@ -200,7 +201,7 @@
                 border-radius: 4px;
                 
                 &.high { background: rgba($danger, 0.1); color: $danger; }
-                &.medium { background: rgba($warning, 0.1); color: darken($warning, 10%); }
+                &.medium { background: rgba($warning, 0.1); color: color.adjust($warning, $lightness: -10%); }
                 &.low { background: rgba($info, 0.1); color: $info; }
             }
 
