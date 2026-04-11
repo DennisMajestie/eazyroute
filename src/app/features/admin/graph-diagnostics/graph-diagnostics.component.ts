@@ -108,9 +108,21 @@ export class GraphDiagnosticsComponent implements OnInit {
   }
 
   viewOnMap(node: IsolatedNode): void {
-    console.log('Viewing node on map:', node);
-    // Future: In-app map navigation
-    window.open(`https://www.google.com/maps?q=${node.location.coordinates[1]},${node.location.coordinates[0]}`, '_blank');
+    if (!node.location?.coordinates) {
+      Swal.fire('No Location', `${node.name} has no coordinates on record.`, 'warning');
+      return;
+    }
+    const [lng, lat] = node.location.coordinates;
+    const url = `https://www.google.com/maps?q=${lat},${lng}`;
+    
+    // Use anchor approach to bypass popup blockers
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   manualRepair(node: IsolatedNode): void {
