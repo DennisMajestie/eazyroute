@@ -15,6 +15,13 @@
     gap: $space-2xl;
 }
 
+.stat-cards-container {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: $space-2xl;
+}
+
 // --- Digital Stat Cards ---
 .stat-card {
     background: rgba(30, 41, 59, 0.7);
@@ -423,10 +430,12 @@
 
 @media (max-width: 1200px) {
     .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat-cards-container { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 768px) {
     .dashboard-grid { grid-template-columns: 1fr; }
+    .stat-cards-container { grid-template-columns: repeat(2, 1fr); }
     .diagnostics-section, .economics-section, .health-section, .actions-section { grid-column: span 1; }
     .diagnostics-grid, .health-layout { grid-template-columns: 1fr; }
 }

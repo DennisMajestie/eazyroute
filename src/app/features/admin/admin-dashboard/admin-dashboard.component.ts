@@ -30,6 +30,7 @@ export class AdminDashboardComponent implements OnInit {
   Math = Math;
 
   statCards = [
+    { label: 'Active Users', value: 15420, icon: '👥', color: '#EAB308', trend: 8 },
     { label: 'Total Terminals', value: 0, icon: '📍', color: '#3B82F6', trend: 12 },
     { label: 'Active Routes', value: 0, icon: '🛣️', color: '#10B981', trend: 5 },
     { label: 'Avg Fare', value: 450, icon: '₦', color: '#F59E0B', trend: -2 },
@@ -108,7 +109,7 @@ export class AdminDashboardComponent implements OnInit {
       next: (data) => {
         this.pricing = data;
         if (data.activeSurgeMultiplier) {
-          this.statCards[2].trend = Math.round((data.activeSurgeMultiplier - 1) * 100);
+          this.statCards[3].trend = Math.round((data.activeSurgeMultiplier - 1) * 100);
         }
       },
       error: (err) => {
@@ -145,8 +146,8 @@ export class AdminDashboardComponent implements OnInit {
     this.adminService.getGraphReport().subscribe({
       next: (data) => {
         this.report = data;
-        this.statCards[0].value = data.totalNodes;
-        this.statCards[1].value = data.totalEdges;
+        this.statCards[1].value = data.totalNodes;
+        this.statCards[2].value = data.totalEdges;
         this.isLoading = false;
       },
       error: (err) => {
@@ -165,8 +166,8 @@ export class AdminDashboardComponent implements OnInit {
           ],
           suggestions: []
         };
-        this.statCards[0].value = this.report.totalNodes;
-        this.statCards[1].value = this.report.totalEdges;
+        this.statCards[1].value = this.report.totalNodes;
+        this.statCards[2].value = this.report.totalEdges;
       }
     });
   }

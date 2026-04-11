@@ -1,24 +1,26 @@
 <div class="dashboard-grid">
     <!-- Operational Stat Cards -->
-    <div class="stat-card" *ngFor="let stat of statCards; let i = index">
-        <div class="stat-header">
-            <div class="stat-icon-box" [style.color]="stat.color">
-                {{ stat.icon }}
+    <div class="stat-cards-container">
+        <div class="stat-card" *ngFor="let stat of statCards; let i = index">
+            <div class="stat-header">
+                <div class="stat-icon-box" [style.color]="stat.color">
+                    {{ stat.icon }}
+                </div>
+                <div class="stat-trend-chip" [class.positive]="stat.trend > 0" [class.negative]="stat.trend < 0">
+                    {{ stat.trend > 0 ? '↑' : '↓' }} {{ Math.abs(stat.trend) }}%
+                </div>
             </div>
-            <div class="stat-trend-chip" [class.positive]="stat.trend > 0" [class.negative]="stat.trend < 0">
-                {{ stat.trend > 0 ? '↑' : '↓' }} {{ Math.abs(stat.trend) }}%
+            <div class="stat-main">
+                <span class="stat-label">{{ stat.label }}</span>
+                <h3 class="stat-value">
+                    <ng-container *ngIf="stat.label === 'Avg Fare' && pricing?.activeSurgeMultiplier">
+                        {{ pricing?.activeSurgeMultiplier }}x
+                    </ng-container>
+                    <ng-container *ngIf="stat.label !== 'Avg Fare' || !pricing?.activeSurgeMultiplier">
+                        {{ stat.value | number }}
+                    </ng-container>
+                </h3>
             </div>
-        </div>
-        <div class="stat-main">
-            <span class="stat-label">{{ stat.label }}</span>
-            <h3 class="stat-value">
-                <ng-container *ngIf="i === 2 && pricing?.activeSurgeMultiplier">
-                    {{ pricing?.activeSurgeMultiplier }}x
-                </ng-container>
-                <ng-container *ngIf="i !== 2 || !pricing?.activeSurgeMultiplier">
-                    {{ stat.value | number }}
-                </ng-container>
-            </h3>
         </div>
     </div>
 
