@@ -234,7 +234,9 @@ export class HomeAlongComponent implements OnInit {
         this.geocodingService.reverseGeocode(primary.latitude, primary.longitude).subscribe({
           next: (res: any) => {
             if (res && (res.display_name || res.name || res.area || res.address)) {
-              this.fromInput = `📍 ${res.display_name || res.name || res.area || res.address}`;
+              const addressStr = typeof res.address === 'string' ? res.address : (res.address?.road || res.address?.neighbourhood || res.address?.suburb || res.address?.city || 'Unknown Location');
+              const name = res.display_name || res.name || res.area || addressStr;
+              this.fromInput = `📍 ${name}`;
               if (this.fromLocation) {
                 this.fromLocation.name = this.fromInput;
                 this.fromLocation.needsNaming = res.needsNaming;
@@ -277,7 +279,8 @@ export class HomeAlongComponent implements OnInit {
             this.geocodingService.reverseGeocode(lat, lng).subscribe({
         next: (result: any) => {
           if (result && (result.display_name || result.name || result.area || result.address)) {
-            const locationName = `📍 ${result.display_name || result.name || result.area || result.address}`;
+            const addressStr = typeof result.address === 'string' ? result.address : (result.address?.road || result.address?.neighbourhood || result.address?.suburb || result.address?.city || 'Unknown Location');
+            const locationName = `📍 ${result.display_name || result.name || result.area || addressStr}`;
             this.fromLocation = {
               ...detectedLocation,
               name: locationName,
