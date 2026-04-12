@@ -20,9 +20,10 @@
     <!-- Search Section -->
     <section class="search-section" *ngIf="!state.hasActiveTrip">
       <!-- From Input -->
-      <div class="search-box position-relative mb-3">
+      <div class="search-box mb-3">
         <span class="default-badge mb-1" *ngIf="isDefaultSelected">🏠 Saved Default</span>
-        <div class="input-with-button">
+        <div class="position-relative">
+          <div class="input-with-button">
           <input type="text"
             [placeholder]="isDetectingLocation ? 'Detecting location...' : 'From: Enter location or use 📍 button'"
             class="form-control" [(ngModel)]="fromQuery" [disabled]="isDetectingLocation"
@@ -47,23 +48,7 @@
           </button>
         </div>
 
-        <!-- Location Error -->
-        <small *ngIf="locationError" class="text-danger d-block mt-1">
-          <i class="fas fa-exclamation-circle"></i> {{ locationError }}
-        </small>
-
-        <!-- Use My Location Hint (shown when no location detected and no error) -->
-        <small *ngIf="!fromLocation && !locationError && !isDetectingLocation" class="text-muted d-block mt-1">
-          <i class="fas fa-info-circle"></i> Click the <i class="fas fa-crosshairs"></i> button to use your current
-          location
-        </small>
-
-        <!-- Real-time Tracking Status -->
-        <small *ngIf="isTrackingLocation" class="text-success d-block mt-1">
-          <i class="fas fa-circle" style="animation: pulse 2s infinite;"></i> Real-time tracking active
-        </small>
-
-        <!-- Search Results for From -->
+        <!-- Search Results for From (Moved here to anchor correctly) -->
         <ul *ngIf="activeSearchField === 'from' && searchResults.length > 0" class="suggestion-list">
           <li *ngFor="let result of searchResults" class="suggestion-item" (click)="selectResult(result)"
             [class.primary-landmark]="result.tier === 'primary'">
@@ -109,6 +94,25 @@
             </div>
           </li>
         </ul>
+        </div>
+
+        <!-- Location Error -->
+        <small *ngIf="locationError" class="text-danger d-block mt-1">
+          <i class="fas fa-exclamation-circle"></i> {{ locationError }}
+        </small>
+
+        <!-- Use My Location Hint (shown when no location detected and no error) -->
+        <small *ngIf="!fromLocation && !locationError && !isDetectingLocation" class="text-muted d-block mt-1">
+          <i class="fas fa-info-circle"></i> Click the <i class="fas fa-crosshairs"></i> button to use your current
+          location
+        </small>
+
+        <!-- Real-time Tracking Status -->
+        <small *ngIf="isTrackingLocation" class="text-success d-block mt-1">
+          <i class="fas fa-circle" style="animation: pulse 2s infinite;"></i> Real-time tracking active
+        </small>
+
+        <!-- Legacy slot from reordering -->
       </div>
 
       <!-- To Input -->

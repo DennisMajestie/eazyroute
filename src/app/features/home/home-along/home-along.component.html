@@ -69,6 +69,10 @@
                     <div class="spinner"></div>
                 </div>
             </div>
+            <!-- Search Results (FROM) -->
+            <ng-container *ngIf="showSearchResults && activeField === 'from'">
+                <ng-container *ngTemplateOutlet="searchResultsTemplate"></ng-container>
+            </ng-container>
             <p class="field-hint" *ngIf="!fromInput">e.g., "Efab Estate", "Lokogoma"</p>
         </div>
 
@@ -82,11 +86,16 @@
                     ×
                 </button>
             </div>
+            <!-- Search Results (TO) -->
+            <ng-container *ngIf="showSearchResults && activeField === 'to'">
+                <ng-container *ngTemplateOutlet="searchResultsTemplate"></ng-container>
+            </ng-container>
             <p class="field-hint" *ngIf="!toInput">e.g., "Berger", "Wuse", "After Shoprite"</p>
         </div>
 
-        <!-- Search Results -->
-        <div class="search-results" *ngIf="showSearchResults && activeField">
+        <!-- Search Results Template -->
+        <ng-template #searchResultsTemplate>
+        <div class="search-results">
 
             <!-- Loading State with Skeleton -->
             <div *ngIf="loadingState.isLoading()">
@@ -118,6 +127,7 @@
                 <p class="no-results-hint">{{ COPY.REASSURANCE.WORKING_ON_IT }}</p>
             </div>
         </div>
+        </ng-template>
 
         <!-- Find Route Button -->
         <button class="btn btn-primary btn-xl find-route-btn" (click)="findRoute()"
