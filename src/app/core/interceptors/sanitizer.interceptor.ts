@@ -18,10 +18,9 @@ interface ApiResponse {
 }
 
 export const sanitizerInterceptor: HttpInterceptorFn = (req, next) => {
-    // Only intercept routing and along requests
+    // Only intercept routing and trip requests
     const isRoutingRequest = req.url.includes('/routes') ||
-        req.url.includes('/along') ||
-        req.url.includes('/generate-route') ||
+        req.url.includes('/along/generate') ||
         req.url.includes('/trips') ||
         req.url.includes('/rerouting');
 
