@@ -372,33 +372,16 @@
       <!-- ... (previous route cards logic, keep but integrate SmartInstruction inside segment list) ... -->
     </section>
 
-    <!-- Enhanced Error Suggestions (Nearby Hubs) -->
-    <div *ngIf="!isLoadingRoutes && generatedRoutes.length === 0 && fromLocation && toLocation && !state.hasActiveTrip"
-      class="alert alert-info shadow-sm bordered-alert">
-      <div class="d-flex align-items-center mb-2">
-        <i class="fas fa-search-location fa-2x me-3 text-primary"></i>
-        <h5 class="mb-0">Route Not Found</h5>
-      </div>
-      <p class="mb-2">We couldn't find a direct route between these points.</p>
-
-      <!-- Localized Hub Suggestions (V4 Recovery) -->
-      <div *ngIf="errorHubs.length > 0" class="hub-suggestions mt-3">
-        <p class="small fw-bold text-muted mb-2">Try searching from one of these major hubs:</p>
-        <div class="d-flex flex-wrap gap-2">
-          <button *ngFor="let hub of errorHubs" (click)="selectHub(hub)"
-            class="btn btn-sm btn-outline-primary rounded-pill shadow-sm">
-            <i class="fas fa-map-marker-alt me-1"></i> {{ hub.name }}
-          </button>
-        </div>
-      </div>
-
-      <!-- Contribute CTA -->
-      <div class="mt-4">
-        <a routerLink="/bus-stops/add" class="btn btn-sm btn-outline-primary bg-white">
-          <i class="fas fa-plus-circle me-1"></i> Is this place missing? Add it to the map
-        </a>
-      </div>
-    </div>
+    <!-- Enhanced Route Not Found Experience -->
+    <app-route-not-found-card 
+      *ngIf="!isLoadingRoutes && generatedRoutes.length === 0 && fromLocation && toLocation && !state.hasActiveTrip"
+      [errorHubs]="errorHubs"
+      [stats]="coverageStats"
+      [fromName]="fromQuery"
+      [toName]="toQuery"
+      (addLocation)="toggleReportModal()"
+      (selectHub)="selectHub($event)">
+    </app-route-not-found-card>
 
     <!-- Map Container -->
     <section class="map-container" *ngIf="!isLoadingRoutes">

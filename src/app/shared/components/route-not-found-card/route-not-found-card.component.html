@@ -1,0 +1,44 @@
+<div class="not-found-card animate-slideUp">
+  <div class="card-glass-overlay"></div>
+  
+  <div class="illustration-container">
+    <img src="assets/images/mapping-pioneer.png" alt="Mapping Pioneer" class="pioneer-img">
+  </div>
+
+  <div class="content">
+    <h3 class="title">Exploring New Horizons? 🗺️</h3>
+    <p class="indulgent-message">
+      We haven't mapped a direct route between <strong>{{fromName}}</strong> and <strong>{{toName}}</strong> yet, 
+      but your journey is unique! Be the pioneer who helps others find their way in this area.
+    </p>
+
+    <div class="stats-grid" *ngIf="stats">
+      <div class="stat-item">
+        <span class="stat-value">{{stats.areasMapped | number}}</span>
+        <span class="stat-label">Areas Mapped</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-value">{{stats.contributors | number}}</span>
+        <span class="stat-label">Contributors</span>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <button class="btn btn-primary btn-lg w-full shadow-lg" (click)="onAddLocation()">
+        <i class="fas fa-plus-circle me-2"></i> Put This Place on the Map
+      </button>
+      <p class="community-hint">Your contribution helps fellow commuters stay moving.</p>
+    </div>
+
+    <!-- Recovery Options -->
+    <div class="recovery-section" *ngIf="errorHubs && errorHubs.length > 0">
+      <h4 class="recovery-title">Try searching from a major hub:</h4>
+      <div class="hub-pills">
+        <button *ngFor="let hub of errorHubs" (click)="onSelectHub(hub)" class="hub-pill">
+          <i class="fas fa-map-marker-alt me-1"></i> {{hub.name}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

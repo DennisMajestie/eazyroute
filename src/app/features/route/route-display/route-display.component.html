@@ -119,13 +119,16 @@
         <p>Generating your route...</p>
     </div>
 
-    <!-- Error State -->
-    <div class="error-state" *ngIf="error && !isLoading">
-        <div class="error-icon">⚠️</div>
-        <p class="error-message">{{ error }}</p>
-        <button class="btn btn-primary" (click)="generateRoute()">
-            Try Again
-        </button>
+    <!-- Enhanced Route Not Found Experience -->
+    <div class="error-container" *ngIf="error && !isLoading">
+        <app-route-not-found-card 
+            [errorHubs]="errorHubs"
+            [stats]="coverageStats"
+            [fromName]="fromLocation?.name || 'Current Point'"
+            [toName]="toLocation?.name || 'Destination'"
+            (addLocation)="handleAddLocation()"
+            (selectHub)="handleSelectHub($event)">
+        </app-route-not-found-card>
     </div>
 
     <!-- Route Content -->

@@ -12,11 +12,12 @@ import { SubmitPriceComponent } from '../../community/submit-price/submit-price.
 import { MapComponent } from '../../../shared/components/map/map.component';
 import { CommunityService } from '../../../core/services/community.service';
 import { CommunityReport } from '../../../models/community.types';
+import { RouteNotFoundCardComponent, CoverageStats } from '../../../shared/components/route-not-found-card/route-not-found-card.component';
 
 @Component({
     selector: 'app-route-display',
     standalone: true,
-    imports: [CommonModule, FormsModule, SubmitPriceComponent, MapComponent],
+    imports: [CommonModule, FormsModule, SubmitPriceComponent, MapComponent, RouteNotFoundCardComponent],
     templateUrl: './route-display.component.html',
     styleUrls: ['./route-display.component.scss']
 })
@@ -34,6 +35,8 @@ export class RouteDisplayComponent implements OnInit {
     isLoading = false;
     isStartingJourney = false;
     error: string = '';
+    errorHubs: any[] = [];
+    coverageStats: CoverageStats | null = null;
     expandedSegments: Set<number> = new Set();
     showStops: { [key: number]: boolean } = {};
 
@@ -222,12 +225,28 @@ export class RouteDisplayComponent implements OnInit {
         this.showStops[index] = !this.showStops[index];
     }
 
+    handleAddLocation() {
+        this.router.navigate(['/bus-stops/add']);
+    }
+
+    handleSelectHub(hub: any) {
+        this.router.navigate(['/trip-planner'], {
+            queryParams: {
+                to: hub.name,
+                lat: hub.lat,
+                lng: hub.lng,
+                from: this.fromLocation?.name
+            }
+        });
+    }
+
     ngOnInit() {
         // Check Night Mode
         this.isNightMode = this.safetyService.isNightMode();
         if (this.isNightMode) {
             this.nightTips = this.safetyService.NIGHT_SAFETY_TIPS;
         }
+        this.fetchStats();
 
         // Get locations from query params
         this.activatedRoute.queryParams.subscribe(params => {
@@ -338,6 +357,8 @@ export class RouteDisplayComponent implements OnInit {
 
                     } else if (response?.errorType === 'LOCATION_NOT_COVERED') {
                         this.error = response.suggestion || 'This area is not yet covered by ALONG.';
+                        this.errorHubs = response.nearbyHubs || [];
+                        this.fetchStats();
                     } else {
                         console.warn('[RouteDisplay] Unexpected response structure:', response);
                         this.error = response?.message || 'No route found for this path.';
@@ -389,6 +410,14 @@ export class RouteDisplayComponent implements OnInit {
                 }
             });
 
+    }
+
+    private fetchStats() {
+        this.alongService.getStats().subscribe({
+            next: (res) => {
+                if (res.success) this.coverageStats = res.data;
+            }
+        });
     }
 
     /**

@@ -21,6 +21,7 @@ import { GeneratedRoute, RouteSegment } from '../../../core/engines/types/easyro
 import { SmartInstructionComponent } from '../../../shared/components/smart-instruction/smart-instruction.component';
 import { RefineLocationModalComponent, RefineLocationResult } from '../../../shared/components/refine-location-modal/refine-location-modal.component';
 import { RouteCardComponent } from '../components/route-card/route-card.component';
+import { RouteNotFoundCardComponent } from '../../../shared/components/route-not-found-card/route-not-found-card.component';
 
 interface SearchResult {
     name: string;
@@ -51,7 +52,7 @@ interface SearchResult {
 @Component({
     selector: 'app-trip-planner',
     standalone: true,
-    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent, RefineLocationModalComponent, RouteCardComponent],
+    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent, RefineLocationModalComponent, RouteCardComponent, RouteNotFoundCardComponent],
     templateUrl: './trip-planner.component.html',
     styleUrl: './trip-planner.component.scss'
 })

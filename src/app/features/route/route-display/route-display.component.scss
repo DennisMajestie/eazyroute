@@ -1535,3 +1535,12 @@
   font-size: 0.8rem;
   margin-left: auto;
 }
+
+.error-container {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
