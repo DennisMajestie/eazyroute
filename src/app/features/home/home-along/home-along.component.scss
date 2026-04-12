@@ -203,6 +203,31 @@
   border-color: var(--primary);
 }
 
+.name-place-btn {
+  position: absolute;
+  right: 86px; // Adjust based on refine-btn and clear-btn
+  padding: 0 10px;
+  height: 32px;
+  background-color: #0ea5e9;
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.name-place-btn:hover {
+  background-color: #0284c7;
+  transform: scale(1.05);
+}
+
 .loading-spinner {
   position: absolute;
   right: var(--space-4);

@@ -45,6 +45,17 @@ export class GeocodingService {
     }
 
     /**
+     * Submit a custom name for a location
+     */
+    namePlace(name: string, lat: number, lng: number): Observable<any> {
+        return this.http.post(`${this.API_URL}/locations/name-place`, {
+            name,
+            lat,
+            lng
+        });
+    }
+
+    /**
      * Forward geocode (search) address to coordinates
      */
     forwardGeocode(query: string): Observable<any[]> {

@@ -145,6 +145,35 @@
     }
   }
 
+  .name-place-btn {
+    position: absolute;
+    right: 6rem; // Next to refine button
+    top: 50%;
+    transform: translateY(-50%);
+    background: #0ea5e9;
+    border: none;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 0.6rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-sm);
+
+    &:hover {
+      background: #0284c7;
+      transform: translateY(-50%) scale(1.05);
+      box-shadow: var(--shadow-md);
+    }
+
+    i {
+      font-size: 0.9rem;
+    }
+  }
+
   .text-danger {
     color: var(--error);
     font-size: 0.813rem;

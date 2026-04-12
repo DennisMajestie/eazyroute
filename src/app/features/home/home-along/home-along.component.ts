@@ -12,6 +12,7 @@ import { Area } from '../../../models/area.model';
 import { SkeletonLandmarkComponent } from '../../../shared/components/skeleton-landmark/skeleton-landmark.component';
 import { LoadingProgressComponent } from '../../../shared/components/loading-progress/loading-progress.component';
 import { RefineLocationModalComponent, RefineLocationResult } from '../../../shared/components/refine-location-modal/refine-location-modal.component';
+import { NamePlaceModalComponent } from '../../../shared/components/name-place-modal/name-place-modal.component';
 import { NIGERIAN_COPY } from '../../../shared/constants/nigerian-copy.constants';
 import { AlongService } from '../../../core/services/along.service';
 import { BoardingInference } from '../../../models/transport.types';
@@ -32,6 +33,7 @@ interface SelectedLocation {
   coords: { lat: number; lng: number };
   locality?: Locality;
   anchor?: Anchor;
+  needsNaming?: boolean;
 }
 
 @Component({
@@ -42,7 +44,8 @@ interface SelectedLocation {
     FormsModule,
     SkeletonLandmarkComponent,
     LoadingProgressComponent,
-    RefineLocationModalComponent
+    RefineLocationModalComponent,
+    NamePlaceModalComponent
   ],
   templateUrl: './home-along.component.html',
   styleUrls: ['./home-along.component.scss']
@@ -230,9 +233,12 @@ export class HomeAlongComponent implements OnInit {
         // Background refresh name
         this.geocodingService.reverseGeocode(primary.latitude, primary.longitude).subscribe({
           next: (res: any) => {
-            if (res?.display_name) {
-              this.fromInput = `📍 ${res.display_name}`;
-              this.fromLocation!.name = this.fromInput;
+            if (res && (res.display_name || res.name || res.area || res.address)) {
+              this.fromInput = `📍 ${res.display_name || res.name || res.area || res.address}`;
+              if (this.fromLocation) {
+                this.fromLocation.name = this.fromInput;
+                this.fromLocation.needsNaming = res.needsNaming;
+              }
             }
           }
         });
@@ -268,14 +274,14 @@ export class HomeAlongComponent implements OnInit {
       this.fromLocation = detectedLocation;
       this.fromInput = detectedLocation.name;
 
-      // Try to get address name
-      this.geocodingService.reverseGeocode(lat, lng).subscribe({
+            this.geocodingService.reverseGeocode(lat, lng).subscribe({
         next: (result: any) => {
-          if (result && (result.display_name || result.name || result.area)) {
-            const locationName = `📍 ${result.display_name || result.name || result.area}`;
+          if (result && (result.display_name || result.name || result.area || result.address)) {
+            const locationName = `📍 ${result.display_name || result.name || result.area || result.address}`;
             this.fromLocation = {
               ...detectedLocation,
-              name: locationName
+              name: locationName,
+              needsNaming: result.needsNaming
             };
             this.fromInput = locationName;
           }
@@ -571,5 +577,20 @@ export class HomeAlongComponent implements OnInit {
   checkNightMode() {
     const hour = new Date().getHours();
     this.isNightMode = hour >= 20 || hour < 5;
+  }
+
+  // Name Place Modal state
+  isNamePlaceModalOpen = false;
+
+  openNamePlaceModal() {
+    this.isNamePlaceModalOpen = true;
+  }
+
+  onNamePlaceModalClosed(success: boolean) {
+    this.isNamePlaceModalOpen = false;
+    if (success && this.fromLocation) {
+        // Optimistically clear needsNaming if they successfully suggested a name
+        this.fromLocation.needsNaming = false;
+    }
   }
 }

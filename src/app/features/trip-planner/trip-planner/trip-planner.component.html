@@ -39,6 +39,12 @@
             title="Refine Name">
             <i class="fas fa-edit"></i>
           </button>
+
+          <!-- Name Place Button (Shows when location needs naming) -->
+          <button *ngIf="fromLocation && fromLocation.needsNaming && !isDetectingLocation" class="name-place-btn" (click)="openNamePlaceModal()"
+            title="Name This Place">
+            <i class="fas fa-tag"></i>
+          </button>
         </div>
 
         <!-- Location Error -->
@@ -535,3 +541,12 @@
 <app-refine-location-modal [isOpen]="isRefineModalOpen" [currentName]="refineModalCurrentName"
   (closed)="onRefineModalClosed($event)">
 </app-refine-location-modal>
+
+<!-- Name Place Modal -->
+<app-name-place-modal 
+  [isOpen]="isNamePlaceModalOpen" 
+  [lat]="fromLocation?.lat ?? null" 
+  [lng]="fromLocation?.lng ?? null"
+  [currentAddress]="fromQuery"
+  (closed)="onNamePlaceModalClosed($event)">
+</app-name-place-modal>

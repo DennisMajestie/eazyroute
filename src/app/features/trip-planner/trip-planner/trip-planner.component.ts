@@ -22,6 +22,7 @@ import { SmartInstructionComponent } from '../../../shared/components/smart-inst
 import { RefineLocationModalComponent, RefineLocationResult } from '../../../shared/components/refine-location-modal/refine-location-modal.component';
 import { RouteCardComponent } from '../components/route-card/route-card.component';
 import { RouteNotFoundCardComponent } from '../../../shared/components/route-not-found-card/route-not-found-card.component';
+import { NamePlaceModalComponent } from '../../../shared/components/name-place-modal/name-place-modal.component';
 
 interface SearchResult {
     name: string;
@@ -52,7 +53,7 @@ interface SearchResult {
 @Component({
     selector: 'app-trip-planner',
     standalone: true,
-    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent, RefineLocationModalComponent, RouteCardComponent, RouteNotFoundCardComponent],
+    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent, RefineLocationModalComponent, RouteCardComponent, RouteNotFoundCardComponent, NamePlaceModalComponent],
     templateUrl: './trip-planner.component.html',
     styleUrl: './trip-planner.component.scss'
 })
@@ -72,7 +73,30 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     // Map Settings (Abuja)
     center = { lat: 9.0765, lng: 7.3986 };
     zoom = 12;
-    // ... imports ...
+    // Trip Planning State
+    fromLocation: any = null;
+    toLocation: any = null;
+    fromQuery: string = '';
+    toQuery: string = '';
+    
+    isLoadingRoutes = false;
+    isDetectingLocation = false;
+    isTrackingLocation = false;
+    isDefaultSelected = false;
+    locationError: string | null = null;
+    
+    searchResults: any[] = [];
+    activeSearchField: 'from' | 'to' | null = null;
+    generatedRoutes: any[] = [];
+    selectedRoute: any | null = null;
+    
+    coverageStats: any = null;
+    isLoadingStats = false;
+    errorHubs: any[] = [];
+    alertMessage: string | null = null;
+    showAlternatives = false;
+    isStartingTrip = false;
+    testMarkers: any[] = [];
     // --- Route Finding ---
     async findRoutes() {
         // Pre-validation: Don't send placeholder strings as queries
@@ -748,8 +772,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 // Background refresh name
                 this.geocodingService.reverseGeocode(lat, lng).subscribe({
                     next: (result: any) => {
-                        if (result && (result.display_name || result.name || result.area)) {
-                            this.fromQuery = `📍 ${result.display_name || result.name || result.area}`;
+                        if (result && (result.display_name || result.name || result.area || result.address)) {
+                            const name = result.display_name || result.name || result.area || result.address;
+                            this.fromQuery = `📍 ${name}`;
+                            (this.fromLocation as any).resolvedName = name;
+                            (this.fromLocation as any).needsNaming = result.needsNaming;
                         }
                     }
                 });
@@ -781,12 +808,14 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             // Try to get address using reverse geocoding (will replace coordinates with name)
             this.geocodingService.reverseGeocode(lat, lng).subscribe({
                 next: (result: any) => {
-                    if (result && (result.display_name || result.name || result.area)) {
+                    if (result && (result.display_name || result.name || result.area || result.address)) {
+                        const name = result.display_name || result.name || result.area || result.address;
                         // Replace coordinates with human-readable name
-                        this.fromQuery = `📍 ${result.display_name || result.name || result.area}`;
+                        this.fromQuery = `📍 ${name}`;
                         if (this.fromLocation) {
-                            (this.fromLocation as any).resolvedName = result.display_name || result.name || result.area;
+                            (this.fromLocation as any).resolvedName = name;
                             (this.fromLocation as any).isExternal = result.source === 'osm';
+                            (this.fromLocation as any).needsNaming = result.needsNaming;
                         }
                     }
                     // If no result, keep the coordinates that are already showing
@@ -942,20 +971,54 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     onRefineModalClosed(result: RefineLocationResult) {
         this.isRefineModalOpen = false;
 
-        if (result.confirmed && result.refinedName !== result.originalName && this.fromLocation) {
-            this.fromQuery = `📍 ${result.refinedName}`;
+        if (result.confirmed && this.fromLocation) {
+            const isNewName = result.refinedName !== result.originalName;
 
-            // Send to backend to "learn" this alias
-            this.busStopService.submitMissingStop({
-                name: result.refinedName,
-                latitude: this.fromLocation.lat,
-                longitude: this.fromLocation.lng,
-                description: `User-refined name for OSM point: ${result.originalName}`,
-                localNames: [result.originalName]
-            }).subscribe({
-                next: () => console.log('[TripPlanner] Name refinement submitted for verification'),
-                error: (err: any) => console.error('[TripPlanner] Failed to submit refinement:', err)
-            });
+            if (isNewName) {
+                const lat = this.fromLocation.lat;
+                const lng = this.fromLocation.lng;
+
+                this.fromQuery = `📍 ${result.refinedName}`;
+                (this.fromLocation as any).resolvedName = result.refinedName;
+
+                // Send to backend to "learn" this alias
+                this.busStopService.submitMissingStop({
+                    name: result.refinedName,
+                    latitude: lat,
+                    longitude: lng,
+                    description: `User-refined name for OSM point: ${result.originalName}`,
+                    localNames: [result.originalName]
+                }).subscribe({
+                    next: () => console.log('[TripPlanner] Name refinement submitted'),
+                    error: (err: any) => console.error('[TripPlanner] Refinement failed:', err)
+                });
+            }
+
+            // 🏠 Persistent Location Logic
+            if (result.isDefault) {
+                this.geolocationService.setPrimaryLocation({
+                    latitude: this.fromLocation.lat,
+                    longitude: this.fromLocation.lng,
+                    accuracy: 0
+                });
+                this.locationError = "Custom home location saved! We will use this as your default.";
+                setTimeout(() => this.locationError = "", 5000);
+            }
+        }
+    }
+
+    // Name Place Modal state
+    isNamePlaceModalOpen = false;
+
+    openNamePlaceModal() {
+        this.isNamePlaceModalOpen = true;
+    }
+
+    onNamePlaceModalClosed(success: boolean) {
+        this.isNamePlaceModalOpen = false;
+        if (success && this.fromLocation) {
+            // Optimistically clear needsNaming if they successfully suggested a name
+            (this.fromLocation as any).needsNaming = false;
         }
     }
 

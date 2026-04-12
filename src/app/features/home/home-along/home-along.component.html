@@ -62,6 +62,9 @@
                     (click)="refineLocation()" type="button" title="Refine Location Name">
                     ✏️
                 </button>
+                <button *ngIf="fromLocation?.needsNaming && !isDetectingLocation" class="name-place-btn" (click)="openNamePlaceModal()" type="button" title="Name This Place">
+                    🏷️ Name Place
+                </button>
                 <div class="loading-spinner" *ngIf="isDetectingLocation">
                     <div class="spinner"></div>
                 </div>
@@ -174,3 +177,12 @@
 <app-refine-location-modal [isOpen]="isRefineModalOpen" [currentName]="refineModalCurrentName"
     (closed)="onRefineModalClosed($event)">
 </app-refine-location-modal>
+
+<!-- Name Place Modal -->
+<app-name-place-modal 
+    [isOpen]="isNamePlaceModalOpen" 
+    [lat]="fromLocation?.coords?.lat ?? null" 
+    [lng]="fromLocation?.coords?.lng ?? null"
+    [currentAddress]="fromInput"
+    (closed)="onNamePlaceModalClosed($event)">
+</app-name-place-modal>
