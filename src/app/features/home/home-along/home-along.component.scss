@@ -256,12 +256,19 @@
 /* ==================== SEARCH RESULTS ==================== */
 
 .search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
   background-color: white;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-xl);
+  margin-top: var(--space-2);
   margin-bottom: var(--space-4);
   max-height: 400px;
   overflow-y: auto;
+  z-index: 1000;
+  border: 1px solid var(--border-light);
 }
 
 .search-result-item {

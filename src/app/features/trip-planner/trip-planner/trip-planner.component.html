@@ -116,12 +116,13 @@
       </div>
 
       <!-- To Input -->
-      <div class="search-box position-relative mb-3">
-        <input type="text" placeholder="🎯 To: Destination" class="form-control" [(ngModel)]="toQuery"
-          (input)="onSearchInput('to', toQuery)">
+      <div class="search-box mb-3">
+        <div class="position-relative">
+          <input type="text" placeholder="🎯 To: Destination" class="form-control" [(ngModel)]="toQuery"
+            (input)="onSearchInput('to', toQuery)">
 
-        <!-- Search Results for To -->
-        <ul *ngIf="activeSearchField === 'to' && searchResults.length > 0" class="suggestion-list">
+          <!-- Search Results for To -->
+          <ul *ngIf="activeSearchField === 'to' && searchResults.length > 0" class="suggestion-list">
           <li *ngFor="let result of searchResults" class="suggestion-item" (click)="selectResult(result)"
             [class.primary-landmark]="result.tier === 'primary'">
             <div class="d-flex justify-content-between align-items-start">
@@ -182,6 +183,7 @@
             </div>
           </li>
         </ul>
+        </div>
       </div>
 
       <!-- Nearby Bus Stops -->
