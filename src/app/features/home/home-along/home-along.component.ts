@@ -235,7 +235,10 @@ export class HomeAlongComponent implements OnInit {
           next: (res: any) => {
             if (res && (res.display_name || res.name || res.area || res.address)) {
               const addressStr = typeof res.address === 'string' ? res.address : (res.address?.road || res.address?.neighbourhood || res.address?.suburb || res.address?.city || 'Unknown Location');
-              const name = res.display_name || res.name || res.area || addressStr;
+              const displayStr = typeof res.display_name === 'string' ? res.display_name : null;
+              const nameStr = typeof res.name === 'string' ? res.name : null;
+              const areaStr = typeof res.area === 'string' ? res.area : null;
+              const name = displayStr || nameStr || areaStr || addressStr;
               this.fromInput = `📍 ${name}`;
               if (this.fromLocation) {
                 this.fromLocation.name = this.fromInput;
@@ -280,7 +283,10 @@ export class HomeAlongComponent implements OnInit {
         next: (result: any) => {
           if (result && (result.display_name || result.name || result.area || result.address)) {
             const addressStr = typeof result.address === 'string' ? result.address : (result.address?.road || result.address?.neighbourhood || result.address?.suburb || result.address?.city || 'Unknown Location');
-            const locationName = `📍 ${result.display_name || result.name || result.area || addressStr}`;
+            const displayStr = typeof result.display_name === 'string' ? result.display_name : null;
+            const nameStr = typeof result.name === 'string' ? result.name : null;
+            const areaStr = typeof result.area === 'string' ? result.area : null;
+            const locationName = `📍 ${displayStr || nameStr || areaStr || addressStr}`;
             this.fromLocation = {
               ...detectedLocation,
               name: locationName,

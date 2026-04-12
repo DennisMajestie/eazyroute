@@ -751,7 +751,10 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                     next: (result: any) => {
                         if (result && (result.display_name || result.name || result.area || result.address)) {
                             const addressStr = typeof result.address === 'string' ? result.address : (result.address?.road || result.address?.neighbourhood || result.address?.suburb || result.address?.city || 'Unknown Location');
-                            const name = result.display_name || result.name || result.area || addressStr;
+                            const displayStr = typeof result.display_name === 'string' ? result.display_name : null;
+                            const nameStr = typeof result.name === 'string' ? result.name : null;
+                            const areaStr = typeof result.area === 'string' ? result.area : null;
+                            const name = displayStr || nameStr || areaStr || addressStr;
                             this.fromQuery = `📍 ${name}`;
                             (this.fromLocation as any).resolvedName = name;
                             (this.fromLocation as any).needsNaming = result.needsNaming;
@@ -788,7 +791,10 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 next: (result: any) => {
                     if (result && (result.display_name || result.name || result.area || result.address)) {
                         const addressStr = typeof result.address === 'string' ? result.address : (result.address?.road || result.address?.neighbourhood || result.address?.suburb || result.address?.city || 'Unknown Location');
-                        const name = result.display_name || result.name || result.area || addressStr;
+                        const displayStr = typeof result.display_name === 'string' ? result.display_name : null;
+                        const nameStr = typeof result.name === 'string' ? result.name : null;
+                        const areaStr = typeof result.area === 'string' ? result.area : null;
+                        const name = displayStr || nameStr || areaStr || addressStr;
                         // Replace coordinates with human-readable name
                         this.fromQuery = `📍 ${name}`;
                         if (this.fromLocation) {
