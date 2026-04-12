@@ -73,30 +73,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     // Map Settings (Abuja)
     center = { lat: 9.0765, lng: 7.3986 };
     zoom = 12;
-    // Trip Planning State
-    fromLocation: any = null;
-    toLocation: any = null;
-    fromQuery: string = '';
-    toQuery: string = '';
-    
-    isLoadingRoutes = false;
-    isDetectingLocation = false;
-    isTrackingLocation = false;
-    isDefaultSelected = false;
-    locationError: string | null = null;
-    
-    searchResults: any[] = [];
-    activeSearchField: 'from' | 'to' | null = null;
-    generatedRoutes: any[] = [];
-    selectedRoute: any | null = null;
-    
-    coverageStats: any = null;
-    isLoadingStats = false;
-    errorHubs: any[] = [];
-    alertMessage: string | null = null;
-    showAlternatives = false;
-    isStartingTrip = false;
-    testMarkers: any[] = [];
+
     // --- Route Finding ---
     async findRoutes() {
         // Pre-validation: Don't send placeholder strings as queries
@@ -386,8 +363,8 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     // Forms & Search
     fromQuery = '';
     toQuery = '';
-    fromLocation: { lat: number, lng: number } | null = null;
-    toLocation: { lat: number, lng: number } | null = null;
+    fromLocation: { lat: number, lng: number, resolvedName?: string, isExternal?: boolean, needsNaming?: boolean } | null = null;
+    toLocation: { lat: number, lng: number, resolvedName?: string, isExternal?: boolean, needsNaming?: boolean } | null = null;
 
     searchResults: SearchResult[] = [];
     activeSearchField: 'from' | 'to' | null = null;
@@ -979,7 +956,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 const lng = this.fromLocation.lng;
 
                 this.fromQuery = `📍 ${result.refinedName}`;
-                (this.fromLocation as any).resolvedName = result.refinedName;
+                this.fromLocation.resolvedName = result.refinedName;
 
                 // Send to backend to "learn" this alias
                 this.busStopService.submitMissingStop({
@@ -1018,7 +995,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.isNamePlaceModalOpen = false;
         if (success && this.fromLocation) {
             // Optimistically clear needsNaming if they successfully suggested a name
-            (this.fromLocation as any).needsNaming = false;
+            this.fromLocation.needsNaming = false;
         }
     }
 
