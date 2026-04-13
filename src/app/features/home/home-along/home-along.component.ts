@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -16,8 +16,8 @@ import { NamePlaceModalComponent } from '../../../shared/components/name-place-m
 import { NIGERIAN_COPY } from '../../../shared/constants/nigerian-copy.constants';
 import { AlongService } from '../../../core/services/along.service';
 import { BoardingInference } from '../../../models/transport.types';
-import { Subscription, interval } from 'rxjs';
-import { switchMap, filter, firstValueFrom } from 'rxjs';
+import { Subscription, interval, Subject } from 'rxjs';
+import { switchMap, filter, firstValueFrom, debounceTime, distinctUntilChanged } from 'rxjs';
 import { GeolocationService } from '../../../core/services/geolocation.service';
 
 interface PopularRoute {
@@ -76,6 +76,10 @@ export class HomeAlongComponent implements OnInit {
   showSmartBoarding: boolean = false;
   isNightMode: boolean = false;
 
+  // Search debounce
+  private searchSubject = new Subject<{ field: 'from' | 'to'; query: string }>();
+  private searchSubscription: Subscription | null = null;
+
   // Popular routes
   popularRoutes: PopularRoute[] = [
     { from: 'Lokogoma', to: 'Area 1', emoji: '🏢' },
@@ -103,6 +107,14 @@ export class HomeAlongComponent implements OnInit {
     this.loadSelectedArea();
     this.checkNightMode();
 
+    // Wire up debounced search
+    this.searchSubscription = this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged((a, b) => a.query === b.query && a.field === b.field)
+    ).subscribe(({ field, query }) => {
+      this._executeSearch(field, query);
+    });
+
     // Auto-detect location on load
     this.detectLocation().then(() => {
       this.startSmartBoardingPolling();
@@ -112,6 +124,22 @@ export class HomeAlongComponent implements OnInit {
   ngOnDestroy() {
     if (this.pollingSubscription) {
       this.pollingSubscription.unsubscribe();
+    }
+    if (this.searchSubscription) {
+      this.searchSubscription.unsubscribe();
+    }
+    this.searchSubject.complete();
+  }
+
+  /**
+   * Close search results when user clicks outside the component
+   */
+  @HostListener('document:click', ['$event.target'])
+  onClickOutside(target: HTMLElement) {
+    const isInsideComponent = target.closest('app-home-along');
+    if (!isInsideComponent) {
+      this.showSearchResults = false;
+      this.activeField = null;
     }
   }
 
@@ -336,6 +364,7 @@ export class HomeAlongComponent implements OnInit {
 
   /**
   * Search for localities, anchors, and landmarks (ALONG Framework)
+  * Debounced — pushes to Subject, actual API call deferred 300ms.
   */
   onSearchInput(field: 'from' | 'to', query: string) {
     this.activeField = field;
@@ -347,15 +376,22 @@ export class HomeAlongComponent implements OnInit {
       return;
     }
 
+    // Show the dropdown immediately with loading state
+    this.showSearchResults = true;
     this.isSearching = true;
-    // Set initial loading state with Nigerian copy
     this.loadingState.setInitialLoading(NIGERIAN_COPY.LOADING.SEARCHING);
 
-    // Hybrid Search (ALONG Framework)
+    // Push to debounced subject — actual request fires 300ms after user stops typing
+    this.searchSubject.next({ field, query });
+  }
+
+  /**
+   * Execute the actual API search (called by debounced subject)
+   */
+  private _executeSearch(field: 'from' | 'to', query: string) {
     this.alongService.search(query).subscribe({
       next: (response) => {
         if (response && response.success && Array.isArray(response.data)) {
-          // Map to LocalitySearchResult format for compatibility or use new format
           this.searchResults = response.data.map((item: any) => ({
             type: item.type,
             name: item.name,
@@ -363,12 +399,13 @@ export class HomeAlongComponent implements OnInit {
             latitude: item.lat ?? item.location?.lat ?? item.location?.coordinates?.[1],
             longitude: item.lng ?? item.location?.lng ?? item.location?.coordinates?.[0],
             source: item.source
-          } as any)); // Using any to bypass strict type check for now if LocalitySearchResult is strict
+          } as any));
 
           this.showSearchResults = true;
           this.loadingState.setSuccess(NIGERIAN_COPY.SUCCESS.READY);
         } else {
           this.searchResults = [];
+          this.showSearchResults = true; // keep open to show no-results state
           this.loadingState.setHardFailure('data_unavailable', NIGERIAN_COPY.HARD_FAILURE.NO_ROUTE_YET);
         }
         this.isSearching = false;
@@ -376,6 +413,7 @@ export class HomeAlongComponent implements OnInit {
       error: (error) => {
         console.error('Hybrid search error:', error);
         this.searchResults = [];
+        this.showSearchResults = true; // keep open to show error state
         this.loadingState.setHardFailure('network_failure', 'Could not search properly. Try again?');
         this.isSearching = false;
       }
