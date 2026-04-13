@@ -135,11 +135,13 @@ export class HomeAlongComponent implements OnInit {
    * Close search results when user clicks outside the component
    */
   @HostListener('document:click', ['$event.target'])
-  onClickOutside(target: HTMLElement) {
-    const isInsideComponent = target.closest('app-home-along');
-    if (!isInsideComponent) {
-      this.showSearchResults = false;
-      this.activeField = null;
+  onClickOutside(target: EventTarget | null) {
+    if (target instanceof Element) {
+      const isInsideComponent = target.closest('app-home-along');
+      if (!isInsideComponent) {
+        this.showSearchResults = false;
+        this.activeField = null;
+      }
     }
   }
 
