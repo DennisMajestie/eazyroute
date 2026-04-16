@@ -225,6 +225,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           ],
           suggestions: []
         };
+
+        
         this.report = mockReport;
         this.statCards[1].value = mockReport.totalNodes;
         this.statCards[2].value = mockReport.totalEdges;

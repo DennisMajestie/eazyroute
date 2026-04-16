@@ -1,0 +1,94 @@
+<div class="soul-container">
+    <div class="header-section">
+        <h1>Abuja Soul v2 Strategy</h1>
+        <p>Configuring location-aware transport preferences for village nodes and bridge crossings.</p>
+    </div>
+
+    <!-- Search Section -->
+    <div class="search-section" *ngIf="!selectedStop">
+        <div class="search-card">
+            <h3>Find Terminal</h3>
+            <div class="input-wrapper">
+                <i class="fas fa-search"></i>
+                <input 
+                    type="text" 
+                    placeholder="Search for village node or terminal..." 
+                    (input)="onSearch($event)">
+                <div class="spinner" *ngIf="isSearching"></div>
+            </div>
+            
+            <ul class="results-list" *ngIf="searchResults.length > 0">
+                <li *ngFor="let stop of searchResults" (click)="selectStop(stop)">
+                    <div class="stop-info">
+                        <span class="name">{{ stop.name }}</span>
+                        <span class="zone">{{ stop.zone || 'No Zone' }}</span>
+                    </div>
+                    <i class="fas fa-chevron-right"></i>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Edit Section -->
+    <div class="edit-section" *ngIf="selectedStop">
+        <div class="selected-stop-banner">
+            <button class="back-btn" (click)="clearSelection()">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="banner-content">
+                <h2>{{ selectedStop.name }}</h2>
+                <span class="badge">{{ selectedStop.zone || 'ZONE_VILLAGE' }}</span>
+            </div>
+        </div>
+
+        <form [formGroup]="soulForm" (ngSubmit)="onSubmit()" class="preferences-form">
+            <div class="preference-group">
+                <div class="group-header">
+                    <i class="fas fa-walking"></i>
+                    <div class="text">
+                        <h3>First-Leg Preference</h3>
+                        <p>Mandatory transport mode for the "Village Rib" (first leg of trip).</p>
+                    </div>
+                </div>
+                <div class="options-grid">
+                    <label *ngFor="let mode of firstLegModes" class="option-card" [class.active]="soulForm.get('firstLegPreferredMode')?.value === mode.value">
+                        <input type="radio" formControlName="firstLegPreferredMode" [value]="mode.value">
+                        <span class="label">{{ mode.label }}</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="preference-group">
+                <div class="group-header">
+                    <i class="fas fa-bridge"></i>
+                    <div class="text">
+                        <h3>Bridge Crossing Preference</h3>
+                        <p>Preferred mode when crossing major expressways (FIDA bridges).</p>
+                    </div>
+                </div>
+                <div class="options-grid">
+                    <label *ngFor="let mode of bridgeModes" class="option-card" [class.active]="soulForm.get('bridgeModePreference')?.value === mode.value">
+                        <input type="radio" formControlName="bridgeModePreference" [value]="mode.value">
+                        <span class="label">{{ mode.label }}</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="actions">
+                <div class="status-msgs">
+                    <div class="alert success" *ngIf="showSuccess">
+                        <i class="fas fa-check-circle"></i> Strategy updated successfully
+                    </div>
+                    <div class="alert error" *ngIf="errorMessage">
+                        <i class="fas fa-exclamation-circle"></i> {{ errorMessage }}
+                    </div>
+                </div>
+                <button type="submit" class="save-btn" [disabled]="isSubmitting">
+                    <i class="fas fa-magic" *ngIf="!isSubmitting"></i>
+                    <i class="fas fa-spinner fa-spin" *ngIf="isSubmitting"></i>
+                    {{ isSubmitting ? 'Saving...' : 'Deploy Strategy' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

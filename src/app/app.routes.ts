@@ -127,6 +127,10 @@ export const routes: Routes = [
             {
                 path: 'seeder',
                 loadComponent: () => import('./features/admin/admin-route-seeder/admin-route-seeder.component').then(m => m.AdminRouteSeederComponent)
+            },
+            {
+                path: 'soul-management',
+                loadComponent: () => import('./features/admin/soul-v2-management/soul-v2-management.component').then(m => m.SoulV2ManagementComponent)
             }
         ]
     },

@@ -208,6 +208,16 @@ export class AdminService {
         return this.http.post(`${this.apiUrl}/route-segments/admin/seed`, payload);
     }
 
+    /**
+     * Update Soul v2 transport preferences for a bus stop (Admin only)
+     */
+    updateBusStopPreferences(id: string, preferences: {
+        firstLegPreferredMode?: string;
+        bridgeModePreference?: string;
+    }): Observable<any> {
+        return this.http.patch(`${this.apiUrl}/bus-stops/${id}/soul-v2-preferences`, preferences);
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // MODERATION QUEUE
     // ═══════════════════════════════════════════════════════════════

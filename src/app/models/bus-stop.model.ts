@@ -56,6 +56,10 @@ export interface BusStop {
     securityProfile?: SecurityProfile;
     zone?: string; // ZONE_VILLAGE, ZONE_HUB, ZONE_RESTRICTED, etc.
 
+    // Abuja Soul v2 Preferences
+    firstLegPreferredMode?: 'okada' | 'keke' | 'taxi' | 'auto';
+    bridgeModePreference?: 'keke' | 'taxi' | 'any';
+
     // Legacy fields (keep for backward compatibility)
     verified: boolean;
     addedBy?: number;
