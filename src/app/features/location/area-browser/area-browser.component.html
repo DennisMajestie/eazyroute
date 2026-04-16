@@ -1,62 +1,87 @@
 <div class="area-browser-container">
     <!-- Header -->
-    <div class="browser-header">
-        <button class="btn-back" (click)="goBack()" title="Go Back">
+    <header class="browser-header">
+        <button class="btn-back" (click)="goBack()">
             <i class="fas fa-arrow-left"></i>
         </button>
-        <h1 class="page-title">{{ territory }}</h1>
-    </div>
-
-    <!-- Stats -->
-    <div class="stats-section" *ngIf="!isLoading">
-        <div class="stat-card">
-            <div class="stat-value">{{ areas.length }}</div>
-            <div class="stat-label">areas in {{ territory }}</div>
+        <div class="header-content">
+            <h1 class="page-title">{{ territoryName }}</h1>
+            <span class="page-subtitle">Districts & Transit Hubs</span>
         </div>
-    </div>
+    </header>
 
-    <!-- Search -->
-    <div class="search-section">
-        <input type="text" class="search-input" [(ngModel)]="areaSearch" (input)="onSearchInput()"
-            placeholder="🔍 Search areas..." />
-    </div>
+    <!-- Stats Dashboard -->
+    <section class="stats-section" *ngIf="!isLoading && areas.length > 0">
+        <div class="stat-card">
+            <div class="stat-icon">🏙️</div>
+            <span class="stat-value">{{ areas.length }}</span>
+            <span class="stat-label">Total Districts</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🚉</div>
+            <span class="stat-value">34</span>
+            <span class="stat-label">Verified Hubs</span>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🛡️</div>
+            <span class="stat-value">v2.0</span>
+            <span class="stat-label">System Node</span>
+        </div>
+    </section>
 
-    <!-- Loading State -->
-    <div class="loading-state" *ngIf="isLoading">
-        <div class="spinner-large"></div>
-        <p>Loading areas...</p>
-    </div>
+    <!-- Smart Search -->
+    <section class="search-section">
+        <input 
+            type="text" 
+            class="search-input" 
+            placeholder="Search districts, LGAs or zones..."
+            [value]="areaSearch"
+            (input)="onSearch($event)">
+    </section>
 
     <!-- Content -->
-    <div class="browser-content" *ngIf="!isLoading">
+    <div class="browser-content">
+        <!-- Loading State -->
+        <div class="loading-state" *ngIf="isLoading">
+            <div class="spinner-large"></div>
+            <h3>Syncing System Nodes...</h3>
+            <p>Gathering the latest transit data for {{ territoryName }}</p>
+        </div>
 
-        <!-- Grouped Areas -->
-        <div class="area-groups" *ngIf="groupedAreas.length > 0">
-            <div class="area-group" *ngFor="let group of groupedAreas">
-                <h3 class="group-title">
-                    {{ getGroupIcon(group.type) }} {{ group.type | titlecase }} Districts
-                </h3>
+        <!-- Area Groups -->
+        <div class="area-groups" *ngIf="!isLoading && groupedAreas.length > 0">
+            <div class="area-group" 
+                 *ngFor="let group of groupedAreas"
+                 [class.village-group]="group.type === 'village'">
+                <h2 class="group-title">
+                    <span class="type-icon">{{ getGroupIcon(group.type) }}</span>
+                    {{ group.type | titlecase }} Zones
+                </h2>
                 <div class="areas-list">
-                    <app-area-card *ngFor="let area of group.areas" [area]="area" (selected)="onAreaSelected($event)">
+                    <app-area-card 
+                        *ngFor="let area of group.areas" 
+                        [area]="area"
+                        (selected)="onAreaSelect($event)">
                     </app-area-card>
                 </div>
             </div>
         </div>
 
         <!-- No Results -->
-        <div class="no-results" *ngIf="areaSearch && filteredAreas.length === 0">
-            <div class="no-results-icon">🔍</div>
-            <p>No areas found matching "{{ areaSearch }}"</p>
+        <div class="no-results" *ngIf="!isLoading && areaSearch && filteredAreas.length === 0">
+            <div class="spinner-large" style="border-top-color: #ef4444; animation: none; transform: scale(0.5);"></div>
+            <h3>No matches found</h3>
+            <p>We couldn't find any districts matching "{{ areaSearch }}"</p>
         </div>
 
         <!-- Empty State -->
-        <div class="empty-state" *ngIf="!areaSearch && areas.length === 0">
-            <div class="empty-icon">📍</div>
-            <h3>No areas available</h3>
-            <p>This state doesn't have mapped areas yet</p>
-            <button class="btn btn-primary" (click)="goBack()">
-                Choose Another State
+        <div class="empty-state" *ngIf="!isLoading && !areaSearch && areas.length === 0">
+            <div class="spinner-large" style="border-top-color: #64748b; animation: none; transform: scale(0.5);"></div>
+            <h3>Region Unmapped</h3>
+            <p>We haven't mapped any areas in {{ territoryName }} yet.</p>
+            <button class="btn btn-primary" (click)="goBack()" style="margin-top: 2rem;">
+                Explore Other Regions
             </button>
         </div>
     </div>
-</div>
+</div>

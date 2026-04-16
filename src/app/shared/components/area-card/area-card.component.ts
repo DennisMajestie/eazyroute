@@ -25,7 +25,8 @@ export class AreaCardComponent {
             'commercial': 'var(--primary)',
             'residential': 'var(--secondary)',
             'mixed': 'var(--accent)',
-            'industrial': '#666'
+            'industrial': '#666',
+            'village': '#ff6b35'
         };
         return colorMap[this.area.type || 'mixed'] || 'var(--accent)';
     }

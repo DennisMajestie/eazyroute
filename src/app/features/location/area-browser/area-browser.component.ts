@@ -15,6 +15,7 @@ import { AreaCardComponent } from '../../../shared/components/area-card/area-car
 })
 export class AreaBrowserComponent implements OnInit {
   territory: string = '';
+  territoryName: string = ''; // Display name for the UI
   areas: Area[] = [];
   filteredAreas: Area[] = [];
   groupedAreas: { type: string; areas: Area[] }[] = [];
@@ -30,6 +31,7 @@ export class AreaBrowserComponent implements OnInit {
   ngOnInit() {
     this.route.params.subscribe(params => {
       this.territory = params['territory'];
+      this.territoryName = this.territory || 'Nigeria';
       if (this.territory) {
         this.loadAreas();
       }
@@ -64,13 +66,21 @@ export class AreaBrowserComponent implements OnInit {
       groups.get(type)!.push(area);
     });
 
-    this.groupedAreas = Array.from(groups.entries()).map(([type, areas]) => ({
-      type,
-      areas
-    }));
+    // Sort: Villages first for Soul V2 seeding compliance, then alphabetical
+    this.groupedAreas = Array.from(groups.entries())
+      .map(([type, areas]) => ({
+        type,
+        areas: areas.sort((a, b) => a.name.localeCompare(b.name))
+      }))
+      .sort((a, b) => {
+        if (a.type === 'village') return -1;
+        if (b.type === 'village') return 1;
+        return a.type.localeCompare(b.type);
+      });
   }
 
-  onSearchInput() {
+  onSearch(event: any) {
+    this.areaSearch = event.target.value;
     if (!this.areaSearch || this.areaSearch.length < 2) {
       this.filteredAreas = this.areas;
     } else {
@@ -83,7 +93,7 @@ export class AreaBrowserComponent implements OnInit {
     this.groupAreas();
   }
 
-  onAreaSelected(area: Area) {
+  onAreaSelect(area: Area) {
     // Save selected area to localStorage
     localStorage.setItem('selectedArea', JSON.stringify(area));
 
@@ -105,7 +115,8 @@ export class AreaBrowserComponent implements OnInit {
       'commercial': '🏢',
       'residential': '🏘️',
       'mixed': '🏪',
-      'industrial': '🏭'
+      'industrial': '🏭',
+      'village': '🏡'
     };
     return iconMap[type] || '📍';
   }

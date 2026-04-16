@@ -46,6 +46,12 @@ export class RouteGenerationEngine {
     private config: EasyRouteConfig = DEFAULT_CONFIG;
     private readonly WALKING_SPEED_MPS = 1.4;
 
+    // Soul V2: Village Routing Hubs (Hardcoded for Option A reliability)
+    private readonly DOGONGADA_GATE: Location = { latitude: 9.051, longitude: 7.525 };
+    private readonly VILLAGE_BOUNDARIES = [
+        { name: 'Dogongada', center: { latitude: 9.048, longitude: 7.523 }, radius: 1000, gate: { latitude: 9.051, longitude: 7.525 }, gateName: 'Efab Junction (Village Gate)' }
+    ];
+
     constructor(
         @Inject(BUS_STOP_REPOSITORY) private busStopRepo: IBusStopRepository,
         @Inject(ROUTING_SERVICE) private routingService: IRoutingService,
@@ -74,6 +80,13 @@ export class RouteGenerationEngine {
         maxAlternatives: number = 5
     ): Promise<GeneratedRoute[]> {
         console.log('[RouteGen] Starting route generation...', { startLocation, endLocation });
+
+        // Soul V2: Check for Village Context (Okada Restriction Enforcement)
+        const villageContext = this.detectVillageContext(startLocation);
+        if (villageContext) {
+            console.log(`[Soul V2] Village context detected: ${villageContext.name}. Synthesizing compliant route...`);
+            return this.synthesizeVillageRoute(startLocation, endLocation, villageContext);
+        }
 
         // Node Snapping: improve origin/destination alignment to nearest known node
         try {
@@ -739,7 +752,7 @@ export class RouteGenerationEngine {
     private createDummyStop(location: Location, id: string): BusStop {
         return {
             id: Math.random(), // Temporary ID
-            name: 'Point',
+            name: id === 'village-gate' ? 'Efab Junction (Village Gate)' : 'Point',
             type: 'landmark',
             localNames: [],
             latitude: location.latitude,
@@ -750,12 +763,93 @@ export class RouteGenerationEngine {
             verificationStatus: 'verified',
             upvotes: 0,
             downvotes: 0,
-            transportModes: ['walking'],
+            transportModes: ['walking', 'okada', 'keke', 'bus'],
             photos: [],
             usageCount: 0,
             isActive: true,
             verified: true,
             createdAt: new Date()
         };
+    }
+
+    /**
+     * Soul V2: Detect if a location is within a restricted Village Zone
+     */
+    private detectVillageContext(location: Location) {
+        for (const village of this.VILLAGE_BOUNDARIES) {
+            const distance = this.locationService.calculateDistance(location, village.center);
+            if (distance <= village.radius) {
+                return village;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Soul V2: Synthesize a compliant journey from a Village Zone
+     * Segment 1 (Internal): Okada to Village Gate
+     * Segment 2 (External): Standard Routing from Gate
+     */
+    private async synthesizeVillageRoute(
+        startLoc: Location,
+        endLoc: Location,
+        village: any
+    ): Promise<GeneratedRoute[]> {
+        const segments: RouteSegment[] = [];
+
+        // 1. Leg 1: Okada from User Point to Village Gate
+        const internalOkada = await this.createTransitSegment(
+            this.createDummyStop(startLoc, 'start-point'),
+            this.createDummyStop(village.gate, 'village-gate'),
+            'okada',
+            'village-exit'
+        );
+        internalOkada.instructions = `Take Okada from ${village.name} to ${village.gateName}`;
+        segments.push(internalOkada);
+
+        // 2. Leg 2: Standard routing from Gate to Destination
+        // We recursively call the engine logic but without the village intercept
+        // For simplicity in Option A, we'll generate the balanced route segment from gate
+        
+        // Find nearby stops at gate exit
+        const exitStops = await this.busStopRepo.findNearby(village.gate, 500);
+        const endStops = await this.busStopRepo.findNearby(endLoc, this.config.nearbyStopRadiusMeters);
+
+        if (exitStops.length > 0 && endStops.length > 0) {
+            // Main transit from Gate to nearby Destination stop
+            const transitSegment = await this.createTransitSegment(
+                exitStops[0],
+                endStops[0],
+                'bus',
+                'main-transit-compliant'
+            );
+            segments.push(transitSegment);
+
+            // Final walk to destination
+            const walkToEnd = await this.createWalkingSegment(
+                this.busStopToLocation(endStops[0]),
+                endLoc,
+                'walk-to-end'
+            );
+            segments.push(walkToEnd);
+        } else {
+            // Fallback: Direct Keke/Bus if no stops found
+            const directLeg = await this.createTransitSegment(
+                this.createDummyStop(village.gate, 'village-gate'),
+                this.createDummyStop(endLoc, 'destination'),
+                'bus',
+                'direct-transit-fallback'
+            );
+            segments.push(directLeg);
+        }
+
+        const route = this.buildRoute(segments, 'balanced');
+        route.strategy = 'recommended';
+        
+        // Add specific metadata for UI
+        (route as any).isSoulV2Compliant = true;
+        (route as any).villageContext = village.name;
+
+        return [route];
     }
 }
