@@ -801,7 +801,7 @@ export class RouteGenerationEngine {
         const internalOkada = await this.createTransitSegment(
             this.createDummyStop(startLoc, 'start-point'),
             this.createDummyStop(village.gate, 'village-gate'),
-            'okada',
+            'bike',  // 'okada' maps to 'bike' in TransportModeType
             'village-exit'
         );
         internalOkada.instructions = `Take Okada from ${village.name} to ${village.gateName}`;
@@ -844,7 +844,7 @@ export class RouteGenerationEngine {
         }
 
         const route = this.buildRoute(segments, 'balanced');
-        route.strategy = 'recommended';
+        route.strategy = 'custom'; // Soul V2 synthesized route — marked via isSoulV2Compliant
         
         // Add specific metadata for UI
         (route as any).isSoulV2Compliant = true;
