@@ -23,6 +23,7 @@ import { RefineLocationModalComponent, RefineLocationResult } from '../../../sha
 import { RouteCardComponent } from '../components/route-card/route-card.component';
 import { RouteNotFoundCardComponent } from '../../../shared/components/route-not-found-card/route-not-found-card.component';
 import { NamePlaceModalComponent } from '../../../shared/components/name-place-modal/name-place-modal.component';
+import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 
 interface SearchResult {
     name: string;
@@ -69,6 +70,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     private geolocationService = inject(GeolocationService);
     private protocolService = inject(CommuterProtocolService);
     private safetyService = inject(SafetyService);
+    private toastService = inject(ToastNotificationService);
 
     // Map Settings (Abuja)
     center = { lat: 9.0765, lng: 7.3986 };
@@ -101,11 +103,11 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         }
 
         if (!this.fromLocation) {
-            alert('Please enter a starting point');
+            this.toastService.warning('Origin Missing', 'Please enter a starting point before searching.');
             return;
         }
         if (!this.toLocation) {
-            alert('Please enter a destination');
+            this.toastService.warning('Destination Missing', 'Please enter a destination before searching.');
             return;
         }
 
@@ -423,12 +425,12 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             };
 
             await firstValueFrom(this.alongService.reportCondition(report));
-            alert('Thank you! Your report has been submitted and will help other commuters.');
+            this.toastService.success('Report Received', 'Thank you! Your traffic intel will help other commuters stay moving.');
             this.showTrafficReportModal = false;
             this.reportDescription = '';
         } catch (error) {
             console.error('[TripPlanner] Report failed:', error);
-            alert('Failed to submit report. Please try again.');
+            this.toastService.error('Report Failed', 'We couldn\'t submit your report. Please check your connection.');
         } finally {
             this.isSubmitting = false;
         }
@@ -491,7 +493,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             case 'red': // SOS
                 if (confirm('Are you sure you want to send an SOS alert? This will notify nearby users and contacts.')) {
                     this.safetyService.sendSOS('SOS_SILENT');
-                    alert('SOS Alert Sent. Help is on the way.');
+                    this.toastService.info('Emergency Response', 'SOS Alert Sent. Help is on the way.');
                 }
                 break;
         }
@@ -938,7 +940,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
      */
     refineLocation() {
         if (!this.fromLocation) {
-            alert('Detect your location first to refine the name.');
+            this.toastService.info('Action Required', 'Detect your location first to refine the name.');
             return;
         }
 
@@ -1288,7 +1290,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
     async startTripWithRoute(route: GeneratedRoute) {
         if (!this.fromLocation || !this.toLocation) {
-            alert('Missing location data');
+            this.toastService.warning('Routing Error', 'Missing location data for trip initialization.');
             return;
         }
 
@@ -1318,7 +1320,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             this.router.navigate(['/trip-tracking']);
         } catch (error) {
             console.error('[TripPlanner] Failed to start trip:', error);
-            alert('Failed to start trip. Please check your connection and try again.');
+            this.toastService.error('Trip Start Failed', 'Please check your connection and try again.');
         } finally {
             this.isStartingTrip = false;
         }
@@ -1332,7 +1334,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 console.log('[TripPlanner] Trip stopped by user');
             } catch (error) {
                 console.error('[TripPlanner] Failed to stop trip:', error);
-                alert('Failed to stop trip. Please try again.');
+                this.toastService.error('Trip Stop Failed', 'We couldn\'t end your active trip. Please try again.');
             }
         }
     }
@@ -1505,7 +1507,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.isSubmitting = true;
         this.busStopService.submitMissingStop(this.newStop).subscribe({
             next: () => {
-                alert('Stop submitted for verification! Thank you.');
+                this.toastService.success('Discovery Logged', 'Stop submitted for verification! Our curators will review ' + (this.newStop.name || 'this area') + ' soon.');
                 this.isSubmitting = false;
                 this.showReportModal = false;
                 this.newStop = {
@@ -1519,7 +1521,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             },
             error: (err) => {
                 console.error(err);
-                alert('Failed to submit stop.');
+                this.toastService.error('Mapping Error', 'Failed to submit stop. Please check your connection.');
                 this.isSubmitting = false;
             }
         });

@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouteSegmentService } from '../../../core/services/route-segment.service';
+import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 
 @Component({
     selector: 'app-submit-price',
@@ -32,7 +33,10 @@ export class SubmitPriceComponent {
     error = '';
     success = false;
 
-    constructor(private routeSegmentService: RouteSegmentService) { }
+    constructor(
+        private routeSegmentService: RouteSegmentService,
+        private toastService: ToastNotificationService
+    ) { }
 
     submit() {
         if (!this.priceMin || !this.estimatedTime) {
@@ -71,6 +75,7 @@ export class SubmitPriceComponent {
 
         this.routeSegmentService.submitCommunitySegment(payload).subscribe({
             next: () => {
+                this.toastService.success('Thank You!', 'Your fare intelligence contribution has been submitted successfully.');
                 this.success = true;
                 this.isSubmitting = false;
                 setTimeout(() => {
@@ -80,9 +85,8 @@ export class SubmitPriceComponent {
             },
             error: (err) => {
                 const message = err.error?.message || err.message || 'Failed to submit. Try again.';
+                this.toastService.error('Submission Failed', message);
                 this.error = message;
-                if (err.status === 404) this.error = 'Selected stop not found in system. Please refresh.';
-                if (err.status === 400) this.error = 'Invalid data provided. Please check price and time.';
                 this.isSubmitting = false;
             }
         });

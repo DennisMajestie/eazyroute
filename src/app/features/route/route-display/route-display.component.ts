@@ -13,6 +13,7 @@ import { MapComponent } from '../../../shared/components/map/map.component';
 import { CommunityService } from '../../../core/services/community.service';
 import { CommunityReport } from '../../../models/community.types';
 import { RouteNotFoundCardComponent, CoverageStats } from '../../../shared/components/route-not-found-card/route-not-found-card.component';
+import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 
 @Component({
     selector: 'app-route-display',
@@ -187,7 +188,8 @@ export class RouteDisplayComponent implements OnInit {
         private safetyService: SafetyService,
         private protocolService: CommuterProtocolService,
         private orchestrator: EasyrouteOrchestratorService,
-        private communityService: CommunityService
+        private communityService: CommunityService,
+        private toastService: ToastNotificationService
     ) { }
 
     /**
@@ -770,7 +772,7 @@ export class RouteDisplayComponent implements OnInit {
             this.router.navigate(['/trip-tracking']);
         } catch (error) {
             console.error('[RouteDisplay] Failed to start journey:', error);
-            alert('Failed to start journey. Please try again.');
+            this.toastService.error('Trip Start Failed', 'We couldn\'t initialize your trip tracking. Please try again.');
         } finally {
             this.isStartingJourney = false;
         }
@@ -926,7 +928,7 @@ export class RouteDisplayComponent implements OnInit {
     submitCommunityReport() {
         if (!this.currentReportingSegment || !this.communityService.canReport()) {
             if (!this.communityService.canReport()) {
-                alert('Please wait before submitting another report.');
+                this.toastService.warning('Pace yourself!', 'Please wait before submitting another community report.');
             }
             return;
         }
@@ -967,16 +969,16 @@ export class RouteDisplayComponent implements OnInit {
             next: (res) => {
                 if (res.success) {
                     this.communityService.logReportSubmission();
-                    alert('Thanks! Your report helps keep the community informed.');
+                    this.toastService.success('Intel Received', 'Thanks! Your report helps keep the community informed.');
                     this.closeReporting();
                 } else {
-                    alert(res.message || 'Failed to submit report.');
+                    this.toastService.error('Reporting Failed', res.message || 'Failed to submit report.');
                 }
                 this.isSubmittingReport = false;
             },
             error: (err) => {
                 console.error('Reporting error:', err);
-                alert('Failed to submit report. Please try again.');
+                this.toastService.error('Reporting Error', 'Failed to submit report. Please check your connection.');
                 this.isSubmittingReport = false;
             }
         });
