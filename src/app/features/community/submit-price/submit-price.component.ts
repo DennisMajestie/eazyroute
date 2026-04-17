@@ -58,9 +58,11 @@ export class SubmitPriceComponent {
         console.log('[SubmitPrice] Sending Community Submission:', payload);
 
         if (payload.fromStopId === 'UNKNOWN_STOP' || payload.toStopId === 'UNKNOWN_STOP') {
-            this.error = 'Cannot submit price info for locations not in our database. Please select a known stop.';
-            this.isSubmitting = false;
-            return;
+            console.warn('[SubmitPrice] Warning: One or both stops have UNKNOWN_STOP IDs. Proceeding with name-based identification.', {
+                from: this.fromStopName,
+                to: this.toStopName
+            });
+            // We NO LONGER return here to allow the submission to reach the backend
         }
 
         if (!payload.distance || payload.distance <= 0) {

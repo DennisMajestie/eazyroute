@@ -49,8 +49,11 @@
         </div>
 
         <div class="modal-footer" *ngIf="!success">
-            <button class="btn btn-secondary" (click)="onClose()">Cancel</button>
+            <button class="btn btn-secondary" (click)="onClose()">
+                <i class="fas fa-times"></i> Cancel
+            </button>
             <button class="btn btn-primary" (click)="submit()" [disabled]="isSubmitting || !priceMin">
+                <i class="fas" [ngClass]="isSubmitting ? 'fa-circle-notch fa-spin' : 'fa-paper-plane'"></i>
                 {{ isSubmitting ? 'Sending...' : 'Submit' }}
             </button>
         </div>
