@@ -288,6 +288,9 @@
                 transform: translateY(-2px);
             }
         }
+    }
+}
+
 // Strategy & Operations Section
 .strategy-section {
     grid-column: span 1;
@@ -366,14 +369,6 @@
     
     .strategy-section {
         grid-column: span 1;
-    }
-}
-            &:hover {
-                background: $primary;
-                color: white;
-                box-shadow: 0 0 15px rgba($primary, 0.4);
-            }
-        }
     }
 }
 
