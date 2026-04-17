@@ -1,4 +1,4 @@
-﻿<div class="route-display-container">
+<div class="route-display-container">
     <!-- Header -->
     <div class="route-header">
         <button class="btn-back" (click)='goBack()' type="button" title="Go Back">
@@ -17,7 +17,7 @@
         </div>
         <div class="street-mode-toggle" (click)="useStreetMode = !useStreetMode" [class.active]="useStreetMode"
             title="Toggle Street Mode (Pidgin Directions)">
-            <span class="toggle-icon">≡ƒùú∩╕Å</span>
+            <span class="toggle-icon">🗣️</span>
             <span class="toggle-label">{{ useStreetMode ? 'Street' : 'Normal' }}</span>
         </div>
     </div>
@@ -25,7 +25,7 @@
     <!-- Night Mode Active Banner -->
     <div class="night-mode-banner" *ngIf="isNightMode">
         <div class="banner-header">
-            <span class="icon">≡ƒîÖ</span>
+            <span class="icon">🌙</span>
             <span>Night Mode Active</span>
         </div>
         <div class="safety-tips-list">
@@ -39,16 +39,16 @@
     <!-- Route Rationale & Warnings -->
     <div class="route-rationale" *ngIf="route?.rationale || route?.metadata?.ribExitApplied">
         <div class="rationale-text" *ngIf="route?.rationale">
-            ≡ƒÆí {{ route?.rationale }}
+            💡 {{ route?.rationale }}
         </div>
         <div class="warning-tag" *ngIf="route?.metadata?.ribExitApplied">
-            ≡ƒÜº Village Exit Fee Included
+            🚧 Village Exit Fee Included
         </div>
     </div>
 
     <!-- Fuel Alert Banner (March 2026 Conflict Adjustment) -->
     <div class="fuel-alert-banner" *ngIf="route">
-        <span class="warning-icon">ΓÜá∩╕Å</span>
+        <span class="warning-icon">⚠️</span>
         <div class="warning-text">
             <strong>Notice:</strong> Due to the fuel crisis, some fares may be 30-50% higher than usual.
             <p class="timestamp">Estimates updated March 2026.</p>
@@ -59,17 +59,17 @@
 
     <div class="route-summary" *ngIf="route">
         <div class="summary-item">
-            <span class="summary-icon">ΓÅ▒∩╕Å</span>
+            <span class="summary-icon">⏳</span>
             <span class="summary-value">{{ route.totalTime }} min</span>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-item">
-            <span class="summary-icon">≡ƒÆ░</span>
+            <span class="summary-icon">💰</span>
             <span class="summary-value">{{ getCostDisplay() }}</span>
         </div>
         <div class="summary-divider"></div>
         <div class="summary-item">
-            <span class="summary-icon">≡ƒôÅ</span>
+            <span class="summary-icon">📏</span>
             <span class="summary-value">{{ (route.totalDistance / 1000).toFixed(1) }}km</span>
         </div>
         <div class="summary-divider" *ngIf="getDynamicBadge(route)"></div>
@@ -90,15 +90,15 @@
             <div class="breakdown-card">
                 <div class="breakdown-row">
                     <span>Base Fare (Shared Along)</span>
-                    <span>Γéª{{ formatCost(route.pricingMetadata?.baseFare || route.totalCost) }}</span>
+                    <span>₦{{ formatCost(route.pricingMetadata?.baseFare || route.totalCost) }}</span>
                 </div>
                 <div class="breakdown-row surge" *ngIf="route.pricingMetadata?.isSurge">
                     <span>{{ route.pricingMetadata?.surgeLabel || 'Peak Hour Surge' }}</span>
-                    <span>+Γéª{{ route.pricingMetadata?.surgeAmount || 200 }}</span>
+                    <span>+₦{{ route.pricingMetadata?.surgeAmount || 200 }}</span>
                 </div>
                 <div class="breakdown-row village" *ngIf="route.metadata?.ribExitApplied">
                     <span>Village Connectivity Fee</span>
-                    <span>+Γéª{{ route.metadata?.ribExitFee || 300 }}</span>
+                    <span>+₦{{ route.metadata?.ribExitFee || 300 }}</span>
                 </div>
                 <div class="breakdown-total">
                     <span>Total Estimated Fare</span>
@@ -136,7 +136,7 @@
 
         <!-- Friday Surge Warning -->
         <div class="surge-warning" *ngIf="route.metadata?.isSurgeApplied">
-            <span class="warning-icon">ΓÜá∩╕Å</span>
+            <span class="warning-icon">⚠️</span>
             <div class="warning-text">
                 <strong>Heavy Traffic (Friday Prayer)</strong>
                 <p>ETA may be longer than usual due to congregational prayers.</p>
@@ -152,11 +152,11 @@
             </div>
         </div>
 
-        <!-- ≡ƒîƒ Hybrid Intelligence: Recommended Route Card -->
+        <!-- 🌟 Hybrid Intelligence: Recommended Route Card -->
         <div class="recommended-card" *ngIf="recommendedRoute" [class.selected]="selectedRouteIndex === 0"
             (click)="selectRoute(0)">
             <div class="card-header">
-                <span class="badge-recommended">≡ƒîƒ Recommended</span>
+                <span class="badge-recommended">🌟 Recommended</span>
                 <span class="badge-strategy" *ngIf="getStrategyBadge(recommendedRoute)">
                     {{ getStrategyBadge(recommendedRoute) }}
                 </span>
@@ -183,24 +183,24 @@
                         <span class="unit">min</span>
                     </div>
                     <div class="info-cost">
-                        <span class="currency">Γéª</span>
+                        <span class="currency">₦</span>
                         <span class="value">{{ formatCost(recommendedRoute.totalCost) }}</span>
                     </div>
                 </div>
 
                 <div class="route-meta-info">
                     <span>{{ (recommendedRoute.totalDistance / 1000).toFixed(1) }}km</span>
-                    <span class="separator">ΓÇó</span>
+                    <span class="separator">•</span>
                     <span>{{ recommendedRoute.segments.length }} legs</span>
                 </div>
             </div>
 
             <div class="card-rationale" *ngIf="recommendedRoute.rationale">
-                ≡ƒÆí {{ recommendedRoute.rationale }}
+                💡 {{ recommendedRoute.rationale }}
             </div>
         </div>
 
-        <!-- ≡ƒöä Alternatives Toggle -->
+        <!-- 🔄 Alternatives Toggle -->
         <div class="alternatives-section" *ngIf="alternativeRoutes.length > 0">
             <h3 class="section-title">Alternative Options</h3>
 
@@ -219,7 +219,7 @@
 
                     <div class="alt-body">
                         <div class="alt-time">{{ r.totalTime }} min</div>
-                        <div class="alt-cost">Γéª{{ formatCost(r.totalCost) }}</div>
+                        <div class="alt-cost">₦{{ formatCost(r.totalCost) }}</div>
                     </div>
 
                     <div class="alt-diff" *ngIf="getRouteDiff(r)">
@@ -231,7 +231,7 @@
 
         <!-- Journey Steps (Vertical Timeline) -->
         <div class="journey-section">
-            <h2 class="section-title">≡ƒ¢ú∩╕Å Suggested Route</h2>
+            <h2 class="section-title">🛣️ Suggested Route</h2>
 
             <div class="timeline-container">
                 <!-- Start Point -->
@@ -263,7 +263,7 @@
                         <div class="mode-header">
                             <div class="mode-icon" [style.background-color]="getSegmentColor(segment)">
                                 <ng-container *ngIf="segment.portalType === 'PEDESTRIAN_BRIDGE'; else normalIcon">
-                                    ≡ƒîë
+                                    🌉
                                 </ng-container>
                                 <ng-template #normalIcon>
                                     {{ getSegmentEmoji(segment) }}
@@ -272,13 +272,13 @@
                             <div class="mode-info">
                                 <div class="mode-title">
                                     <span class="mode-name">{{ getSegmentMode(segment) | uppercase }}</span>
-                                    <span class="mode-cost" *ngIf="segment.cost">Γéª{{ formatCost(segment.cost) }}</span>
+                                    <span class="mode-cost" *ngIf="segment.cost">₦{{ formatCost(segment.cost) }}</span>
                                 </div>
                                 <div class="mode-meta">
                                     <span *ngIf="segment.distance">{{ segment.distance }}m</span>
-                                    <span *ngIf="segment.estimatedTime">ΓÇó {{ segment.estimatedTime }} min</span>
-                                    <span class="bridge-tag" *ngIf="segment.portalType === 'PEDESTRIAN_BRIDGE'">≡ƒîë Pedestrian Bridge</span>
-                                    <span class="bridge-tag flyover" *ngIf="segment.portalType === 'VEHICULAR_FLYOVER'">≡ƒÜù Flyover</span>
+                                    <span *ngIf="segment.estimatedTime">• {{ segment.estimatedTime }} min</span>
+                                    <span class="bridge-tag" *ngIf="segment.portalType === 'PEDESTRIAN_BRIDGE'">🌉 Pedestrian Bridge</span>
+                                    <span class="bridge-tag flyover" *ngIf="segment.portalType === 'VEHICULAR_FLYOVER'">🚘 Flyover</span>
                                 </div>
 
                                 <!-- Dynamic Adjustment Indicator for Segment -->
@@ -291,7 +291,7 @@
                                 </div>
                             </div>
                             <div class="mode-expand">
-                                {{ isSegmentExpanded(i) ? 'Γû▓' : 'Γû╝' }}
+                                {{ isSegmentExpanded(i) ? '▲' : '▼' }}
                             </div>
                         </div>
 
@@ -299,20 +299,20 @@
                         <div class="mode-details" *ngIf="isSegmentExpanded(i)">
                             <!-- Dynamic Adjustment Rationale -->
                             <div class="dynamic-rationale" *ngIf="segment.dynamicAdjustment?.rationale">
-                                <span class="icon">≡ƒöì</span>
+                                <span class="icon">🔍</span>
                                 <p>{{ segment.dynamicAdjustment?.rationale }}</p>
                             </div>
 
                             <!-- Guidance Bubble -->
                             <div class="guidance-bubble">
-                                <span class="guidance-icon">≡ƒôó</span>
+                                <span class="guidance-icon">📢</span>
                                 <p class="instruction">{{ segment.instructions || segment.instruction }}</p>
                             </div>
 
                             <!-- Security Status -->
                             <div class="security-card" *ngIf="getSecurityInfo(segment) as security">
                                 <div class="security-header">
-                                    <span class="security-label">≡ƒ¢í∩╕Å Commuter Guardian</span>
+                                    <span class="security-label">🛡️ Commuter Guardian</span>
                                     <span class="risk-badge" [class]="security.risk.toLowerCase()">
                                         {{ getRiskLabel(security.risk) }}
                                     </span>
@@ -321,7 +321,7 @@
                                     {{ security.advice }}
                                 </div>
                                 <div class="threat-tags" *ngIf="security.threats.length > 0">
-                                    <span class="threat-tag" *ngFor="let threat of security.threats">ΓÜá∩╕Å {{ threat
+                                    <span class="threat-tag" *ngFor="let threat of security.threats">⚠️ {{ threat
                                         }}</span>
                                 </div>
                             </div>
@@ -329,12 +329,12 @@
                             <!-- Boarding Strength Hub Status -->
                             <div class="hub-status-card" *ngIf="getBoardingStrengthInfo(segment) as hub">
                                 <div class="hub-header" *ngIf="hub.isMajorHub">
-                                    <span class="hub-badge strong">Γ£à Major {{ getSegmentMode(segment) | titlecase }}
+                                    <span class="hub-badge strong">✅ Major {{ getSegmentMode(segment) | titlecase }}
                                         Hub</span>
                                     <span class="hub-hint">Plenty {{ getSegmentMode(segment) }} here</span>
                                 </div>
                                 <div class="hub-header" *ngIf="hub.isWeak">
-                                    <span class="hub-badge weak">≡ƒÜ½ {{ getSegmentMode(segment) | titlecase }}s rare
+                                    <span class="hub-badge weak">🚫 {{ getSegmentMode(segment) | titlecase }}s rare
                                         here</span>
                                     <span class="hub-hint">Better to board at <strong>{{ hub.backboneName
                                             }}</strong></span>
@@ -344,10 +344,10 @@
                             <!-- Boarding Protocol -->
                             <div class="protocol-card" *ngIf="getHubProtocol(segment) as protocol">
                                 <div class="protocol-meta">
-                                    <span class="location">≡ƒôì {{ protocol.location }}</span>
-                                    <span class="price">≡ƒÆ░ Γéª{{ protocol.price.min }} - {{ protocol.price.max }}</span>
+                                    <span class="location">📍 {{ protocol.location }}</span>
+                                    <span class="price">💰 ₦{{ protocol.price.min }} - {{ protocol.price.max }}</span>
                                 </div>
-                                <div class="protocol-tip">≡ƒÆí {{ protocol.tip }}</div>
+                                <div class="protocol-tip">💡 {{ protocol.tip }}</div>
                             </div>
 
                             <!-- Intermediate Stops Dropdown -->
@@ -371,7 +371,7 @@
                                 </button>
                                 <button class="btn-price" *ngIf="segment.type !== 'walk' && segment.type !== 'wait'"
                                     (click)="$event.stopPropagation(); openSubmitPrice(segment)">
-                                    Γ₧ò Contribute Fare Info
+                                    ➔ Contribute Fare Info
                                 </button>
                             </div>
                         </div>
@@ -383,7 +383,7 @@
                         <div class="point-label" *ngIf="segment.toStop">
                             {{ getStopName(segment.toStop) }}
                             <div class="terminal-alert" *ngIf="isTerminalArrival(segment)">
-                                <span class="alert-icon">≡ƒÅü</span>
+                                <span class="alert-icon">🏁</span>
                                 <span class="alert-text">Last Bus/Along Stop. Switch to Keke/Okada here.</span>
                             </div>
                         </div>
@@ -405,16 +405,16 @@
         <div class="action-buttons">
             <button class="btn btn-primary btn-xl" (click)="startJourney()" [disabled]="isStartingJourney">
                 <span *ngIf="isStartingJourney" class="spinner-border spinner-border-sm me-2"></span>
-                {{ isStartingJourney ? 'Starting...' : '≡ƒÜÇ Start Journey' }}
+                {{ isStartingJourney ? 'Starting...' : '🚀 Start Journey' }}
             </button>
             <button class="btn btn-secondary btn-lg" (click)="shareRoute()">
-                ≡ƒôñ Share via WhatsApp
+                📤 Share via WhatsApp
             </button>
         </div>
 
         <!-- Quick Instructions -->
         <div class="quick-instructions">
-            <h3 class="instructions-title">≡ƒô¥ Quick Summary</h3>
+            <h3 class="instructions-title">📝 Quick Summary</h3>
 
             <ol class="instructions-list">
                 <li *ngFor="let instruction of route.instructions">
@@ -427,7 +427,7 @@
 
     <!-- Empty State -->
     <div class="empty-state" *ngIf="!isLoading && !error && !route">
-        <div class="empty-icon">≡ƒù║∩╕Å</div>
+        <div class="empty-icon">🗺️</div>
         <h3>No route data</h3>
         <p>Please start from the home screen</p>
         <button class="btn btn-primary" (click)="goBack()">
@@ -474,7 +474,7 @@
 
             <div class="report-inputs">
                 <div class="input-group" *ngIf="reportType === 'fare'">
-                    <label>Current Fare (Γéª)</label>
+                    <label>Current Fare (₦)</label>
                     <input type="number" [(ngModel)]="reportValue.fare" placeholder="e.g. 300">
                 </div>
                 <div class="input-group" *ngIf="reportType === 'wait_time'">
