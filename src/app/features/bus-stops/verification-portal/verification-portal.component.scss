@@ -85,12 +85,19 @@
 
 // ===== VERIFICATION CARD =====
 .verification-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(25px);
-  border: 1px solid var(--glass-border);
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(40px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 32px;
   overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-8px) scale(1.01);
+    border-color: rgba(0, 135, 81, 0.3);
+    box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.6), 0 0 20px rgba(0, 135, 81, 0.1);
+  }
 
   .mini-map-wrapper {
     position: relative;
@@ -138,14 +145,15 @@
 
         .verification-badge {
           font-size: 0.75rem;
-          padding: 0.6rem 1rem;
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.05);
-          color: var(--text-dim);
-          line-height: 1.4;
+          padding: 0.75rem 1.25rem;
+          border-radius: 16px;
+          background: rgba(255, 255, 255, 0.03);
+          color: rgba(255, 255, 255, 0.5);
+          line-height: 1.5;
           display: flex;
           align-items: flex-start;
-          gap: 0.75rem;
+          gap: 1rem;
+          border: 1px solid rgba(255, 255, 255, 0.05);
           
           i { margin-top: 0.2rem; color: var(--theme-gold); }
           
@@ -159,16 +167,29 @@
     }
 
     .action-buttons {
-      display: flex; gap: 1rem;
+      display: flex; gap: 1.25rem;
       
       button {
-        flex: 1; padding: 0.875rem; border-radius: 16px; border: none; font-size: 0.875rem; font-weight: 700;
-        display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: all 0.3s;
+        flex: 1; padding: 1.1rem; border-radius: 20px; border: none; font-size: 0.95rem; font-weight: 800;
+        display: flex; align-items: center; justify-content: center; gap: 0.75rem; transition: all 0.3s;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
         &:active { transform: scale(0.95); }
       }
-
-      .btn-reject { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); &:hover { background: rgba(239, 68, 68, 0.2); } }
-      .btn-verify { background: var(--theme-green); color: white; box-shadow: 0 8px 16px rgba(0, 135, 81, 0.3); &:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(0, 135, 81, 0.4); } }
+      
+      .btn-reject { 
+        background: rgba(239, 68, 68, 0.1); 
+        color: #f87171; 
+        border: 1px solid rgba(239, 68, 68, 0.2); 
+        &:hover { background: #ef4444; color: white; } 
+      }
+      
+      .btn-verify { 
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%); 
+        color: white; 
+        box-shadow: 0 10px 20px rgba(0, 135, 81, 0.2); 
+        &:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0, 135, 81, 0.4); } 
+      }
     }
   }
 }

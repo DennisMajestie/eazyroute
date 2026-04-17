@@ -1,4 +1,5 @@
 <div class="cil-container">
+    <div class="mesh-gradient"></div>
     <div class="header-overlay">
         <div class="title-wrap">
             <h2>Community Intelligence Layer (CIL)</h2>
@@ -60,7 +61,12 @@
             <h3>Report Inspector</h3>
             <div class="report-card" [attr.data-type]="selectedReport.reportType">
                 <div class="report-header">
-                    <span class="type-icon">{{ selectedReport.reportType === 'fare' ? '💰' : '🚥' }}</span>
+                    <span class="type-icon">
+                        <i class="fas" [class.fa-money-bill-wave]="selectedReport.reportType === 'fare'"
+                           [class.fa-traffic-light]="selectedReport.reportType === 'congestion'"
+                           [class.fa-exclamation-triangle]="selectedReport.reportType === 'risk_alert'"
+                           [class.fa-clock]="selectedReport.reportType === 'wait_time'"></i>
+                    </span>
                     <strong>{{ selectedReport.reportType | uppercase }}</strong>
                 </div>
                 <div class="report-body">

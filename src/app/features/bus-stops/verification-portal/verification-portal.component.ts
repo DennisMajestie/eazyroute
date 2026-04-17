@@ -5,7 +5,7 @@ import { BusStop } from '../../../models/bus-stop.model';
 import { MapComponent } from '../../../shared/components/map/map.component';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
-import { ToastrService } from 'ngx-toastr';
+import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 
 @Component({
     selector: 'app-verification-portal',
@@ -17,7 +17,7 @@ import { ToastrService } from 'ngx-toastr';
 export class VerificationPortalComponent implements OnInit {
     private busStopService = inject(BusStopService);
     private router = inject(Router);
-    private toastr = inject(ToastrService);
+    private toastService = inject(ToastNotificationService);
     public authService = inject(AuthService);
 
     pendingStops: BusStop[] = [];
@@ -28,13 +28,13 @@ export class VerificationPortalComponent implements OnInit {
         this.loadPendingStops();
     }
 
-    async showToast(message: string, type: 'success' | 'error' | 'warning' = 'success') {
+    async showToast(message: string, type: 'success' | 'error' | 'warning' = 'success', title?: string) {
         if (type === 'success') {
-            this.toastr.success(message);
+            this.toastService.success(title || 'Action Success', message);
         } else if (type === 'error') {
-            this.toastr.error(message);
+            this.toastService.error(title || 'Action Failed', message);
         } else if (type === 'warning') {
-            this.toastr.warning(message);
+            this.toastService.warning(title || 'Warning', message);
         }
     }
 
@@ -49,14 +49,14 @@ export class VerificationPortalComponent implements OnInit {
                 console.error('Failed to load pending stops', err);
                 this.error = 'Failed to load places needing verification.';
                 this.isLoading = false;
-                this.showToast('Failed to load places needing verification.', 'error');
+                this.showToast('Failed to load places needing verification.', 'error', 'Data Sync Error');
             }
         });
     }
 
     verifyPlace(stop: BusStop) {
         if (!stop.id) {
-            this.showToast('Error: Stop ID is missing.', 'error');
+            this.showToast('Error: Stop ID is missing.', 'error', 'Logic Error');
             return;
         }
 
@@ -64,7 +64,7 @@ export class VerificationPortalComponent implements OnInit {
             next: () => {
                 // Remove from list
                 this.pendingStops = this.pendingStops.filter(s => s.id !== stop.id);
-                this.showToast(`Successfully submitted! Thank you for helping the community.`);
+                this.showToast(`Stop "${stop.name}" verified! Thank you for the contribution approval.`, 'success', 'Verification Complete');
             },
             error: (err) => {
                 console.error('Verification failed', err);
@@ -75,7 +75,7 @@ export class VerificationPortalComponent implements OnInit {
 
     rejectPlace(stop: BusStop) {
         if (!stop.id) {
-            this.showToast('Error: Stop ID is missing.', 'error');
+            this.showToast('Error: Stop ID is missing.', 'error', 'Logic Error');
             return;
         }
 
@@ -83,7 +83,7 @@ export class VerificationPortalComponent implements OnInit {
             next: () => {
                 // Remove from list
                 this.pendingStops = this.pendingStops.filter(s => s.id !== stop.id);
-                this.showToast('Point reported as incorrect.', 'warning');
+                this.showToast(`Point "${stop.name}" reported as incorrect.`, 'warning', 'Rejection Logged');
             },
             error: (err) => {
                 console.error('Rejection failed', err);

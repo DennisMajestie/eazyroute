@@ -2,10 +2,24 @@
 
 :host {
     display: block;
-    background: #0f172a; // Deep Command Center Slate
+    background: #020617; // Deeper Slate for high contrast
     min-height: 100vh;
     padding: $space-2xl;
     color: #f1f5f9;
+    position: relative;
+    overflow-x: hidden;
+}
+
+.mesh-gradient {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 0;
+  background: 
+    radial-gradient(at 10% 10%, rgba(16, 185, 129, 0.15) 0, transparent 50%),
+    radial-gradient(at 90% 10%, rgba(59, 130, 246, 0.1) 0, transparent 50%),
+    radial-gradient(at 50% 90%, rgba(234, 179, 8, 0.1) 0, transparent 50%);
+  filter: blur(100px);
+  pointer-events: none;
 }
 
 /* System Live Header */
@@ -98,14 +112,15 @@
 
 // --- Digital Stat Cards ---
 .stat-card {
-    background: rgba(30, 41, 59, 0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(30px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     padding: $space-xl;
-    border-radius: $radius-2xl;
+    border-radius: 28px;
     position: relative;
     overflow: hidden;
-    transition: all $transition-base;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 1;
 
     &::before {
         content: '';
@@ -115,10 +130,23 @@
     }
 
     &:hover {
-        transform: translateY(-5px);
-        background: rgba(30, 41, 59, 0.9);
-        border-color: rgba($primary, 0.3);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        transform: translateY(-10px) scale(1.02);
+        background: rgba(30, 41, 59, 0.6);
+        border-color: rgba(16, 185, 129, 0.4);
+        box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(16, 185, 129, 0.1);
+        
+        &::after {
+          opacity: 1;
+        }
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; width: 100%; height: 4px;
+      background: linear-gradient(90deg, transparent, #10b981, transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
     }
 
     .stat-header {
@@ -240,15 +268,26 @@
         }
 
         .action-link, .refresh-btn {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: $primary;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #fff;
             text-decoration: none;
-            padding: $space-sm $space-lg;
-            border-radius: $radius-lg;
-            background: rgba($primary, 0.1);
-            border: 1px solid rgba($primary, 0.2);
-            transition: all 0.2s;
+            padding: 8px 18px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+
+            &:hover {
+                background: linear-gradient(135deg, rgba(16, 185, 129, 0.4), rgba(16, 185, 129, 0.2));
+                border-color: #10b981;
+                box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+                transform: translateY(-2px);
+            }
+        }
 // Strategy & Operations Section
 .strategy-section {
     grid-column: span 1;

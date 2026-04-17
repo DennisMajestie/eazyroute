@@ -12,6 +12,7 @@ import {
 import { environment } from '../../../../environments/environment';
 import { interval, Subject } from 'rxjs';
 import { takeUntil, startWith } from 'rxjs/operators';
+import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -22,6 +23,7 @@ import { takeUntil, startWith } from 'rxjs/operators';
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
   public adminService = inject(AdminService);
+  private toastService = inject(ToastNotificationService);
   private destroy$ = new Subject<void>();
   
   report: GraphReport | null = null;
@@ -90,6 +92,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.warn('[Admin] Could not load user stats:', err);
+        this.toastService.error('Data Sync Error', 'Failed to refresh active user statistics.');
       }
     });
   }
@@ -103,6 +106,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
             this.health = this.getMockDiagnostics();
         } else {
             console.error('[Admin] Engine diagnostics failed:', err);
+            this.toastService.error('Engine Error', 'Failed to retrieve real-time engine health data.');
         }
       }
     });
@@ -121,6 +125,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
             this.pricing = this.getMockPricing();
         } else {
             console.error('[Admin] Pricing analytics failed:', err);
+            this.toastService.error('Analytics Error', 'Failed to load pricing and surge trends.');
         }
         this.isLoadingPricing = false;
       }
@@ -209,6 +214,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error loading report:', err);
+        this.toastService.error('Report Error', 'Could not generate the latest graph integrity report.');
         this.isLoading = false;
         // Mock data for demo if API fails
         const mockReport: GraphReport = {

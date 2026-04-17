@@ -3,10 +3,22 @@
 .cil-container {
     position: relative;
     width: 100%;
-    height: calc(100vh - 80px); // Adjust based on admin layout header
+    height: calc(100vh - 80px);
     display: flex;
     overflow: hidden;
-    background: #f1f5f9;
+    background: #020617; // Deep dark foundation
+    color: white;
+}
+
+.mesh-gradient {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 0;
+  background: 
+    radial-gradient(at 0% 0%, rgba(16, 185, 129, 0.2) 0, transparent 60%),
+    radial-gradient(at 100% 100%, rgba(59, 130, 246, 0.15) 0, transparent 60%);
+  filter: blur(80px);
+  pointer-events: none;
 }
 
 .map-viewport {
@@ -23,10 +35,12 @@
     pointer-events: none;
 
     .title-wrap {
-        background: white;
-        padding: 12px 20px;
-        border-radius: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(20px);
+        padding: 14px 24px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
         margin-bottom: 12px;
         display: inline-flex;
         align-items: center;
@@ -37,8 +51,9 @@
             margin: 0;
             font-size: 1.1rem;
             font-weight: 800;
-            color: #0f172a;
+            color: #fff;
             white-space: nowrap;
+            letter-spacing: 0.02em;
         }
 
         .live-pulse {
@@ -66,20 +81,21 @@
         pointer-events: auto;
 
         button {
-            background: white;
-            border: 1px solid #e2e8f0;
-            padding: 8px 16px;
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
             border-radius: 9999px;
             font-size: 0.8rem;
-            font-weight: 600;
-            color: #64748b;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.6);
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
             &:hover {
-                background: #f8fafc;
-                border-color: $primary;
+                background: rgba(30, 41, 59, 0.8);
+                border-color: rgba(16, 185, 129, 0.5);
+                color: #fff;
             }
 
             &.active {
@@ -93,15 +109,17 @@
 
 /* Side Panel */
 .side-panel {
-    width: 360px;
-    background: white;
-    border-left: 1px solid #e2e8f0;
+    width: 380px;
+    background: rgba(10, 15, 28, 0.6);
+    backdrop-filter: blur(40px);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
     z-index: 5;
     display: flex;
     flex-direction: column;
     padding: 24px;
     overflow-y: auto;
-    box-shadow: -4px 0 15px -3px rgba(0, 0, 0, 0.05);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
+    color: white;
 
     .panel-section {
         margin-bottom: 32px;
@@ -119,16 +137,17 @@
     .trust-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 12px;
+        gap: 16px;
 
         .trust-card {
-            background: #f8fafc;
-            padding: 12px;
-            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
             text-align: center;
 
-            .label { font-size: 0.65rem; color: #64748b; text-transform: uppercase; display: block; }
-            .value { font-size: 1.1rem; font-weight: 800; color: #0f172a; }
+            .label { font-size: 0.65rem; color: rgba(255, 255, 255, 0.4); text-transform: uppercase; display: block; margin-bottom: 4px; }
+            .value { font-size: 1.25rem; font-weight: 800; color: #fff; font-family: var(--font-display); }
         }
     }
 
@@ -190,11 +209,18 @@
     }
 
     .report-card {
-        background: white;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 16px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        background: rgba(30, 41, 59, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 20px;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        transition: all 0.3s ease;
+        
+        &:hover {
+            transform: scale(1.02);
+            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(30, 41, 59, 0.5);
+        }
 
         &[data-type="fare"] { border-left: 4px solid #ef4444; }
         &[data-type="congestion"] { border-left: 4px solid #f59e0b; }

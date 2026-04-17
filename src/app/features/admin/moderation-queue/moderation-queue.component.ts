@@ -4,6 +4,7 @@ import { AdminService } from '../../../core/services/admin.service';
 import { LeafletMapService } from '../../../core/services/leaflet-map.service';
 import { ModerationItem } from '../../../models/admin.types';
 import { environment } from '../../../../environments/environment';
+import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 
 @Component({
   selector: 'app-moderation-queue',
@@ -15,6 +16,7 @@ import { environment } from '../../../../environments/environment';
 export class ModerationQueueComponent implements OnInit {
   private adminService = inject(AdminService);
   private mapService = inject(LeafletMapService);
+  private toastService = inject(ToastNotificationService);
   
   queue: ModerationItem[] = [];
   filteredQueue: ModerationItem[] = [];
@@ -42,15 +44,15 @@ export class ModerationQueueComponent implements OnInit {
   }
 
   promoteToCaptain(userId: string): void {
-    if (confirm('Are you sure you want to promote this user to Captain?')) {
+    if (confirm('Are you sure you want to promote this user to Captain? This action grants elevated contribution verification rights.')) {
         this.adminService.promoteToCaptain(userId).subscribe({
-            next: () => alert('User promoted to Captain status!'),
+            next: () => this.toastService.success('Promotion Successful', 'User has been granted Captain status.'),
             error: (err) => {
                 if (environment.useMockAdminData) {
-                    alert('Promotion successful (Simulation mode).');
+                    this.toastService.info('Simulation Mode', 'Promotion simulation successful.');
                 } else {
                     console.error('[Moderation] Promotion failed:', err);
-                    alert('Failed to promote user. Please try again later.');
+                    this.toastService.error('Promotion Failed', 'We couldn\'t update user status. Please try again.');
                 }
             }
         });
@@ -133,17 +135,17 @@ export class ModerationQueueComponent implements OnInit {
           this.queue = this.queue.filter(q => q._id !== item._id);
           this.applyFilter();
           this.selectedItem = null;
-          alert('Submission approved successfully!');
+          this.toastService.success('Submission Approved', `The ${item.type} contribution is now live.`);
         },
         error: (err) => {
           if (environment.useMockAdminData) {
               this.queue = this.queue.filter(q => q._id !== item._id);
               this.applyFilter();
               this.selectedItem = null;
-              alert('Submission approved successfully (Simulation)!');
+              this.toastService.info('Simulation Mode', 'Submission approval simulation successful.');
           } else {
               console.error('[Moderation] Approval failed:', err);
-              alert('Failed to approve submission.');
+              this.toastService.error('Process Error', 'Failed to approve the submission.');
           }
         }
       });
@@ -158,17 +160,17 @@ export class ModerationQueueComponent implements OnInit {
           this.queue = this.queue.filter(q => q._id !== item._id);
           this.applyFilter();
           this.selectedItem = null;
-          alert('Submission rejected.');
+          this.toastService.warning('Submission Rejected', 'The report has been declined and the user notified.');
         },
         error: (err) => {
           if (environment.useMockAdminData) {
               this.queue = this.queue.filter(q => q._id !== item._id);
               this.applyFilter();
               this.selectedItem = null;
-              alert('Submission rejected (Simulation).');
+              this.toastService.info('Simulation Mode', 'Submission rejection simulation successful.');
           } else {
               console.error('[Moderation] Rejection failed:', err);
-              alert('Failed to reject submission.');
+              this.toastService.error('Process Error', 'Failed to decline the submission.');
           }
         }
       });

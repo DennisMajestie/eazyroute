@@ -6,6 +6,7 @@ import { BusStopService } from '../../../core/services/bus-stop.service';
 import { MapComponent } from '../../../shared/components/map/map.component';
 import { environment } from '../../../../environments/environment';
 import { GeolocationService } from '../../../core/services/geolocation.service';
+import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
@@ -20,6 +21,7 @@ export class AddPlaceComponent {
     private router = inject(Router);
     private location = inject(Location);
     private geolocationService = inject(GeolocationService);
+    private toastService = inject(ToastNotificationService);
 
     // Map Settings
     center = { lat: 9.0765, lng: 7.3986 }; // Default Abuja
@@ -50,6 +52,7 @@ export class AddPlaceComponent {
             this.updateLocation(coords.latitude, coords.longitude);
         } catch (error) {
             console.warn('[AddPlace] Geolocation failed:', error);
+            this.toastService.warning('Location Detection', 'We couldn\'t find your coordinates automatically. Please drop a pin.');
         } finally {
             this.isDetecting = false;
         }
@@ -74,7 +77,7 @@ export class AddPlaceComponent {
 
         // Validation: Ensure coordinates are non-zero (or outside baseline 0,0)
         if (Math.abs(this.place.latitude) < 0.0001 && Math.abs(this.place.longitude) < 0.0001) {
-            alert('Please select a valid location on the map.');
+            this.toastService.warning('Selection Required', 'Please select a valid location on the map before submitting.');
             return;
         }
 
@@ -82,6 +85,7 @@ export class AddPlaceComponent {
 
         this.busStopService.submitPlace(this.place).subscribe({
             next: () => {
+                this.toastService.success('Map Contribution', 'Thank you! ' + this.place.name + ' has been submitted for verification.');
                 this.isSubmitting = false;
                 this.showSuccess = true;
 
@@ -93,7 +97,7 @@ export class AddPlaceComponent {
             error: (err) => {
                 console.error('Submission failed', err);
                 this.isSubmitting = false;
-                alert('Failed to submit. Please try again.');
+                this.toastService.error('Submission Failed', 'We couldn\'t save this place. Please check your data and try again.');
             }
         });
     }

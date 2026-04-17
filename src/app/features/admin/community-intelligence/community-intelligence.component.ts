@@ -7,6 +7,7 @@ import { ContributorStats } from '../../../models/admin.types';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
+import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 
 @Component({
   selector: 'app-community-intelligence',
@@ -18,6 +19,7 @@ import { environment } from '../../../../environments/environment';
 export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, OnDestroy {
   private adminService = inject(AdminService);
   private mapService = inject(LeafletMapService);
+  private toastService = inject(ToastNotificationService);
   private destroy$ = new Subject<void>();
 
   map: any;
@@ -75,6 +77,7 @@ export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, On
             this.renderMarkers();
         } else {
             console.error('[CIL] Community reports failed:', err);
+            this.toastService.error('Direct Intelligience Error', 'Failed to synchronize live community reports.');
         }
         this.isLoading = false;
       }
@@ -96,6 +99,7 @@ export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, On
             ];
         } else {
             console.error('[CIL] Top contributors failed:', err);
+            this.toastService.error('Reputation Sync Error', 'Could not load contributor rankings.');
         }
       }
     });
