@@ -48,7 +48,7 @@ export class AdminRouteSeederComponent implements OnInit {
   selectedFromStopName = '';
   selectedToStopName = '';
 
-  transportModes = ['KEKE', 'OKADA', 'TAXI', 'BUS'];
+  transportModes = ['KEKE', 'OKADA', 'TAXI', 'BUS', 'WALK'];
 
   ngOnInit() {
     this.seederForm = this.fb.group({
