@@ -935,15 +935,21 @@ export class RouteDisplayComponent implements OnInit {
 
         this.isSubmittingReport = true;
 
+        // Resolve coordinates: prefer stop coords, fall back to known route origin/destination
+        const stopLat = (this.currentReportingSegment.fromStop as any)?.latitude;
+        const stopLng = (this.currentReportingSegment.fromStop as any)?.longitude;
+        const resolvedLat = (stopLat && stopLat !== 0) ? stopLat : (this.fromLocation?.lat ?? 9.0765);
+        const resolvedLng = (stopLng && stopLng !== 0) ? stopLng : (this.fromLocation?.lng ?? 7.3986);
+
         const report: CommunityReport = {
             reportType: this.reportType === 'risk_alert' ? 'risk_alert' : (this.reportType as any),
             location: {
-                lat: (this.currentReportingSegment.fromStop as any)?.latitude || 0,
-                lng: (this.currentReportingSegment.fromStop as any)?.longitude || 0
+                lat: resolvedLat,
+                lng: resolvedLng
             },
             mode: this.getSegmentMode(this.currentReportingSegment).toLowerCase(),
             nodeId: this.currentReportingSegment.fromStopId || (this.currentReportingSegment as any).fromId,
-            corridorId: this.currentReportingSegment.backboneName ? undefined : (this.currentReportingSegment as any).corridorId, // Use ID if available
+            corridorId: this.currentReportingSegment.backboneName ? undefined : (this.currentReportingSegment as any).corridorId,
             payload: {},
             timestamp: new Date()
         };

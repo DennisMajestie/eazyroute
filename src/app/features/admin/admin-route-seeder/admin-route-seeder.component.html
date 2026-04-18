@@ -71,7 +71,7 @@
                             </ul>
                         </div>
 
-                        <!-- Per-Leg Mode & Price -->
+                        <!-- Per-Leg Mode, Price & One-Way -->
                         <div class="leg-details-grid">
                             <div class="form-group">
                                 <label>Mode to Leg #{{ i + 1 }}</label>
@@ -87,6 +87,13 @@
                                 <label>Max Price (₦)</label>
                                 <input type="number" formControlName="maxPrice" class="form-control" step="50">
                             </div>
+                        </div>
+                        <div class="one-way-row">
+                            <label class="toggle-wrap">
+                                <input type="checkbox" formControlName="isOneWay">
+                                <span class="toggle-slider"></span>
+                                <span class="label-text">One-Way (this segment only)</span>
+                            </label>
                         </div>
                         <div class="error-msg" *ngIf="legs.at(i).errors?.['priceRangeInvalid'] && (legs.at(i).get('minPrice')?.touched || legs.at(i).get('maxPrice')?.touched)">
                             Max must be &ge; Min price.
@@ -123,7 +130,7 @@
                         </ul>
                     </div>
 
-                    <!-- Final Segment Mode & Price -->
+                    <!-- Final Segment Mode, Price & One-Way -->
                     <div class="leg-details-grid">
                         <div class="form-group">
                             <label>Mode to Destination</label>
@@ -139,6 +146,13 @@
                             <label>Max Price (₦)</label>
                             <input type="number" formControlName="maxPrice" class="form-control" step="50">
                         </div>
+                    </div>
+                    <div class="one-way-row">
+                        <label class="toggle-wrap">
+                            <input type="checkbox" formControlName="isOneWay">
+                            <span class="toggle-slider"></span>
+                            <span class="label-text">One-Way (this segment only)</span>
+                        </label>
                     </div>
                     <div class="error-msg" *ngIf="seederForm.errors?.['priceRangeInvalid'] && (seederForm.get('minPrice')?.touched || seederForm.get('maxPrice')?.touched)">
                         Max must be &ge; Min price.

@@ -102,6 +102,58 @@
                     padding-bottom: 0;
                     margin-bottom: 12px;
                 }
+
+                .one-way-row {
+                    margin-top: 10px;
+                    margin-bottom: 4px;
+
+                    .toggle-wrap {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        cursor: pointer;
+
+                        input[type="checkbox"] {
+                            display: none;
+
+                            &:checked + .toggle-slider {
+                                background: #3b82f6;
+                                &::before {
+                                    transform: translateX(20px);
+                                }
+                            }
+                        }
+
+                        .toggle-slider {
+                            width: 40px;
+                            height: 22px;
+                            background: #cbd5e1;
+                            border-radius: 22px;
+                            position: relative;
+                            transition: 0.3s;
+                            flex-shrink: 0;
+
+                            &::before {
+                                content: '';
+                                position: absolute;
+                                width: 16px;
+                                height: 16px;
+                                border-radius: 50%;
+                                background: white;
+                                top: 3px;
+                                left: 3px;
+                                transition: 0.3s;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+                            }
+                        }
+
+                        .label-text {
+                            font-size: 0.8rem;
+                            font-weight: 600;
+                            color: #475569;
+                        }
+                    }
+                }
             }
 
             .leg-details-grid {

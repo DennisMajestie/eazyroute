@@ -75,7 +75,8 @@ export class AdminRouteSeederComponent implements OnInit {
       stopName: [''],
       transportMode: ['KEKE', Validators.required],
       minPrice: [200, [Validators.required, Validators.min(0)]],
-      maxPrice: [300, [Validators.required, Validators.min(0)]]
+      maxPrice: [300, [Validators.required, Validators.min(0)]],
+      isOneWay: [false]
     }, { validators: this.legPriceRangeValidator });
     
     this.legs.push(legForm);
@@ -238,7 +239,7 @@ export class AdminRouteSeederComponent implements OnInit {
         toStopId: leg.stopId,
         transportMode: leg.transportMode,
         priceRange: { min: leg.minPrice, max: leg.maxPrice },
-        isOneWay: false // As per user instruction: "it shouldnt be one way"
+        isOneWay: leg.isOneWay ?? false
       });
       currentFromId = leg.stopId;
     }
@@ -249,7 +250,7 @@ export class AdminRouteSeederComponent implements OnInit {
       toStopId: val.toStopId,
       transportMode: val.transportMode,
       priceRange: { min: val.minPrice, max: val.maxPrice },
-      isOneWay: false
+      isOneWay: val.isOneWay ?? false
     });
 
     this.totalSegmentsToSeed = segments.length;
