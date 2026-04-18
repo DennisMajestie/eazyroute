@@ -47,27 +47,50 @@
                         <span class="dot"></span>
                         <span class="line"></span>
                     </div>
-                    <div class="form-group autocomplete-container">
-                        <div class="leg-header">
-                            <label>Leg #{{ i + 1 }} Stop</label>
-                            <button type="button" class="remove-leg" (click)="removeLeg(i)">
-                                <i class="fas fa-times"></i>
-                            </button>
+                    <div class="leg-content">
+                        <div class="form-group autocomplete-container">
+                            <div class="leg-header">
+                                <label>Leg #{{ i + 1 }} Stop</label>
+                                <button type="button" class="remove-leg" (click)="removeLeg(i)">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="input-wrapper">
+                                <i class="fas fa-ellipsis-v"></i>
+                                <input 
+                                    type="text" 
+                                    class="form-control" 
+                                    placeholder="Intermediate stop..." 
+                                    formControlName="stopName"
+                                    (input)="onLegSearch($event, i)">
+                            </div>
+                            <ul class="dropdown-list" *ngIf="legResults[i] && legResults[i].length > 0">
+                                <li *ngFor="let stop of legResults[i]" (click)="selectLegStop(stop, i)">
+                                    <i class="fas fa-bus-alt"></i> {{ stop.name }}
+                                </li>
+                            </ul>
                         </div>
-                        <div class="input-wrapper">
-                            <i class="fas fa-ellipsis-v"></i>
-                            <input 
-                                type="text" 
-                                class="form-control" 
-                                placeholder="Intermediate stop..." 
-                                formControlName="stopName"
-                                (input)="onLegSearch($event, i)">
+
+                        <!-- Per-Leg Mode & Price -->
+                        <div class="leg-details-grid">
+                            <div class="form-group">
+                                <label>Mode to Leg #{{ i + 1 }}</label>
+                                <select formControlName="transportMode" class="form-control">
+                                    <option *ngFor="let mode of transportModes" [value]="mode">{{ mode }}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Min Price (₦)</label>
+                                <input type="number" formControlName="minPrice" class="form-control" step="50">
+                            </div>
+                            <div class="form-group">
+                                <label>Max Price (₦)</label>
+                                <input type="number" formControlName="maxPrice" class="form-control" step="50">
+                            </div>
                         </div>
-                        <ul class="dropdown-list" *ngIf="legResults[i] && legResults[i].length > 0">
-                            <li *ngFor="let stop of legResults[i]" (click)="selectLegStop(stop, i)">
-                                <i class="fas fa-bus-alt"></i> {{ stop.name }}
-                            </li>
-                        </ul>
+                        <div class="error-msg" *ngIf="legs.at(i).errors?.['priceRangeInvalid'] && (legs.at(i).get('minPrice')?.touched || legs.at(i).get('maxPrice')?.touched)">
+                            Max must be &ge; Min price.
+                        </div>
                     </div>
                 </div>
 
@@ -81,59 +104,47 @@
                 <div class="node-marker">
                     <span class="dot"></span>
                 </div>
-                <div class="form-group autocomplete-container">
-                    <label>Destination Node *</label>
-                    <div class="input-wrapper">
-                        <i class="fas fa-flag-checkered"></i>
-                        <input 
-                            type="text" 
-                            class="form-control" 
-                            placeholder="Final destination..." 
-                            [value]="selectedToStopName"
-                            (input)="onToSearch($event)">
+                <div class="leg-content">
+                    <div class="form-group autocomplete-container">
+                        <label>Destination Node *</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-flag-checkered"></i>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                placeholder="Final destination..." 
+                                [value]="selectedToStopName"
+                                (input)="onToSearch($event)">
+                        </div>
+                        <ul class="dropdown-list" *ngIf="toResults.length > 0">
+                            <li *ngFor="let stop of toResults" (click)="selectToStop(stop)">
+                                <i class="fas fa-bus-alt"></i> {{ stop.name }}
+                            </li>
+                        </ul>
                     </div>
-                    <ul class="dropdown-list" *ngIf="toResults.length > 0">
-                        <li *ngFor="let stop of toResults" (click)="selectToStop(stop)">
-                            <i class="fas fa-bus-alt"></i> {{ stop.name }}
-                        </li>
-                    </ul>
+
+                    <!-- Final Segment Mode & Price -->
+                    <div class="leg-details-grid">
+                        <div class="form-group">
+                            <label>Mode to Destination</label>
+                            <select formControlName="transportMode" class="form-control">
+                                <option *ngFor="let mode of transportModes" [value]="mode">{{ mode }}</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Min Price (₦)</label>
+                            <input type="number" formControlName="minPrice" class="form-control" step="50">
+                        </div>
+                        <div class="form-group">
+                            <label>Max Price (₦)</label>
+                            <input type="number" formControlName="maxPrice" class="form-control" step="50">
+                        </div>
+                    </div>
+                    <div class="error-msg" *ngIf="seederForm.errors?.['priceRangeInvalid'] && (seederForm.get('minPrice')?.touched || seederForm.get('maxPrice')?.touched)">
+                        Max must be &ge; Min price.
+                    </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Mode & Constraints -->
-        <div class="form-grid compact">
-            <div class="form-group">
-                <label>Transport Mode *</label>
-                <select formControlName="transportMode" class="form-control">
-                    <option *ngFor="let mode of transportModes" [value]="mode">{{ mode }}</option>
-                </select>
-            </div>
-
-            <div class="form-group checkbox-group">
-                <label class="toggle-wrap">
-                    <input type="checkbox" formControlName="isOneWay">
-                    <span class="toggle-slider"></span>
-                    <span class="label-text">Strictly One-Way Constraint</span>
-                </label>
-                <small class="hint-text">Leave unchecked to automatically link the return trip.</small>
-            </div>
-        </div>
-
-        <!-- Base Pricing Range -->
-        <div class="form-grid price-grid">
-            <div class="form-group">
-                <label>Baseline Min Price (₦) *</label>
-                <input type="number" formControlName="minPrice" class="form-control" min="0" step="50">
-            </div>
-            
-            <div class="form-group">
-                <label>Baseline Max Price (₦) *</label>
-                <input type="number" formControlName="maxPrice" class="form-control" min="0" step="50">
-            </div>
-        </div>
-        <div class="error-msg range-err" *ngIf="seederForm.errors?.['priceRangeInvalid'] && (seederForm.get('minPrice')?.touched || seederForm.get('maxPrice')?.touched)">
-            Maximum price must be greater than or equal to minimum price.
         </div>
 
         <div class="action-footer">

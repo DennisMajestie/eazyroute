@@ -55,11 +55,12 @@ export class AdminRouteSeederComponent implements OnInit {
       fromStopId: ['', Validators.required],
       toStopId: ['', Validators.required],
       legs: this.fb.array([]), // Intermediate stops
+      // These root fields now represent the FINAL segment (from last leg to destination)
       transportMode: ['KEKE', Validators.required],
       minPrice: [200, [Validators.required, Validators.min(0)]],
       maxPrice: [300, [Validators.required, Validators.min(0)]],
       isOneWay: [false]
-    }, { validators: this.priceRangeValidator });
+    }, { validators: this.rootPriceRangeValidator });
 
     this.setupAutocomplete();
   }
@@ -71,8 +72,12 @@ export class AdminRouteSeederComponent implements OnInit {
   addLeg() {
     const legForm = this.fb.group({
       stopId: ['', Validators.required],
-      stopName: ['']
-    });
+      stopName: [''],
+      transportMode: ['KEKE', Validators.required],
+      minPrice: [200, [Validators.required, Validators.min(0)]],
+      maxPrice: [300, [Validators.required, Validators.min(0)]]
+    }, { validators: this.legPriceRangeValidator });
+    
     this.legs.push(legForm);
     this.legResults.push([]);
     this.isSearchingLeg.push(false);
@@ -84,8 +89,15 @@ export class AdminRouteSeederComponent implements OnInit {
     this.isSearchingLeg.splice(index, 1);
   }
 
-  // Ensure maxPrice >= minPrice
-  priceRangeValidator(g: FormGroup) {
+  // Ensure maxPrice >= minPrice for the root (destination segment)
+  rootPriceRangeValidator(g: FormGroup) {
+    const min = g.get('minPrice')?.value;
+    const max = g.get('maxPrice')?.value;
+    return min !== null && max !== null && min <= max ? null : { 'priceRangeInvalid': true };
+  }
+
+  // Ensure maxPrice >= minPrice for each leg
+  legPriceRangeValidator(g: any) {
     const min = g.get('minPrice')?.value;
     const max = g.get('maxPrice')?.value;
     return min !== null && max !== null && min <= max ? null : { 'priceRangeInvalid': true };
@@ -215,24 +227,30 @@ export class AdminRouteSeederComponent implements OnInit {
 
     const val = this.seederForm.value;
     
-    // Decompose journey into segments
-    // Sequence: [Origin, Leg1, Leg2, ..., Destination]
-    const stopsSequence = [
-      val.fromStopId,
-      ...val.legs.map((l: any) => l.stopId),
-      val.toStopId
-    ];
-
+    // Build segments array
     const segments: any[] = [];
-    for (let i = 0; i < stopsSequence.length - 1; i++) {
+    
+    // Segment 1 to N: From previous to current leg
+    let currentFromId = val.fromStopId;
+    for (const leg of val.legs) {
       segments.push({
-        fromStopId: stopsSequence[i],
-        toStopId: stopsSequence[i+1],
-        transportMode: val.transportMode,
-        priceRange: { min: val.minPrice, max: val.maxPrice },
-        isOneWay: val.isOneWay
+        fromStopId: currentFromId,
+        toStopId: leg.stopId,
+        transportMode: leg.transportMode,
+        priceRange: { min: leg.minPrice, max: leg.maxPrice },
+        isOneWay: false // As per user instruction: "it shouldnt be one way"
       });
+      currentFromId = leg.stopId;
     }
+
+    // Final Segment: From last leg (or origin) to Destination
+    segments.push({
+      fromStopId: currentFromId,
+      toStopId: val.toStopId,
+      transportMode: val.transportMode,
+      priceRange: { min: val.minPrice, max: val.maxPrice },
+      isOneWay: false
+    });
 
     this.totalSegmentsToSeed = segments.length;
     

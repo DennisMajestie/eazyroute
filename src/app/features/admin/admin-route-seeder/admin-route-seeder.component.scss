@@ -92,8 +92,45 @@
             &.destination .dot { border-color: #10b981; background: #10b981; }
             &.leg .dot { border-color: #94a3b8; }
 
-            .form-group {
-                padding-bottom: 24px;
+            .leg-content {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+                padding-bottom: 30px;
+
+                .form-group {
+                    padding-bottom: 0;
+                    margin-bottom: 12px;
+                }
+            }
+
+            .leg-details-grid {
+                display: grid;
+                grid-template-columns: 1.5fr 1fr 1fr;
+                gap: 12px;
+                background: #f1f5f9;
+                padding: 12px;
+                border-radius: 12px;
+                border: 1px solid #e2e8f0;
+
+                .form-group {
+                    margin-bottom: 0;
+                    
+                    label {
+                        font-size: 0.75rem;
+                        color: #64748b;
+                    }
+
+                    .form-control {
+                        padding: 8px 12px;
+                        font-size: 0.85rem;
+                        background: white;
+                    }
+                }
+
+                @media (max-width: 600px) {
+                    grid-template-columns: 1fr;
+                }
             }
 
             .leg-header {
