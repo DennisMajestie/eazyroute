@@ -6,7 +6,7 @@
 
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, FormArray, Validators } from '@angular/forms';
 import { Subject, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
 import { AdminService } from '../../../core/services/admin.service';
@@ -15,7 +15,7 @@ import { BusStopService } from '../../../core/services/bus-stop.service';
 @Component({
   selector: 'app-admin-route-seeder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './admin-route-seeder.component.html',
   styleUrls: ['./admin-route-seeder.component.scss']
 })
