@@ -37,6 +37,9 @@
                             <i class="fas fa-bus-alt"></i> {{ stop.name }}
                         </li>
                     </ul>
+                    <div class="error-msg" *ngIf="seederForm.get('fromStopId')?.invalid && (seederForm.get('fromStopId')?.touched || selectedFromStopName)">
+                        Please select an origin from the results.
+                    </div>
                 </div>
             </div>
 
@@ -162,6 +165,9 @@
         </div>
 
         <div class="action-footer">
+            <div class="form-invalid-hint" *ngIf="seederForm.invalid && !isSubmitting">
+                <i class="fas fa-info-circle"></i> Some fields are missing or invalid. Check the stops and prices.
+            </div>
             <div class="seeding-progress" *ngIf="isSubmitting && totalSegmentsToSeed > 1">
                 Seeding segment {{ processedLegsCount + 1 }} of {{ totalSegmentsToSeed }}...
             </div>
