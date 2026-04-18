@@ -49,6 +49,17 @@ export class AdminRouteSeederComponent implements OnInit {
   selectedToStopName = '';
 
   transportModes = ['KEKE', 'OKADA', 'TAXI', 'BUS', 'WALK'];
+  
+  // Quick Node Creation State
+  showQuickCreate = false;
+  quickCreateTarget: 'from' | 'to' | number | null = null;
+  quickNode = {
+    name: '',
+    latitude: 0,
+    longitude: 0,
+    area: 'Abuja Central'
+  };
+  isCreatingNode = false;
 
   ngOnInit() {
     this.seederForm = this.fb.group({
@@ -302,5 +313,56 @@ export class AdminRouteSeederComponent implements OnInit {
     this.isSearchingLeg = [];
     this.selectedFromStopName = '';
     this.selectedToStopName = '';
+  }
+
+  toggleQuickCreate(target: 'from' | 'to' | number) {
+    if (this.quickCreateTarget === target && this.showQuickCreate) {
+      this.showQuickCreate = false;
+      this.quickCreateTarget = null;
+    } else {
+      this.showQuickCreate = true;
+      this.quickCreateTarget = target;
+      // Pre-fill name if they already typed something
+      if (target === 'from') this.quickNode.name = this.selectedFromStopName;
+      else if (target === 'to') this.quickNode.name = this.selectedToStopName;
+      else if (typeof target === 'number') this.quickNode.name = this.legs.at(target).get('stopName')?.value;
+    }
+  }
+
+  createQuickNode() {
+    if (!this.quickNode.name || !this.quickNode.latitude || !this.quickNode.longitude) {
+      return;
+    }
+
+    this.isCreatingNode = true;
+    this.busStopService.createBusStop({
+       name: this.quickNode.name,
+       latitude: this.quickNode.latitude,
+       longitude: this.quickNode.longitude,
+       area: this.quickNode.area
+    }).subscribe({
+      next: (res) => {
+        if (res.success && res.data) {
+          const newNode = res.data;
+          // Auto-select the new node
+          if (this.quickCreateTarget === 'from') {
+            this.selectFromStop(newNode);
+          } else if (this.quickCreateTarget === 'to') {
+            this.selectToStop(newNode);
+          } else if (typeof this.quickCreateTarget === 'number') {
+            this.selectLegStop(newNode, this.quickCreateTarget);
+          }
+          
+          this.showQuickCreate = false;
+          this.quickCreateTarget = null;
+          this.quickNode = { name: '', latitude: 0, longitude: 0, area: 'Abuja Central' };
+        }
+        this.isCreatingNode = false;
+      },
+      error: (err) => {
+        console.error('Error creating node:', err);
+        this.isCreatingNode = false;
+      }
+    });
   }
 }

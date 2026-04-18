@@ -2,6 +2,8 @@ import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
+import { BusStopService } from '../../../core/services/bus-stop.service';
+import { FormsModule } from '@angular/forms';
 import { 
     GraphReport, 
     ConnectionSuggestion, 
@@ -17,12 +19,13 @@ import { ToastNotificationService } from '../../../core/services/toast-notificat
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './admin-dashboard.component.html',
   styleUrls: ['./admin-dashboard.component.scss']
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
   public adminService = inject(AdminService);
+  private busStopService = inject(BusStopService);
   private toastService = inject(ToastNotificationService);
   private destroy$ = new Subject<void>();
   
@@ -45,6 +48,15 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     { label: 'Avg Fare', value: 450, icon: '₦', color: '#F59E0B', trend: -2 },
     { label: 'User Contributions', value: 0, icon: '🙌', color: '#8B5CF6', trend: 18 }
   ];
+
+  // Quick Node Creation State
+  quickNode = {
+    name: '',
+    latitude: 0,
+    longitude: 0,
+    area: 'Abuja Central'
+  };
+  isCreatingNode = false;
 
   ngOnInit(): void {
     // Start automated 120s polling
@@ -251,6 +263,37 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           { fromStop: { _id: '1', name: 'Berger' }, toStop: { _id: '2', name: 'Wuse Market' }, distance: 1200, reason: 'High demand area', priority: 'high' },
           { fromStop: { _id: '3', name: 'Area 1' }, toStop: { _id: '4', name: 'Garki' }, distance: 800, reason: 'Short gap', priority: 'medium' }
         ];
+      }
+    });
+  }
+
+  createQuickNode(): void {
+    if (!this.quickNode.name || !this.quickNode.latitude || !this.quickNode.longitude) {
+      this.toastService.error('Missing Data', 'Please provide a name and valid coordinates.');
+      return;
+    }
+
+    this.isCreatingNode = true;
+    this.busStopService.createBusStop({
+      name: this.quickNode.name,
+      latitude: this.quickNode.latitude,
+      longitude: this.quickNode.longitude,
+      area: this.quickNode.area
+    }).subscribe({
+      next: (res) => {
+        if (res.success) {
+          this.toastService.success('Node Created', `${this.quickNode.name} has been added to the graph.`);
+          this.quickNode = { name: '', latitude: 0, longitude: 0, area: 'Abuja Central' };
+          this.loadReport(); // Refresh stats
+        } else {
+          this.toastService.error('Creation Failed', res.message || 'Unknown error');
+        }
+        this.isCreatingNode = false;
+      },
+      error: (err) => {
+        console.error('Error creating node:', err);
+        this.toastService.error('API Error', 'Failed to connect to the node creation service.');
+        this.isCreatingNode = false;
       }
     });
   }

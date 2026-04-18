@@ -137,6 +137,40 @@
         </div>
     </div>
 
+    <!-- Quick Administrative Actions -->
+    <div class="overview-section quick-actions-section">
+        <div class="section-header">
+            <h3>Quick Node Creator</h3>
+            <span class="beta-badge">Field Tool</span>
+        </div>
+        <div class="quick-node-form">
+            <div class="form-row">
+                <div class="field-item">
+                    <label>Node Name</label>
+                    <input type="text" [(ngModel)]="quickNode.name" placeholder="e.g. Berger Underbridge">
+                </div>
+                <div class="field-item">
+                    <label>Area</label>
+                    <input type="text" [(ngModel)]="quickNode.area" placeholder="e.g. Wuse II">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field-item">
+                    <label>Latitude</label>
+                    <input type="number" [(ngModel)]="quickNode.latitude" step="0.000001" placeholder="9.xxx">
+                </div>
+                <div class="field-item">
+                    <label>Longitude</label>
+                    <input type="number" [(ngModel)]="quickNode.longitude" step="0.000001" placeholder="7.xxx">
+                </div>
+            </div>
+            <button class="btn-create-node" (click)="createQuickNode()" [disabled]="isCreatingNode">
+                <i class="fas" [class.fa-plus-circle]="!isCreatingNode" [class.fa-circle-notch]="isCreatingNode" [class.fa-spin]="isCreatingNode"></i>
+                {{ isCreatingNode ? 'Creating Node...' : 'Seed New Node' }}
+            </button>
+        </div>
+    </div>
+
     <!-- Strategy & Operations Controls -->
     <div class="overview-section strategy-section">
         <div class="section-header">

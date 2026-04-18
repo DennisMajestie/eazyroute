@@ -31,6 +31,9 @@
                             placeholder="Start of journey..." 
                             [value]="selectedFromStopName"
                             (input)="onFromSearch($event)">
+                        <button type="button" class="btn-quick-create" (click)="toggleQuickCreate('from')" title="Create missing node">
+                            <i class="fas fa-plus"></i>
+                        </button>
                     </div>
                     <ul class="dropdown-list" *ngIf="fromResults.length > 0">
                         <li *ngFor="let stop of fromResults" (click)="selectFromStop(stop)">
@@ -66,6 +69,9 @@
                                     placeholder="Intermediate stop..." 
                                     formControlName="stopName"
                                     (input)="onLegSearch($event, i)">
+                                <button type="button" class="btn-quick-create" (click)="toggleQuickCreate(i)" title="Create missing node">
+                                    <i class="fas fa-plus"></i>
+                                </button>
                             </div>
                             <ul class="dropdown-list" *ngIf="legResults[i] && legResults[i].length > 0">
                                 <li *ngFor="let stop of legResults[i]" (click)="selectLegStop(stop, i)">
@@ -125,6 +131,9 @@
                                 placeholder="Final destination..." 
                                 [value]="selectedToStopName"
                                 (input)="onToSearch($event)">
+                            <button type="button" class="btn-quick-create" (click)="toggleQuickCreate('to')" title="Create missing node">
+                                <i class="fas fa-plus"></i>
+                            </button>
                         </div>
                         <ul class="dropdown-list" *ngIf="toResults.length > 0">
                             <li *ngFor="let stop of toResults" (click)="selectToStop(stop)">
@@ -160,6 +169,43 @@
                     <div class="error-msg" *ngIf="seederForm.errors?.['priceRangeInvalid'] && (seederForm.get('minPrice')?.touched || seederForm.get('maxPrice')?.touched)">
                         Max must be &ge; Min price.
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inline Quick Create Node Overlay (only shows when toggled) -->
+        <div class="quick-create-overlay" *ngIf="showQuickCreate">
+            <div class="quick-create-card">
+                <div class="quick-header">
+                    <h4><i class="fas fa-magic"></i> Quick Seed New Node</h4>
+                    <button type="button" class="close-btn" (click)="showQuickCreate = false">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="quick-body">
+                    <p class="hint">Entering coordinates for: <strong>{{ quickNode.name || 'New Transit Node' }}</strong></p>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" [(ngModel)]="quickNode.name" [ngModelOptions]="{standalone: true}" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Area</label>
+                            <input type="text" [(ngModel)]="quickNode.area" [ngModelOptions]="{standalone: true}" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Latitude</label>
+                            <input type="number" [(ngModel)]="quickNode.latitude" [ngModelOptions]="{standalone: true}" class="form-control" step="0.000001">
+                        </div>
+                        <div class="form-group">
+                            <label>Longitude</label>
+                            <input type="number" [(ngModel)]="quickNode.longitude" [ngModelOptions]="{standalone: true}" class="form-control" step="0.000001">
+                        </div>
+                    </div>
+                    <button type="button" class="btn-seed-node" (click)="createQuickNode()" [disabled]="isCreatingNode">
+                        <i class="fas" [class.fa-microchip]="!isCreatingNode" [class.fa-spinner]="isCreatingNode" [class.fa-spin]="isCreatingNode"></i>
+                        {{ isCreatingNode ? 'Injecting into Graph...' : 'Seed Node & Select' }}
+                    </button>
                 </div>
             </div>
         </div>

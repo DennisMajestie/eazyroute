@@ -464,4 +464,155 @@
             }
         }
     }
+
+    .btn-quick-create {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        color: #3b82f6;
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        z-index: 10;
+
+        &:hover {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+    }
+
+    .quick-create-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        animation: fadeInOverlay 0.3s ease-out;
+
+        .quick-create-card {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+
+            .quick-header {
+                background: #f8fafc;
+                padding: 16px 20px;
+                border-bottom: 1px solid #e2e8f0;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+
+                h4 {
+                    margin: 0;
+                    font-size: 1rem;
+                    color: #1e293b;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+
+                    i { color: #3b82f6; }
+                }
+
+                .close-btn {
+                    background: none;
+                    border: none;
+                    color: #94a3b8;
+                    cursor: pointer;
+                    padding: 5px;
+                    transition: color 0.2s;
+
+                    &:hover { color: #ef4444; }
+                }
+            }
+
+            .quick-body {
+                padding: 20px;
+
+                .hint {
+                    font-size: 0.8rem;
+                    color: #64748b;
+                    margin-bottom: 20px;
+                    background: #f0f9ff;
+                    padding: 8px 12px;
+                    border-radius: 8px;
+                    border-left: 4px solid #3b82f6;
+                }
+
+                .form-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    gap: 16px;
+                    margin-bottom: 24px;
+
+                    .form-group {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 6px;
+
+                        label {
+                            font-size: 0.75rem;
+                            font-weight: 600;
+                            color: #475569;
+                        }
+
+                        input {
+                            font-size: 0.9rem;
+                            padding: 8px 12px;
+                        }
+                    }
+                }
+
+                .btn-seed-node {
+                    width: 100%;
+                    background: #1e293b;
+                    color: white;
+                    border: none;
+                    padding: 12px;
+                    border-radius: 12px;
+                    font-weight: 700;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 10px;
+                    cursor: pointer;
+                    transition: all 0.2s;
+
+                    &:hover:not(:disabled) {
+                        background: #0f172a;
+                        transform: translateY(-2px);
+                    }
+
+                    &:disabled {
+                        opacity: 0.7;
+                        cursor: not-allowed;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@keyframes fadeInOverlay {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
 }

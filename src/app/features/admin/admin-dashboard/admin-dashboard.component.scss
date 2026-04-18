@@ -509,6 +509,92 @@
 }
 
 // --- Health Status (Digital Dial) ---
+.quick-actions-section {
+    .beta-badge {
+        font-size: 0.65rem;
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        padding: 2px 8px;
+        border-radius: 12px;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        text-transform: uppercase;
+        font-weight: 700;
+    }
+
+    .quick-node-form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 10px;
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+
+            .field-item {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+
+                label {
+                    font-size: 0.75rem;
+                    font-weight: 600;
+                    color: #94a3b8;
+                }
+
+                input {
+                    background: rgba(15, 23, 42, 0.4);
+                    border: 1px solid rgba(148, 163, 184, 0.2);
+                    border-radius: 8px;
+                    padding: 8px 12px;
+                    color: #f1f5f9;
+                    font-size: 0.85rem;
+                    transition: all 0.2s;
+
+                    &:focus {
+                        outline: none;
+                        border-color: #3b82f6;
+                        background: rgba(15, 23, 42, 0.6);
+                    }
+
+                    &::placeholder {
+                        color: #475569;
+                    }
+                }
+            }
+        }
+
+        .btn-create-node {
+            margin-top: 5px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+
+            &:hover:not(:disabled) {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(37, 99, 235, 0.3);
+            }
+
+            &:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+        }
+    }
+}
+
 .health-section {
     grid-column: span 2;
 
