@@ -36,7 +36,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   isLoadingPricing = false;
   Math = Math;
 
-  nextSyncSeconds = 30;
+  nextSyncSeconds = 120;
 
   statCards = [
     { label: 'Active Users', value: 0, icon: '👥', color: '#EAB308', trend: 8 },
@@ -47,8 +47,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit(): void {
-    // Start automated 30s polling
-    interval(30000)
+    // Start automated 120s polling
+    interval(120000)
       .pipe(
         startWith(0),
         takeUntil(this.destroy$)
@@ -62,7 +62,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.nextSyncSeconds--;
-        if (this.nextSyncSeconds < 0) this.nextSyncSeconds = 30;
+        if (this.nextSyncSeconds < 0) this.nextSyncSeconds = 120;
       });
   }
 
@@ -72,7 +72,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   }
 
   loadAllData(): void {
-    this.nextSyncSeconds = 30;
+    this.nextSyncSeconds = 120;
     this.loadUserStats();
     this.loadReport();
     this.loadSuggestions();

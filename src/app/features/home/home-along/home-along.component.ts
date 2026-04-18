@@ -149,8 +149,8 @@ export class HomeAlongComponent implements OnInit {
    * Start polling for smart boarding suggestions
    */
   startSmartBoardingPolling() {
-    // Poll every 15 seconds
-    this.pollingSubscription = interval(15000)
+    // Poll every 120 seconds
+    this.pollingSubscription = interval(120000)
       .pipe(
         filter(() => !!this.fromLocation && !this.isSearching), // Only poll if we have a location and not searching
         switchMap(() => {

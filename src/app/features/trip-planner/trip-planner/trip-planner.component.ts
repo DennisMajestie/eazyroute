@@ -1495,7 +1495,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 };
                 this.tripService.updateLocation(this.activeTripId, activeLoc).subscribe();
             }
-        }, 5000);
+        }, 30000);
     }
 
     // --- Crowdsourcing Logic ---
