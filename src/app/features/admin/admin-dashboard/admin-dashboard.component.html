@@ -245,13 +245,27 @@
             <a routerLink="/admin/graph" class="action-link">Full History</a>
         </div>
         <div class="feed-container">
-            <div class="feed-item" *ngFor="let suggestion of suggestions | slice:0:4">
-                <div class="time">11:04 AM</div>
+            <div class="feed-item" *ngFor="let item of (liveFeed.length > 0 ? liveFeed : [
+                { id: 'fallback', title: 'System Heartbeat', message: 'Engine topology verified', timestamp: yesterday, severity: 'info' }
+            ]) | slice:0:5" [attr.data-severity]="item.severity">
+                <div class="time">{{ item.timestamp | date:'shortTime' }}</div>
                 <div class="log">
-                    <span style="color:#d1d5db; font-weight: 600;">Node Recovery:</span> 
-                    {{ suggestion?.fromStop?.name || 'Unknown' }} snapped to Hub
+                    <span class="log-title">{{ item.title }}</span> 
+                    <p class="log-msg">{{ item.message }}</p>
                 </div>
-                <div class="chip">AUTO</div>
+                <div class="chip" [class]="item.severity">{{ item.severity | uppercase }}</div>
+            </div>
+            
+            <div class="empty-feed" *ngIf="liveFeed.length === 0 && suggestions.length > 0">
+                <p>Waiting for live events... Showing recent topology snaps:</p>
+                <div class="feed-item" *ngFor="let suggestion of suggestions | slice:0:3">
+                    <div class="time">Recent</div>
+                    <div class="log">
+                        <span style="color:#d1d5db; font-weight: 600;">Topology:</span> 
+                        Suggested link: {{ suggestion.fromStop.name }} → {{ suggestion.toStop.name }}
+                    </div>
+                    <div class="chip info">SUGGEST</div>
+                </div>
             </div>
         </div>
     </div>

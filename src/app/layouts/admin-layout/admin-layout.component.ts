@@ -4,6 +4,7 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { AdminAlertComponent } from '../../shared/components/admin-alert/admin-alert.component';
+import { WebSocketService } from '../../core/services/websocket.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -15,6 +16,7 @@ import { AdminAlertComponent } from '../../shared/components/admin-alert/admin-a
 export class AdminLayoutComponent {
   private router = inject(Router);
   private authService = inject(AuthService);
+  public wsService = inject(WebSocketService);
 
   isSidebarCollapsed = false;
   currentUrl = '';

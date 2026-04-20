@@ -215,9 +215,28 @@
             .status-dot {
                 width: 8px;
                 height: 8px;
-                background: $primary;
+                background: #9ca3af;
                 border-radius: $radius-full;
-                box-shadow: 0 0 0 2px rgba($primary, 0.2);
+                transition: background 0.3s ease;
+
+                &.connected {
+                    background: $primary;
+                    box-shadow: 0 0 0 2px rgba($primary, 0.2);
+                }
+
+                &.connecting, &.reconnecting {
+                    background: #f59e0b;
+                    animation: status-pulse 1.5s infinite;
+                }
+
+                &.error {
+                    background: #ef4444;
+                    box-shadow: 0 0 0 2px rgba(#ef4444, 0.2);
+                }
+
+                &.disconnected {
+                    background: #9ca3af;
+                }
             }
         }
 
@@ -261,4 +280,10 @@
     .admin-main {
         width: 100vw;
     }
+}
+
+@keyframes status-pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
 }

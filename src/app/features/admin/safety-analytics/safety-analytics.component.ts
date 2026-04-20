@@ -6,6 +6,7 @@ import { SafetyIncident, SafetyAnalytics } from '../../../models/admin.types';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-safety-analytics',
@@ -17,6 +18,7 @@ import { environment } from '../../../../environments/environment';
 export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestroy {
   private adminService = inject(AdminService);
   private mapService = inject(LeafletMapService);
+  private notifService = inject(NotificationService);
   private destroy$ = new Subject<void>();
 
   map: any;
@@ -36,6 +38,7 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
   ngOnInit(): void {
     this.loadHistory();
     this.loadAnalytics();
+    this.initRealTimeListeners();
   }
 
   ngAfterViewInit(): void {
@@ -45,6 +48,39 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private initRealTimeListeners(): void {
+    this.notifService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(notif => {
+        if (notif.severity === 'sos' && notif.data) {
+          console.log('[Safety] Real-time SOS received:', notif.data);
+          
+          // Data format check - backend broadcast might be different from history schema
+          const incident: SafetyIncident = {
+            _id: notif.id,
+            type: notif.data.type || 'SOS_PANIC',
+            location: {
+              lat: notif.data.latitude,
+              lng: notif.data.longitude
+            },
+            timestamp: notif.timestamp,
+            severity: 'high',
+            description: notif.data.description || notif.message,
+            status: 'active'
+          };
+
+          // Update local state
+          if (!this.incidents.some(i => i._id === incident._id)) {
+            this.incidents.unshift(incident);
+            if (this.analytics) {
+              this.analytics.activePanicTriggers = (this.analytics.activePanicTriggers || 0) + 1;
+            }
+            this.renderIncidents();
+          }
+        }
+      });
   }
 
   async initMap(): Promise<void> {

@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
+import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-community-intelligence',
@@ -20,6 +21,7 @@ export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, On
   private adminService = inject(AdminService);
   private mapService = inject(LeafletMapService);
   private toastService = inject(ToastNotificationService);
+  private notifService = inject(NotificationService);
   private destroy$ = new Subject<void>();
 
   map: any;
@@ -38,6 +40,7 @@ export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, On
   ngOnInit(): void {
     this.loadContributors();
     this.loadReports();
+    this.initRealTimeListeners();
   }
 
   ngAfterViewInit(): void {
@@ -47,6 +50,24 @@ export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, On
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private initRealTimeListeners(): void {
+    this.notifService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(notif => {
+        if (notif.data && (notif.id.startsWith('cong-') || notif.data.reportType)) {
+          console.log('[CIL] Real-time report received:', notif.data);
+          
+          const report: CommunityReport = notif.data; // Assumption: data is the report object
+          
+          if (!this.reports.some(r => r.timestamp === report.timestamp && r.location.lat === report.location.lat)) {
+            this.reports.unshift(report);
+            this.renderMarkers();
+            this.toastService.info('Live Intel', `New ${report.reportType} report received.`);
+          }
+        }
+      });
   }
 
   async initMap(): Promise<void> {

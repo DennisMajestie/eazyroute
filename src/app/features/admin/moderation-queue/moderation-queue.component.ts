@@ -5,6 +5,9 @@ import { LeafletMapService } from '../../../core/services/leaflet-map.service';
 import { ModerationItem } from '../../../models/admin.types';
 import { environment } from '../../../../environments/environment';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-moderation-queue',
@@ -17,6 +20,8 @@ export class ModerationQueueComponent implements OnInit {
   private adminService = inject(AdminService);
   private mapService = inject(LeafletMapService);
   private toastService = inject(ToastNotificationService);
+  private notifService = inject(NotificationService);
+  private destroy$ = new Subject<void>();
   
   queue: ModerationItem[] = [];
   filteredQueue: ModerationItem[] = [];
@@ -27,6 +32,27 @@ export class ModerationQueueComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadQueue();
+    this.initRealTimeListeners();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initRealTimeListeners(): void {
+    this.notifService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(notif => {
+        if (notif.id.startsWith('mod-') && notif.data) {
+          console.log('[Moderation] Real-time item received:', notif.data);
+          // Add to beginning of queue if not already there
+          if (!this.queue.some(q => q._id === notif.data._id)) {
+            this.queue.unshift(notif.data);
+            this.applyFilter();
+          }
+        }
+      });
   }
 
   async initPreviewMap(location: { lat: number; lng: number }): Promise<void> {

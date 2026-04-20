@@ -15,6 +15,7 @@ import { environment } from '../../../../environments/environment';
 import { interval, Subject } from 'rxjs';
 import { takeUntil, startWith } from 'rxjs/operators';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
+import { NotificationService, AdminNotification } from '../../../core/services/notification.service';
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -27,6 +28,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   public adminService = inject(AdminService);
   private busStopService = inject(BusStopService);
   private toastService = inject(ToastNotificationService);
+  private notifService = inject(NotificationService);
   private destroy$ = new Subject<void>();
   
   report: GraphReport | null = null;
@@ -34,6 +36,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   pricing: PricingAnalytics | null = null;
   userStats: UserStats | null = null;
   suggestions: ConnectionSuggestion[] = [];
+  liveFeed: AdminNotification[] = [];
+  yesterday = new Date(Date.now() - 86400000);
   
   isLoading = false;
   isLoadingPricing = false;
@@ -75,6 +79,27 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.nextSyncSeconds--;
         if (this.nextSyncSeconds < 0) this.nextSyncSeconds = 120;
+      });
+
+    this.initRealTimeListeners();
+  }
+
+  private initRealTimeListeners(): void {
+    this.notifService.notifications$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(notif => {
+        // Prepend to live feed
+        this.liveFeed.unshift(notif);
+        // Keep only last 10 items
+        if (this.liveFeed.length > 10) this.liveFeed.pop();
+        
+        // Trigger specific data refreshes based on event type
+        if (notif.id.startsWith('mod-')) {
+          this.loadUserStats(); // Update contribution count
+        }
+        if (notif.severity === 'sos' && this.health) {
+          this.health.status = 'degraded'; // Reflect system stress
+        }
       });
   }
 
