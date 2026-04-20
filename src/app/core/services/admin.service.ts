@@ -226,10 +226,15 @@ export class AdminService {
      * Get items in the moderation queue
      */
     getModerationQueue(): Observable<ModerationItem[]> {
-        return this.http.get<{ success: boolean; data: ModerationItem[] }>(
+        return this.http.get<{ success: boolean; data: any[] }>(
             `${this.apiUrl}/moderation/queue`
         ).pipe(
-            map(response => response.data || [])
+            map(response => (response.data || []).map(item => ({
+                ...item,
+                type: item.itemType,
+                status: item.action,
+                submittedBy: typeof item.submittedBy === 'object' ? (item.submittedBy.name || item.submittedBy.email) : item.submittedBy
+            } as ModerationItem)))
         );
     }
 

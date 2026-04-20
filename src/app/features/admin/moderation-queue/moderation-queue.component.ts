@@ -46,9 +46,20 @@ export class ModerationQueueComponent implements OnInit {
       .subscribe(notif => {
         if (notif.id.startsWith('mod-') && notif.data) {
           console.log('[Moderation] Real-time item received:', notif.data);
+          
+          // Map backend format to frontend format
+          const item = {
+            ...notif.data,
+            type: notif.data.type || notif.data.itemType, // Support both formats
+            status: notif.data.status || notif.data.action,
+            submittedBy: typeof notif.data.submittedBy === 'object' ? 
+              (notif.data.submittedBy.name || notif.data.submittedBy.email) : 
+              notif.data.submittedBy
+          } as ModerationItem;
+
           // Add to beginning of queue if not already there
-          if (!this.queue.some(q => q._id === notif.data._id)) {
-            this.queue.unshift(notif.data);
+          if (!this.queue.some(q => q._id === item._id)) {
+            this.queue.unshift(item);
             this.applyFilter();
           }
         }
