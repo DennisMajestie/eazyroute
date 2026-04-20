@@ -66,6 +66,22 @@ export class NotificationService {
                 data
             });
         });
+
+        // 4. Listen for User Intel / Community Reports
+        this.wsService.on('community:report:new').subscribe(data => {
+            const reportType = (data.type || 'Intel').replace('_', ' ');
+            const capitalizedType = reportType.charAt(0).toUpperCase() + reportType.slice(1);
+            
+            this.notify({
+                id: `comm-${Date.now()}`,
+                title: `New Community ${capitalizedType}`,
+                message: `Incoming ${reportType} report for ${data.mode || 'transit'}.`,
+                severity: 'success',
+                timestamp: new Date(),
+                actionLink: '/admin/community',
+                data
+            });
+        });
     }
 
     /**

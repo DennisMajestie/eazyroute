@@ -94,7 +94,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         if (this.liveFeed.length > 10) this.liveFeed.pop();
         
         // Trigger specific data refreshes based on event type
-        if (notif.id.startsWith('mod-')) {
+        if (notif.id.startsWith('mod-') || notif.id.startsWith('comm-')) {
           this.loadUserStats(); // Update contribution count
         }
         if (notif.severity === 'sos' && this.health) {
