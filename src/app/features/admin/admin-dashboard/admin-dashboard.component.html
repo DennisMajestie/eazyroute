@@ -24,7 +24,7 @@
     </div>
     
     <!-- New Harvest Alert -->
-    <div class="admin-harvest-alert" *ngIf="report && report.pendingHarvestCount > 0">
+    <div class="admin-harvest-alert" *ngIf="report && $any(report).pendingHarvestCount > 0">
         <div class="alert-content">
             <div class="alert-icon">🌱</div>
             <div class="alert-text">
@@ -33,7 +33,7 @@
                 Use the <a routerLink="/admin/harvest-registry">Harvest Registry</a> to review and verify them.
             </div>
         </div>
-        <button class="btn-dismiss" (click)="report.pendingHarvestCount = 0">×</button>
+        <button class="btn-dismiss" (click)="$any(report).pendingHarvestCount = 0">×</button>
     </div>
 
     <!-- Operational Stat Cards -->
