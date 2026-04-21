@@ -1,12 +1,19 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
 
+export interface ToastNotificationAction {
+    label: string;
+    callback: () => void;
+}
+
 export interface ToastNotification {
     id: string;
     type: 'info' | 'success' | 'warning' | 'error';
     title: string;
     message: string;
     duration?: number;
+    action?: ToastNotificationAction;
+    vibrate?: boolean;
 }
 
 @Injectable({
@@ -21,9 +28,23 @@ export class ToastNotificationService {
     /**
      * Show a new toast notification
      */
-    show(title: string, message: string, type: 'info' | 'success' | 'warning' | 'error' = 'info', duration: number = 5000): void {
+    show(
+        title: string, 
+        message: string, 
+        type: 'info' | 'success' | 'warning' | 'error' = 'info', 
+        duration: number = 5000,
+        options?: { action?: ToastNotificationAction, vibrate?: boolean }
+    ): void {
         const id = Math.random().toString(36).substring(2, 9);
-        const newNotification: ToastNotification = { id, title, message, type, duration };
+        const newNotification: ToastNotification = { 
+            id, 
+            title, 
+            message, 
+            type, 
+            duration,
+            action: options?.action,
+            vibrate: options?.vibrate
+        };
 
         const current = this.notificationsSubject.value;
         this.notificationsSubject.next([...current, newNotification]);
@@ -48,8 +69,8 @@ export class ToastNotificationService {
         this.show(title, message, 'warning', duration);
     }
 
-    error(title: string, message: string, duration?: number): void {
-        this.show(title, message, 'error', duration);
+    error(title: string, message: string, duration?: number, options?: { action?: ToastNotificationAction, vibrate?: boolean }): void {
+        this.show(title, message, 'error', duration, options);
     }
 
     /**

@@ -95,9 +95,9 @@ export class AddPlaceComponent {
                 }, 3000);
             },
             error: (err) => {
-                console.error('Submission failed', err);
+                console.error('[AddPlace] Submission failed:', err);
                 this.isSubmitting = false;
-                this.toastService.error('Submission Failed', 'We couldn\'t save this place. Please check your data and try again.');
+                // Global ErrorInterceptor handled the redundant toast
             }
         });
     }
