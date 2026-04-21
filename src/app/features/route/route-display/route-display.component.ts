@@ -434,9 +434,16 @@ export class RouteDisplayComponent implements OnInit {
             totalSegCost += (seg.cost || 0);
         });
 
-        // 1. Distance Fix (0.0km bug)
-        if (route.totalDistance <= 0 && totalSegDist > 0) {
-            console.log('[RouteDisplay] Patching totalDistance from segments:', totalSegDist);
+        // 1. Distance Fix (Smart Unit Detection)
+        // If segments sum to a small number (e.g. < 100) but it's a multi-leg journey,
+        // it's almost certainly in Kilometers. Convert to Meters for internal consistency.
+        if (totalSegDist < 100 && route.segments.length > 0 && totalSegDist > 0) {
+            console.log('[RouteDisplay] Small segment distance detected. Converting KM to Meters:', totalSegDist);
+            totalSegDist = totalSegDist * 1000;
+        }
+
+        // Apply updated total distance if it's currently 0 or different from the sum
+        if (route.totalDistance <= 0 || (route.totalDistance < totalSegDist && route.totalDistance < 100)) {
             route.totalDistance = totalSegDist;
         }
 
@@ -445,11 +452,14 @@ export class RouteDisplayComponent implements OnInit {
             route.totalTime = totalSegTime;
         }
 
-        // 3. Cost Logic (Ensure it includes surcharges but isn't less than segment sum)
-        const currentTotal = typeof route.totalCost === 'number' ? route.totalCost : (route.totalCost?.min || 0);
-        if (totalSegCost > currentTotal) {
-            console.log('[RouteDisplay] Patching totalCost to match segment sum:', totalSegCost);
-            route.totalCost = totalSegCost;
+        // 3. Cost Synchronization (SUM OF PARTS)
+        // Ensure totalCost exactly matches the sum of its segments to prevent "₦600 vs 500" confusion.
+        if (totalSegCost > 0) {
+            // If totalCost is missing or significantly different without surge metadata, snap to sum.
+            const hasExplicitSurge = !!route.pricingMetadata?.isSurge || !!route.pricingMetadata?.surgeAmount;
+            if (!hasExplicitSurge || route.totalCost <= 0) {
+                route.totalCost = totalSegCost;
+            }
         }
 
         // 4. Metric Correction for Rationale (Sync string with data)
