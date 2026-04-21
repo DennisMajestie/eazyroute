@@ -1,26 +1,68 @@
 @use "../../../../styles/variables" as *;
 
-.registry-container {
+:host {
+    display: block;
+    background: #020617;
+    min-height: 100vh;
     padding: $space-2xl;
+    color: #f1f5f9;
+    position: relative;
+    overflow-x: hidden;
+}
+
+.mesh-gradient {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 0;
+  background: 
+    radial-gradient(at 10% 10%, rgba(16, 185, 129, 0.15) 0, transparent 50%),
+    radial-gradient(at 90% 10%, rgba(59, 130, 246, 0.1) 0, transparent 50%),
+    radial-gradient(at 50% 90%, rgba(234, 179, 8, 0.1) 0, transparent 50%);
+  filter: blur(100px);
+  pointer-events: none;
+}
+
+.registry-container {
+    position: relative;
+    z-index: 1;
     animation: fadeIn 0.4s ease-out;
 
     .header-section {
         display: flex;
         justify-content: space-between;
-        align-items: flex-end;
+        align-items: center;
         margin-bottom: $space-2xl;
+        background: rgba(30, 41, 59, 0.5);
+        backdrop-filter: blur(8px);
+        padding: $space-xl $space-2xl;
+        border-radius: $radius-2xl;
+        border: 1px solid rgba(255, 255, 255, 0.05);
 
         .title-area {
-            h2 {
+            .premium-title {
                 font-family: $font-display;
-                font-size: 1.75rem;
+                font-size: 1.5rem;
                 font-weight: 800;
-                color: #000000;
-                margin-bottom: $space-xs;
+                color: #fff;
+                margin: 0;
+                display: flex;
+                align-items: center;
+                gap: $space-md;
+
+                &::before {
+                    content: '';
+                    width: 4px;
+                    height: 20px;
+                    background: $primary;
+                    border-radius: $radius-full;
+                    box-shadow: 0 0 12px $primary;
+                }
             }
-            p {
-                color: #334155;
-                font-size: 0.9rem;
+            .premium-subtitle {
+                color: #94a3b8;
+                font-size: 0.85rem;
+                margin-top: 4px;
+                margin-left: 16px;
             }
         }
 
@@ -39,50 +81,40 @@
             input {
                 width: 100%;
                 padding: $space-md $space-lg $space-md 40px;
-                background: rgba(15, 23, 42, 0.4);
+                background: rgba(15, 23, 42, 0.6);
                 border: 1px solid rgba(148, 163, 184, 0.2);
                 border-radius: 12px;
                 color: #f1f5f9;
-                font-size: 0.9rem;
+                font-size: 0.85rem;
                 backdrop-filter: blur(8px);
                 transition: all 0.3s;
 
                 &:focus {
                     outline: none;
-                    border-color: #10b981;
-                    box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+                    border-color: $primary;
+                    box-shadow: 0 0 15px rgba($primary, 0.2);
+                    background: rgba(15, 23, 42, 0.8);
                 }
             }
         }
     }
 }
 
-.registry-card {
-    position: relative;
-    padding: 0;
-    overflow: hidden;
+.premium-glass {
     background: rgba(15, 23, 42, 0.4);
-    backdrop-filter: blur(20px);
+    backdrop-filter: blur(30px);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-}
+    border-radius: 28px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s;
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
 
-.loading-overlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(15, 23, 42, 0.6);
-    z-index: 10;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    .spinner {
-        width: 40px;
-        height: 40px;
-        border: 4px solid rgba(16, 185, 129, 0.1);
-        border-top: 4px solid #10b981;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0; height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
     }
 }
 
@@ -94,12 +126,12 @@
     thead {
         background: rgba(30, 41, 59, 0.5);
         th {
-            padding: $space-lg;
-            font-size: 0.75rem;
-            font-weight: 700;
+            padding: $space-xl;
+            font-size: 0.7rem;
+            font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #94a3b8;
+            letter-spacing: 0.1em;
+            color: #64748b;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
     }
@@ -110,21 +142,21 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 
             &:hover {
-                background: rgba(16, 185, 129, 0.03);
+                background: rgba(16, 185, 129, 0.04);
             }
 
             td {
-                padding: $space-lg;
+                padding: $space-xl;
                 font-size: 0.9rem;
                 color: #cbd5e1;
 
                 .name-chip {
                     display: flex;
                     align-items: center;
-                    gap: 10px;
-                    font-weight: 600;
+                    gap: 12px;
+                    font-weight: 700;
                     color: #f1f5f9;
-                    i { color: #10b981; }
+                    i { color: $primary; }
                 }
 
                 &.mono {
@@ -134,10 +166,12 @@
                 }
 
                 .badge {
-                    padding: 4px 10px;
-                    border-radius: 6px;
-                    font-size: 0.7rem;
-                    font-weight: 700;
+                    padding: 4px 12px;
+                    border-radius: 8px;
+                    font-size: 0.65rem;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
                     
                     &.category {
                         background: rgba($primary, 0.1);
@@ -147,23 +181,25 @@
                 }
 
                 .btn-action {
-                    padding: 6px 12px;
+                    padding: 8px 16px;
                     background: rgba(56, 189, 248, 0.1);
                     color: #38bdf8;
                     border: 1px solid rgba(56, 189, 248, 0.2);
-                    border-radius: 8px;
+                    border-radius: 12px;
                     text-decoration: none;
-                    font-size: 0.75rem;
-                    font-weight: 700;
+                    font-size: 0.7rem;
+                    font-weight: 800;
                     display: inline-flex;
                     align-items: center;
-                    gap: 6px;
+                    gap: 8px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.05em;
                     transition: all 0.3s;
 
                     &:hover {
                         background: #38bdf8;
                         color: #fff;
-                        box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+                        box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
                         transform: translateY(-2px);
                     }
                 }
@@ -172,60 +208,62 @@
     }
 }
 
-.empty-state {
-    padding: 60px;
-    text-align: center;
-    color: #64748b;
-    font-style: italic;
-}
-
 .pagination-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: $space-xl;
-    background: rgba(30, 41, 59, 0.3);
+    padding: $space-2xl;
+    background: rgba(15, 23, 42, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
 
     .page-info {
         font-size: 0.8rem;
+        font-weight: 600;
         color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }
 
     .page-controls {
         display: flex;
         align-items: center;
-        gap: $space-lg;
+        gap: $space-2xl;
 
         button {
-            padding: 8px 16px;
-            background: rgba(15, 23, 42, 0.5);
+            padding: 10px 20px;
+            background: rgba(30, 41, 59, 0.5);
             border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            color: #cbd5e1;
-            font-size: 0.8rem;
-            font-weight: 600;
+            border-radius: 12px;
+            color: #f1f5f9;
+            font-size: 0.7rem;
+            font-weight: 800;
+            letter-spacing: 0.1em;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
 
             &:hover:not(:disabled) {
-                background: #1e293b;
-                border-color: #94a3b8;
+                background: $primary;
+                border-color: $primary;
                 color: #fff;
+                box-shadow: 0 0 20px rgba($primary, 0.3);
+                transform: translateY(-2px);
             }
 
             &:disabled {
-                opacity: 0.5;
+                opacity: 0.3;
                 cursor: not-allowed;
             }
         }
 
         .active-page {
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.9rem;
-            color: #10b981;
+            font-size: 1rem;
+            font-weight: 700;
+            color: $primary;
+            text-shadow: 0 0 10px rgba($primary, 0.3);
         }
     }
 }
 
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
