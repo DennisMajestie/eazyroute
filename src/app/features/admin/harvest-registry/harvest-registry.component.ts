@@ -19,6 +19,9 @@ export class HarvestRegistryComponent implements OnInit {
   limit: number = 20;
   searchQuery: string = '';
   isLoading: boolean = false;
+  
+  // Expose Math to the template to fix TS2339
+  protected readonly Math = Math;
 
   constructor(
     private adminService: AdminService,

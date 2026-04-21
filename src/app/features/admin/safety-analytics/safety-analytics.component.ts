@@ -98,11 +98,11 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
 
   loadAnalytics(): void {
     this.adminService.getSafetyAnalytics().subscribe({
-      next: (data) => {
+      next: (data: SafetyAnalytics) => {
         this.analytics = data;
         this.renderHotspots();
       },
-      error: (err) => {
+      error: (err: any) => {
         if (environment.useMockAdminData) {
             console.warn('[Safety] Using mock analytics');
             this.analytics = this.getMockAnalytics();
@@ -117,12 +117,12 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
   loadHistory(): void {
     this.isLoading = true;
     this.adminService.getIncidentHistory().subscribe({
-      next: (data) => {
+      next: (data: SafetyIncident[]) => {
         this.incidents = data;
         this.renderIncidents();
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         if (environment.useMockAdminData) {
             console.warn('[Safety] Using mock incident history');
             this.incidents = this.getMockHistory();

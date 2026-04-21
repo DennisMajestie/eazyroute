@@ -47,7 +47,7 @@ export class AdminService {
      */
     getEngineDiagnostics(): Observable<EngineHealth> {
         return this.http.get<{ success: boolean; data: EngineHealth }>(
-            `${this.apiUrl}/health` // This typically points to the health endpoint
+            `${this.apiUrl}/health`
         ).pipe(
             map(response => response.data)
         );
@@ -58,7 +58,7 @@ export class AdminService {
      */
     getPricingAnalytics(): Observable<PricingAnalytics> {
         return this.http.get<{ success: boolean; data: PricingAnalytics }>(
-            `${this.apiUrl}/pricing/admin/list` // Pointing to the requested analytics endpoint
+            `${this.apiUrl}/pricing/admin/list`
         ).pipe(
             map(response => response.data)
         );
@@ -295,6 +295,8 @@ export class AdminService {
             return `${Math.round(meters)}m`;
         }
         return `${(meters / 1000).toFixed(1)}km`;
+    }
+
     /**
      * Get all harvested (inactive and pending) bus stops
      */

@@ -86,12 +86,12 @@ export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, On
   loadReports(): void {
     this.isLoading = true;
     this.adminService.getCommunityReports().subscribe({
-      next: (data) => {
+      next: (data: CommunityReport[]) => {
         this.reports = data;
         this.renderMarkers();
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         if (environment.useMockAdminData) {
             console.warn('[CIL] Using mock reports');
             this.reports = this.getMockReports();
@@ -107,10 +107,10 @@ export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, On
 
   loadContributors(): void {
     this.adminService.getTopContributors().subscribe({
-      next: (data) => {
+      next: (data: ContributorStats[]) => {
         this.contributors = data;
       },
-      error: (err) => {
+      error: (err: any) => {
         if (environment.useMockAdminData) {
             console.warn('[CIL] Using mock contributors');
             this.contributors = [

@@ -29,7 +29,7 @@
             <div class="alert-icon">🌱</div>
             <div class="alert-text">
                 <strong>New Harvest Detected:</strong> 
-                {{ report.pendingHarvestCount }} landmarks in Abuja are currently pending. 
+                {{ $any(report).pendingHarvestCount }} landmarks in Abuja are currently pending. 
                 Use the <a routerLink="/admin/harvest-registry">Harvest Registry</a> to review and verify them.
             </div>
         </div>
