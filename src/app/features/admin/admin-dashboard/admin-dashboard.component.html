@@ -30,7 +30,7 @@
             <div class="alert-text">
                 <strong>New Harvest Detected:</strong> 
                 {{ report.pendingHarvestCount }} landmarks in Abuja are currently pending. 
-                Use the <a routerLink="/admin/seeder">Route Seeder</a> to weave them into the active graph.
+                Use the <a routerLink="/admin/harvest-registry">Harvest Registry</a> to review and verify them.
             </div>
         </div>
         <button class="btn-dismiss" (click)="report.pendingHarvestCount = 0">×</button>
@@ -38,7 +38,9 @@
 
     <!-- Operational Stat Cards -->
     <div class="stat-cards-container">
-        <div class="stat-card" *ngFor="let stat of statCards; let i = index">
+        <div class="stat-card" *ngFor="let stat of statCards; let i = index" 
+             [routerLink]="stat.label === 'Harvested Drafts' ? '/admin/harvest-registry' : null"
+             [style.cursor]="stat.label === 'Harvested Drafts' ? 'pointer' : 'default'">
             <div class="stat-header">
                 <div class="stat-icon-box" [style.color]="stat.color">
                     {{ stat.icon }}

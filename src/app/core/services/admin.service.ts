@@ -295,5 +295,19 @@ export class AdminService {
             return `${Math.round(meters)}m`;
         }
         return `${(meters / 1000).toFixed(1)}km`;
+    /**
+     * Get all harvested (inactive and pending) bus stops
+     */
+    getHarvestedBusStops(page: number = 1, limit: number = 50, search?: string): Observable<{ data: any[]; total: number }> {
+        let params = `?page=${page}&limit=${limit}&isActive=false&verificationStatus=pending`;
+        if (search) params += `&search=${search}`;
+        return this.http.get<{ success: boolean; data: any[]; pagination: any }>(
+            `${this.apiUrl}/bus-stops${params}`
+        ).pipe(
+            map(response => ({
+                data: response.data || [],
+                total: response.pagination?.total || 0
+            }))
+        );
     }
 }

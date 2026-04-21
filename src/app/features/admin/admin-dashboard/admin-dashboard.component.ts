@@ -124,14 +124,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.applyUserStats(data);
       },
       error: (err) => {
-        if (environment.useMockAdminData) {
-          console.warn('[Admin] Using mock user statistics');
-          const mockStats = this.getMockUserStats();
-          this.applyUserStats(mockStats);
-        } else {
-          console.warn('[Admin] Could not load user stats:', err);
-          this.toastService.error('Data Sync Error', 'Failed to refresh active user statistics.');
-        }
+        console.error('[Admin] Could not load user stats:', err);
+        this.toastService.error('Data Sync Error', 'Failed to refresh active user statistics.');
       }
     });
   }
@@ -156,37 +150,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     if (routeCard && this.report) routeCard.value = this.report.totalEdges;
   }
 
-  getMockUserStats(): UserStats {
-    return {
-      total: 842,
-      totalContributions: 156,
-      verified: 412,
-      byRole: [
-        { _id: 'admin', count: 5 },
-        { _id: 'moderator', count: 12 },
-        { _id: 'captain', count: 48 },
-        { _id: 'commuter', count: 777 }
-      ],
-      byStatus: [
-        { _id: 'active', count: 790 },
-        { _id: 'banned', count: 14 },
-        { _id: 'pending', count: 38 }
-      ],
-      recentUsers: []
-    };
-  }
 
   loadDiagnostics(): void {
     this.adminService.getEngineDiagnostics().subscribe({
       next: (data) => this.health = data,
       error: (err) => {
-        if (environment.useMockAdminData) {
-            console.warn('[Admin] Using mock engine status');
-            this.health = this.getMockDiagnostics();
-        } else {
-            console.error('[Admin] Engine diagnostics failed:', err);
-            this.toastService.error('Engine Error', 'Failed to retrieve real-time engine health data.');
-        }
+        console.error('[Admin] Engine diagnostics failed:', err);
+        this.toastService.error('Engine Error', 'Failed to retrieve real-time engine health data.');
       }
     });
   }
@@ -199,44 +169,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.isLoadingPricing = false;
       },
       error: (err) => {
-        if (environment.useMockAdminData) {
-            console.warn('[Admin] Using mock pricing analytics');
-            this.pricing = this.getMockPricing();
-        } else {
-            console.error('[Admin] Pricing analytics failed:', err);
-            this.toastService.error('Analytics Error', 'Failed to load pricing and surge trends.');
-        }
+        console.error('[Admin] Pricing analytics failed:', err);
+        this.toastService.error('Analytics Error', 'Failed to load pricing trends.');
         this.isLoadingPricing = false;
       }
     });
   }
 
-  getMockDiagnostics(): EngineHealth {
-    return {
-      uptime: '4d 12h 30m',
-      memoryUsage: { heapTotal: 1024 * 1024 * 512, heapUsed: 1024 * 1024 * 342, external: 1024 * 1024 * 12 },
-      counts: { nodes: 1242, edges: 3841, hubs: 12 },
-      status: 'healthy',
-      lastSyncAt: new Date()
-    };
-  }
-
-  getMockPricing(): PricingAnalytics {
-    return {
-      activeSurgeMultiplier: 1.85,
-      surgeLabel: '🔥 Evening Rush (April 2026)',
-      avgDailyFares: { keke: 150, okada: 200, taxi: 800, bus: 300 },
-      trends: [
-        { label: 'Mon', value: 420 }, { label: 'Tue', value: 440 }, { label: 'Wed', value: 450 },
-        { label: 'Thu', value: 480 }, { label: 'Fri', value: 520 }, { label: 'Sat', value: 380 }, { label: 'Sun', value: 350 }
-      ],
-      topCorridors: [
-        { name: 'Southern Feeder', traffic: 1240, revenue: 154000 },
-        { name: 'Main Expressway', traffic: 980, revenue: 210000 },
-        { name: 'Village Rib Connect', traffic: 450, revenue: 85000 }
-      ]
-    };
-  }
 
   loadPricingAnalytics(): void {
     this.adminService.getPricingAnalytics().subscribe({
@@ -254,21 +193,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         }
       },
       error: (err) => {
-        console.warn('[AdminDashboard] Using mock pricing diagnostics');
-        this.pricing = {
-          activeSurgeMultiplier: 1.85,
-          surgeLabel: '🔥 Evening Rush (April 2026)',
-          avgDailyFares: { keke: 150, okada: 200, taxi: 800, bus: 300 },
-          trends: [
-            { label: 'Mon', value: 420 }, { label: 'Tue', value: 440 }, { label: 'Wed', value: 450 },
-            { label: 'Thu', value: 480 }, { label: 'Fri', value: 520 }, { label: 'Sat', value: 380 }, { label: 'Sun', value: 350 }
-          ],
-          topCorridors: [
-            { name: 'Southern Feeder', traffic: 1240, revenue: 154000 },
-            { name: 'Main Expressway', traffic: 980, revenue: 210000 },
-            { name: 'Village Rib Connect', traffic: 450, revenue: 85000 }
-          ]
-        };
+        console.error('[AdminDashboard] Pricing diagnostics failed:', err);
       }
     });
   }
@@ -299,26 +224,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         console.error('Error loading report:', err);
         this.toastService.error('Report Error', 'Could not generate the latest graph integrity report.');
         this.isLoading = false;
-        // Mock data for demo if API fails
-        const mockReport: GraphReport = {
-          totalNodes: 1242,
-          totalEdges: 3841,
-          isolatedCount: 42,
-          pendingHarvestCount: 15,
-          semanticOrphanCount: 33,
-          semanticOrphans: [],
-          health: 'moderate',
-          issues: [
-            '42 isolated bus stops found in Gwarinpa area.',
-            'Route graph density is below threshold in Phase 3.',
-            '12 duplicate terminal entries detected.'
-          ],
-          suggestions: []
-        };
-
-        this.report = mockReport;
-        this.statCards[1].value = mockReport.totalNodes;
-        this.statCards[2].value = mockReport.totalEdges;
       }
     });
   }
@@ -330,10 +235,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error('Error loading suggestions:', err);
-        this.suggestions = [
-          { fromStop: { _id: '1', name: 'Berger' }, toStop: { _id: '2', name: 'Wuse Market' }, distance: 1200, reason: 'High demand area', priority: 'high' },
-          { fromStop: { _id: '3', name: 'Area 1' }, toStop: { _id: '4', name: 'Garki' }, distance: 800, reason: 'Short gap', priority: 'medium' }
-        ];
+        this.suggestions = [];
       }
     });
   }

@@ -131,6 +131,10 @@ export const routes: Routes = [
             {
                 path: 'soul-management',
                 loadComponent: () => import('./features/admin/soul-v2-management/soul-v2-management.component').then(m => m.SoulV2ManagementComponent)
+            },
+            {
+                path: 'harvest-registry',
+                loadComponent: () => import('./features/admin/harvest-registry/harvest-registry.component').then(m => m.HarvestRegistryComponent)
             }
         ]
     },

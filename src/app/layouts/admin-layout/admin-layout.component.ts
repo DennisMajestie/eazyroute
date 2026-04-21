@@ -46,6 +46,7 @@ export class AdminLayoutComponent {
     if (this.currentUrl.includes('/admin/community')) return 'Community Intelligence';
     if (this.currentUrl.includes('/admin/safety')) return 'Safety Intelligence';
     if (this.currentUrl.includes('/admin/seeder')) return 'Route Seeder';
+    if (this.currentUrl.includes('/admin/harvest-registry')) return 'Landmark Harvest Registry';
     return 'Admin Console';
   }
 }
