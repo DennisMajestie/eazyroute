@@ -304,6 +304,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           totalNodes: 1242,
           totalEdges: 3841,
           isolatedCount: 42,
+          pendingHarvestCount: 15,
           semanticOrphanCount: 33,
           semanticOrphans: [],
           health: 'moderate',
@@ -315,7 +316,6 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           suggestions: []
         };
 
-        
         this.report = mockReport;
         this.statCards[1].value = mockReport.totalNodes;
         this.statCards[2].value = mockReport.totalEdges;
