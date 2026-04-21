@@ -457,7 +457,9 @@ export class RouteDisplayComponent implements OnInit {
         if (totalSegCost > 0) {
             // If totalCost is missing or significantly different without surge metadata, snap to sum.
             const hasExplicitSurge = !!route.pricingMetadata?.isSurge || !!route.pricingMetadata?.surgeAmount;
-            if (!hasExplicitSurge || route.totalCost <= 0) {
+            const currentTotalValue = typeof route.totalCost === 'number' ? route.totalCost : (route.totalCost?.min || 0);
+            
+            if (!hasExplicitSurge || currentTotalValue <= 0) {
                 route.totalCost = totalSegCost;
             }
         }
