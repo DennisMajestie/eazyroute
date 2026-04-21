@@ -11,6 +11,7 @@ export interface GraphReport {
     isolatedCount: number;         // Stops with no connections
     semanticOrphanCount: number;   // Nodes not in core skeleton
     semanticOrphans: Array<{ id: string; name: string }>;
+    pendingHarvestCount: number;   // New: harvested but inactive nodes
     health: 'good' | 'moderate' | 'poor';
     issues: string[];              // List of identified issues
     suggestions: ConnectionSuggestion[];

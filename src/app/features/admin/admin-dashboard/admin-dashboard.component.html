@@ -22,6 +22,19 @@
             </div>
         </div>
     </div>
+    
+    <!-- New Harvest Alert -->
+    <div class="admin-harvest-alert" *ngIf="report && report.pendingHarvestCount > 0">
+        <div class="alert-content">
+            <div class="alert-icon">🌱</div>
+            <div class="alert-text">
+                <strong>New Harvest Detected:</strong> 
+                {{ report.pendingHarvestCount }} landmarks in Abuja are currently pending. 
+                Use the <a routerLink="/admin/seeder">Route Seeder</a> to weave them into the active graph.
+            </div>
+        </div>
+        <button class="btn-dismiss" (click)="report.pendingHarvestCount = 0">×</button>
+    </div>
 
     <!-- Operational Stat Cards -->
     <div class="stat-cards-container">

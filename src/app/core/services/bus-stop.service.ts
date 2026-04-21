@@ -135,8 +135,11 @@ export class BusStopService {
   /**
    * Search bus stops (simple query - from BusStopHttpService)
    */
-  searchBusStops(query: string): Observable<ApiResponse<BusStopResponse[]>> {
-    const params = new HttpParams().set('search', query);
+  searchBusStops(query: string, includeInactive: boolean = false): Observable<ApiResponse<BusStopResponse[]>> {
+    let params = new HttpParams().set('search', query);
+    if (includeInactive) {
+      params = params.set('includeInactive', 'true');
+    }
     return this.http.get<ApiResponse<BusStopResponse[]>>(`${this.apiUrl}/search`, { params });
   }
 

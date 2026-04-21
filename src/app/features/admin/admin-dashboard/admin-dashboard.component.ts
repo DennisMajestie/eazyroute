@@ -50,6 +50,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     { label: 'Total Terminals', value: 0, icon: '📍', color: '#3B82F6', trend: 12 },
     { label: 'Active Routes', value: 0, icon: '🛣️', color: '#10B981', trend: 5 },
     { label: 'Avg Fare', value: 450, icon: '₦', color: '#F59E0B', trend: -2 },
+    { label: 'Harvested Drafts', value: 0, icon: '📜', color: '#6366F1', trend: 0 },
     { label: 'User Contributions', value: 0, icon: '🙌', color: '#8B5CF6', trend: 18 }
   ];
 
@@ -288,6 +289,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.report = data;
         this.statCards[1].value = data.totalNodes;
         this.statCards[2].value = data.totalEdges;
+        
+        const harvestCard = this.statCards.find(c => c.label === 'Harvested Drafts');
+        if (harvestCard) harvestCard.value = data.pendingHarvestCount || 0;
+        
         this.isLoading = false;
       },
       error: (err) => {
