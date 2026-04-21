@@ -270,4 +270,14 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       }
     });
   }
+
+  copyToken(): void {
+    const token = localStorage.getItem('eazyroute_token');
+    if (token) {
+      navigator.clipboard.writeText(token);
+      this.toastService.success('Copied!', 'Admin API Token copied to clipboard.');
+    } else {
+      this.toastService.error('Error', 'No active session found. Please log in again.');
+    }
+  }
 }

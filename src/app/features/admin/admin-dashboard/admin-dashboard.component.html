@@ -188,8 +188,11 @@
 
     <!-- Strategy & Operations Controls -->
     <div class="overview-section strategy-section">
-        <div class="section-header">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
             <h3>Strategy & Operations</h3>
+            <button class="action-link" (click)="copyToken()" style="font-size: 0.75rem; border: 1px solid #6366f1; background: rgba(99, 102, 241, 0.1); padding: 4px 12px; border-radius: 8px; color: #818cf8; cursor: pointer;">
+                <i class="fas fa-key"></i> Copy API Token
+            </button>
         </div>
         <div class="strategy-grid">
             <a routerLink="/admin/soul-management" class="strat-card soul-card">
