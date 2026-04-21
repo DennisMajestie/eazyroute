@@ -120,10 +120,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   loadUserStats(): void {
     this.adminService.getUserStats().subscribe({
-      next: (data) => {
+      next: (data: UserStats) => {
         this.applyUserStats(data);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('[Admin] Could not load user stats:', err);
         this.toastService.error('Data Sync Error', 'Failed to refresh active user statistics.');
       }
@@ -153,8 +153,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   loadDiagnostics(): void {
     this.adminService.getEngineDiagnostics().subscribe({
-      next: (data) => this.health = data,
-      error: (err) => {
+      next: (data: EngineHealth) => this.health = data,
+      error: (err: any) => {
         console.error('[Admin] Engine diagnostics failed:', err);
         this.toastService.error('Engine Error', 'Failed to retrieve real-time engine health data.');
       }
@@ -164,11 +164,11 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   loadPricing(): void {
     this.isLoadingPricing = true;
     this.adminService.getPricingAnalytics().subscribe({
-      next: (data) => {
+      next: (data: PricingAnalytics) => {
         this.pricing = data;
         this.isLoadingPricing = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('[Admin] Pricing analytics failed:', err);
         this.toastService.error('Analytics Error', 'Failed to load pricing trends.');
         this.isLoadingPricing = false;
@@ -179,7 +179,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   loadPricingAnalytics(): void {
     this.adminService.getPricingAnalytics().subscribe({
-      next: (data) => {
+      next: (data: PricingAnalytics) => {
         this.pricing = data;
         
         // Bind real-time avg fare to card
@@ -192,7 +192,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
           this.statCards[3].trend = Math.round((data.activeSurgeMultiplier - 1) * 100);
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('[AdminDashboard] Pricing diagnostics failed:', err);
       }
     });
@@ -210,7 +210,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   loadReport(): void {
     this.isLoading = true;
     this.adminService.getGraphReport().subscribe({
-      next: (data) => {
+      next: (data: GraphReport) => {
         this.report = data;
         this.statCards[1].value = data.totalNodes;
         this.statCards[2].value = data.totalEdges;
@@ -220,7 +220,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         
         this.isLoading = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading report:', err);
         this.toastService.error('Report Error', 'Could not generate the latest graph integrity report.');
         this.isLoading = false;
@@ -230,10 +230,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
 
   loadSuggestions(): void {
     this.adminService.getConnectionSuggestions().subscribe({
-      next: (data) => {
+      next: (data: ConnectionSuggestion[]) => {
         this.suggestions = data;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading suggestions:', err);
         this.suggestions = [];
       }
@@ -253,7 +253,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       longitude: this.quickNode.longitude,
       area: this.quickNode.area
     }).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         if (res.success) {
           this.toastService.success('Node Created', `${this.quickNode.name} has been added to the graph.`);
           this.quickNode = { name: '', latitude: 0, longitude: 0, area: 'Abuja Central' };
@@ -263,7 +263,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         }
         this.isCreatingNode = false;
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error creating node:', err);
         this.toastService.error('API Error', 'Failed to connect to the node creation service.');
         this.isCreatingNode = false;
