@@ -85,7 +85,7 @@
                             <div class="form-group">
                                 <label>Mode to Leg #{{ i + 1 }}</label>
                                 <select formControlName="transportMode" class="form-control">
-                                    <option *ngFor="let mode of transportModes" [value]="mode">{{ mode }}</option>
+                                    <option *ngFor="let mode of transportModes" [value]="mode">{{ mode | uppercase }}</option>
                                 </select>
                             </div>
                             <div class="form-group">
@@ -147,7 +147,7 @@
                         <div class="form-group">
                             <label>Mode to Destination</label>
                             <select formControlName="transportMode" class="form-control">
-                                <option *ngFor="let mode of transportModes" [value]="mode">{{ mode }}</option>
+                                <option *ngFor="let mode of transportModes" [value]="mode">{{ mode | uppercase }}</option>
                             </select>
                         </div>
                         <div class="form-group">

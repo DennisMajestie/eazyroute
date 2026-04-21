@@ -48,7 +48,7 @@ export class AdminRouteSeederComponent implements OnInit {
   selectedFromStopName = '';
   selectedToStopName = '';
 
-  transportModes = ['KEKE', 'OKADA', 'TAXI', 'BUS', 'WALK'];
+  transportModes = ['keke', 'okada', 'taxi', 'bus', 'walking'];
   
   // Quick Node Creation State
   showQuickCreate = false;
@@ -67,7 +67,7 @@ export class AdminRouteSeederComponent implements OnInit {
       toStopId: ['', Validators.required],
       legs: this.fb.array([]), // Intermediate stops
       // These root fields now represent the FINAL segment (from last leg to destination)
-      transportMode: ['KEKE', Validators.required],
+      transportMode: ['keke', Validators.required],
       minPrice: [200, [Validators.required, Validators.min(0)]],
       maxPrice: [300, [Validators.required, Validators.min(0)]],
       isOneWay: [false]
@@ -84,7 +84,7 @@ export class AdminRouteSeederComponent implements OnInit {
     const legForm = this.fb.group({
       stopId: ['', Validators.required],
       stopName: [''],
-      transportMode: ['KEKE', Validators.required],
+      transportMode: ['keke', Validators.required],
       minPrice: [200, [Validators.required, Validators.min(0)]],
       maxPrice: [300, [Validators.required, Validators.min(0)]],
       isOneWay: [false]
@@ -303,7 +303,7 @@ export class AdminRouteSeederComponent implements OnInit {
     this.seederForm.reset({
       fromStopId: '',
       toStopId: '',
-      transportMode: 'KEKE',
+      transportMode: 'keke',
       minPrice: 200,
       maxPrice: 300,
       isOneWay: false
