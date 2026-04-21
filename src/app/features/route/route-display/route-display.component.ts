@@ -351,6 +351,9 @@ export class RouteDisplayComponent implements OnInit {
 
                         // Hybrid Intelligence Separation
                         if (this.routes.length > 0) {
+                            // Ensure all routes have correct metric sums (Fix for 0.0km/Price mismatch bugs)
+                            this.routes.forEach(r => this.recalculateRouteMetrics(r));
+                            
                             this.recommendedRoute = this.routes[0];
                             this.alternativeRoutes = this.routes.slice(1);
                         }
@@ -412,6 +415,54 @@ export class RouteDisplayComponent implements OnInit {
                 }
             });
 
+    }
+    
+    /**
+     * Fix for Metric Inconsistencies (₦600 vs 500, 0.0km vs 8.2km)
+     * Sums up segments if the route-level totals are missing or logically lower than the parts.
+     */
+    private recalculateRouteMetrics(route: AlongRoute) {
+        if (!route || !route.segments) return;
+
+        let totalSegDist = 0;
+        let totalSegTime = 0;
+        let totalSegCost = 0;
+
+        route.segments.forEach(seg => {
+            totalSegDist += (seg.distance || 0);
+            totalSegTime += (seg.estimatedTime || 0);
+            totalSegCost += (seg.cost || 0);
+        });
+
+        // 1. Distance Fix (0.0km bug)
+        if (route.totalDistance <= 0 && totalSegDist > 0) {
+            console.log('[RouteDisplay] Patching totalDistance from segments:', totalSegDist);
+            route.totalDistance = totalSegDist;
+        }
+
+        // 2. Time Fix
+        if (route.totalTime <= 0 && totalSegTime > 0) {
+            route.totalTime = totalSegTime;
+        }
+
+        // 3. Cost Logic (Ensure it includes surcharges but isn't less than segment sum)
+        const currentTotal = typeof route.totalCost === 'number' ? route.totalCost : (route.totalCost?.min || 0);
+        if (totalSegCost > currentTotal) {
+            console.log('[RouteDisplay] Patching totalCost to match segment sum:', totalSegCost);
+            route.totalCost = totalSegCost;
+        }
+
+        // 4. Metric Correction for Rationale (Sync string with data)
+        if (route.rationale) {
+            const actualLegs = route.segments.length;
+            const actualKm = (route.totalDistance / 1000).toFixed(1);
+            
+            // Fix legs: e.g., "1 legs" -> "2 legs"
+            route.rationale = route.rationale.replace(/\d+\s+legs/, `${actualLegs} legs`);
+            
+            // Fix distance: e.g., "0.0km" -> "8.2km"
+            route.rationale = route.rationale.replace(/\d+(\.\d+)?km/, `${actualKm}km`);
+        }
     }
 
     private fetchStats() {
