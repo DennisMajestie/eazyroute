@@ -139,7 +139,8 @@ export class AdminService {
                 semanticOrphans: [],
                 pendingHarvestCount: 0,
                 health: 'moderate',
-                issues: []
+                issues: [],
+                suggestions: []
             } as GraphReport)
         );
     }
