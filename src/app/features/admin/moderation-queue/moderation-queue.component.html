@@ -113,8 +113,31 @@
                 </div>
 
                 <div class="data-preview">
-                    <h4>Payload Data</h4>
-                    <pre>{{ selectedItem?.data | json }}</pre>
+                    <h4>Submission Details</h4>
+                    <div class="data-grid">
+                        <div class="data-item" *ngFor="let entry of (selectedItem?.data | keyvalue)">
+                            <span class="label">
+                                <ng-container [ngSwitch]="entry.key">
+                                    <span *ngSwitchCase="'transportMode'">Vehicle Type</span>
+                                    <span *ngSwitchCase="'priceRange'">Fare Estimates</span>
+                                    <span *ngSwitchCase="'riskScore'">AI Risk Score</span>
+                                    <span *ngSwitchCase="'fromStopId'">Departure Hub</span>
+                                    <span *ngSwitchCase="'toStopId'">Arrival Hub</span>
+                                    <span *ngSwitchDefault>{{ entry.key }}</span>
+                                </ng-container>
+                            </span>
+                            <span class="value" [title]="entry.value">
+                                <ng-container [ngSwitch]="entry.key">
+                                    <span *ngSwitchCase="'priceRange'">
+                                        ₦{{ entry.value?.min }} - ₦{{ entry.value?.max }}
+                                    </span>
+                                    <span *ngSwitchDefault>
+                                        {{ entry.value }}
+                                    </span>
+                                </ng-container>
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="audit-log">
