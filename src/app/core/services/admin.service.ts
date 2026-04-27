@@ -256,8 +256,8 @@ export class AdminService {
     /**
      * Approve a moderation item
      */
-    approveItem(id: string): Observable<void> {
-        return this.http.post<void>(`${this.apiUrl}/moderation/${id}/approve`, {});
+    approveItem(id: string, notes?: string): Observable<void> {
+        return this.http.post<void>(`${this.apiUrl}/moderation/${id}/approve`, { notes });
     }
 
     /**

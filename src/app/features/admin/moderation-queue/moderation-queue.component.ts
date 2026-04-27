@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../core/services/admin.service';
 import { LeafletMapService } from '../../../core/services/leaflet-map.service';
 import { ModerationItem } from '../../../models/admin.types';
@@ -12,7 +13,7 @@ import { takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-moderation-queue',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './moderation-queue.component.html',
   styleUrls: ['./moderation-queue.component.scss']
 })
@@ -25,9 +26,13 @@ export class ModerationQueueComponent implements OnInit {
 
   queue: ModerationItem[] = [];
   filteredQueue: ModerationItem[] = [];
-  activeTab: 'all' | 'bus_stop' | 'pricing' | 'safety' = 'all';
+  activeTab: 'all' | 'bus_stop' | 'pricing' | 'safety' | 'route_segment' = 'all';
   isLoading = false;
   selectedItem: ModerationItem | null = null;
+  selectedIds = new Set<string>();
+  showApproveModal = false;
+  approvalNotes = '';
+  pendingApprovalItem: ModerationItem | null = null;
   mapPreview: any;
 
   ngOnInit(): void {
@@ -71,7 +76,7 @@ export class ModerationQueueComponent implements OnInit {
       });
   }
 
-  async initPreviewMap(location: { lat: number; lng: number }): Promise<void> {
+  async initPreviewMap(location: { lat: number; lng: number }, secondaryLocation?: { lat: number; lng: number }): Promise<void> {
     const L = await this.mapService.loadLeaflet();
     if (!L) return;
 
@@ -80,8 +85,25 @@ export class ModerationQueueComponent implements OnInit {
       if (this.mapPreview) {
         this.mapPreview.remove();
       }
-      this.mapPreview = this.mapService.initMap('item-preview-map', location, 15);
+
+      this.mapPreview = this.mapService.initMap('item-preview-map', location, 14);
       L.marker([location.lat, location.lng]).addTo(this.mapPreview);
+
+      if (secondaryLocation) {
+        L.marker([secondaryLocation.lat, secondaryLocation.lng]).addTo(this.mapPreview);
+        // Draw connection line
+        L.polyline([
+          [location.lat, location.lng],
+          [secondaryLocation.lat, secondaryLocation.lng]
+        ], { color: '#3B82F6', weight: 4, dashArray: '10, 10', opacity: 0.8 }).addTo(this.mapPreview);
+
+        // Fit bounds to show both markers
+        const bounds = L.latLngBounds([
+          [location.lat, location.lng],
+          [secondaryLocation.lat, secondaryLocation.lng]
+        ]);
+        this.mapPreview.fitBounds(bounds, { padding: [30, 30] });
+      }
     }, 100);
   }
 
@@ -153,6 +175,22 @@ export class ModerationQueueComponent implements OnInit {
         status: 'pending',
         flags: [],
         autoFlags: { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false }
+      },
+      {
+        _id: 'q4',
+        type: 'route_segment',
+        data: {
+          fromStop: { name: 'Berger Roundabout', location: { lat: 9.0645, lng: 7.4523 } },
+          toStop: { name: 'Wuse Market', location: { lat: 9.0611, lng: 7.4622 } },
+          transportMode: 'Taxi',
+          priceRange: { min: 200, max: 400 },
+          estimatedTime: 8
+        },
+        submittedBy: 'Musa Y.',
+        submittedAt: new Date(Date.now() - 1500000),
+        status: 'pending',
+        flags: [],
+        autoFlags: { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false }
       }
     ];
   }
@@ -163,6 +201,7 @@ export class ModerationQueueComponent implements OnInit {
   }
 
   applyFilter(): void {
+    this.selectedIds.clear(); // Clear selections on filter change
     if (this.activeTab === 'all') {
       this.filteredQueue = this.queue;
     } else {
@@ -170,28 +209,116 @@ export class ModerationQueueComponent implements OnInit {
     }
   }
 
+  toggleSelection(id: string): void {
+    if (this.selectedIds.has(id)) {
+      this.selectedIds.delete(id);
+    } else {
+      this.selectedIds.add(id);
+    }
+  }
+
+  toggleAll(event: any): void {
+    if (event.target.checked) {
+      this.filteredQueue.forEach(item => this.selectedIds.add(item._id));
+    } else {
+      this.selectedIds.clear();
+    }
+  }
+
+  isAllSelected(): boolean {
+    return this.filteredQueue.length > 0 && this.selectedIds.size === this.filteredQueue.length;
+  }
+
+  bulkApprove(): void {
+    const ids = Array.from(this.selectedIds);
+    if (confirm(`Approve all ${ids.length} selected items?`)) {
+      // In a real app, we'd use a bulk endpoint. Here we'll simulate it.
+      this.isLoading = true;
+      let completed = 0;
+      ids.forEach(id => {
+        this.adminService.approveItem(id).subscribe({
+          next: () => {
+            completed++;
+            if (completed === ids.length) this.onBulkActionComplete('Approved');
+          },
+          error: () => {
+            completed++;
+            if (completed === ids.length) this.onBulkActionComplete('Processed with errors');
+          }
+        });
+      });
+    }
+  }
+
+  bulkReject(): void {
+    const ids = Array.from(this.selectedIds);
+    const reason = prompt(`Reject all ${ids.length} selected items? Enter reason:`);
+    if (reason) {
+      this.isLoading = true;
+      let completed = 0;
+      ids.forEach(id => {
+        this.adminService.rejectItem(id, reason).subscribe({
+          next: () => {
+            completed++;
+            if (completed === ids.length) this.onBulkActionComplete('Rejected');
+          },
+          error: () => {
+            completed++;
+            if (completed === ids.length) this.onBulkActionComplete('Processed with errors');
+          }
+        });
+      });
+    }
+  }
+
+  private onBulkActionComplete(action: string): void {
+    const ids = Array.from(this.selectedIds);
+    this.queue = this.queue.filter(q => !ids.includes(q._id));
+    this.applyFilter();
+    this.isLoading = false;
+    this.toastService.success('Bulk Action Complete', `${ids.length} items have been ${action}.`);
+  }
+
   approve(item: ModerationItem): void {
-    if (confirm(`Approve this ${item.type} submission?`)) {
-      this.adminService.approveItem(item._id).subscribe({
-        next: () => {
+    this.pendingApprovalItem = item;
+    this.approvalNotes = '';
+    this.showApproveModal = true;
+  }
+
+  confirmApprove(): void {
+    if (!this.pendingApprovalItem) return;
+
+    const item = this.pendingApprovalItem;
+    this.isLoading = true;
+    this.showApproveModal = false;
+
+    this.adminService.approveItem(item._id, this.approvalNotes).subscribe({
+      next: () => {
+        this.queue = this.queue.filter(q => q._id !== item._id);
+        this.applyFilter();
+        this.selectedItem = null;
+        this.isLoading = false;
+        this.toastService.success('Submission Approved', `The ${item.type} contribution is now live.`);
+      },
+      error: (err) => {
+        this.isLoading = false;
+        if (environment.useMockAdminData) {
           this.queue = this.queue.filter(q => q._id !== item._id);
           this.applyFilter();
           this.selectedItem = null;
-          this.toastService.success('Submission Approved', `The ${item.type} contribution is now live.`);
-        },
-        error: (err) => {
-          if (environment.useMockAdminData) {
-            this.queue = this.queue.filter(q => q._id !== item._id);
-            this.applyFilter();
-            this.selectedItem = null;
-            this.toastService.info('Simulation Mode', 'Submission approval simulation successful.');
-          } else {
-            console.error('[Moderation] Approval failed:', err);
-            this.toastService.error('Process Error', 'Failed to approve the submission.');
-          }
+          this.toastService.info('Simulation Mode', 'Submission approval simulation successful.');
+        } else {
+          console.error('[Moderation] Approval failed:', err);
+          this.toastService.error('Process Error', 'Failed to approve the submission.');
         }
-      });
-    }
+      }
+    });
+  }
+
+  cancelApprove(): void {
+    this.showApproveModal = false;
+    this.pendingApprovalItem = null;
+    this.approvalNotes = '';
   }
 
   reject(item: ModerationItem): void {
@@ -223,7 +350,13 @@ export class ModerationQueueComponent implements OnInit {
     this.selectedItem = item;
 
     // Auto-init map if item has coordinates
-    if (item.data.location?.lat && item.data.location?.lng) {
+    if (item.type === 'route_segment') {
+      const fromLoc = item.data.fromStop?.location;
+      const toLoc = item.data.toStop?.location;
+      if (fromLoc && toLoc) {
+        this.initPreviewMap(fromLoc, toLoc);
+      }
+    } else if (item.data.location?.lat && item.data.location?.lng) {
       this.initPreviewMap(item.data.location);
     } else if (item.data.coordinates) { // Alternative format
       this.initPreviewMap({ lat: item.data.coordinates[1], lng: item.data.coordinates[0] });

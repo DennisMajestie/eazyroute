@@ -9,6 +9,26 @@
         <button class="tab-btn" [class.active]="activeTab === 'bus_stop'" (click)="setTab('bus_stop')">Bus Stops</button>
         <button class="tab-btn" [class.active]="activeTab === 'pricing'" (click)="setTab('pricing')">Pricing</button>
         <button class="tab-btn" [class.active]="activeTab === 'safety'" (click)="setTab('safety')">Safety</button>
+        <button class="tab-btn" [class.active]="activeTab === 'route_segment'" (click)="setTab('route_segment')">Route Segments</button>
+    </div>
+
+    <!-- Bulk Actions Bar -->
+    <div class="bulk-actions-bar" *ngIf="selectedIds.size > 0">
+        <div class="selection-info">
+            <i class="fas fa-check-double text-primary"></i>
+            <span><strong>{{ selectedIds.size }}</strong> items selected</span>
+        </div>
+        <div class="bulk-buttons">
+            <button class="bulk-btn approve" (click)="bulkApprove()">
+                <i class="fas fa-check"></i> Approve All
+            </button>
+            <button class="bulk-btn reject" (click)="bulkReject()">
+                <i class="fas fa-times"></i> Reject All
+            </button>
+            <button class="bulk-btn clear" (click)="selectedIds.clear()">
+                Cancel
+            </button>
+        </div>
     </div>
 
     <!-- Main Table -->
@@ -17,6 +37,9 @@
             <table class="moderation-table">
                 <thead>
                     <tr>
+                        <th class="checkbox-col">
+                            <input type="checkbox" (change)="toggleAll($event)" [checked]="isAllSelected()">
+                        </th>
                         <th>Submission</th>
                         <th>Contributor</th>
                         <th>Type</th>
@@ -26,11 +49,24 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of filteredQueue" [class.flagged]="(item.flags?.length || 0) > 0">
+                    <tr *ngFor="let item of filteredQueue" [class.flagged]="(item.flags?.length || 0) > 0" [class.selected]="selectedIds.has(item._id)">
+                        <td class="checkbox-col">
+                            <input type="checkbox" [checked]="selectedIds.has(item._id)" (change)="toggleSelection(item._id)">
+                        </td>
                         <td>
                             <div class="submission-data">
-                                <span class="data-title">{{ item.data?.name || item.data?.title || item.data?.fromStop?.name || 'Draft Submission' }}</span>
-                                <span class="data-subtitle">{{ item.data?.location?.name || item.data?.category || item.data?.toStop?.name || 'No location' }}</span>
+                                <ng-container *ngIf="item.type === 'route_segment'">
+                                    <div class="route-display">
+                                        <span class="data-title">{{ item.data?.fromStop?.name }}</span>
+                                        <i class="fas fa-arrow-right route-arrow"></i>
+                                        <span class="data-title">{{ item.data?.toStop?.name }}</span>
+                                    </div>
+                                    <span class="data-subtitle">{{ item.data?.transportMode }} • {{ item.data?.estimatedTime }} mins</span>
+                                </ng-container>
+                                <ng-container *ngIf="item.type !== 'route_segment'">
+                                    <span class="data-title">{{ item.data?.name || item.data?.title || 'Draft Submission' }}</span>
+                                    <span class="data-subtitle">{{ item.data?.location?.name || item.data?.category || 'No location' }}</span>
+                                </ng-container>
                             </div>
                         </td>
                         <td>
@@ -74,7 +110,7 @@
                     </tr>
 
                     <tr *ngIf="(filteredQueue?.length || 0) === 0 && !isLoading">
-                        <td colspan="6" class="empty-row">
+                        <td colspan="7" class="empty-row">
                             <div class="empty-state">
                                 <i class="fas fa-folder-open empty-icon"></i>
                                 <p>Queue is empty. Everything is up to date!</p>
@@ -83,9 +119,9 @@
                     </tr>
 
                     <tr *ngIf="isLoading">
-                        <td colspan="6" class="loading-row">
+                        <td colspan="7" class="loading-row">
                              <div class="spinner"></div>
-                             <span>Refreshing queue...</span>
+                             <span>Processing changes...</span>
                         </td>
                     </tr>
                 </tbody>
@@ -113,29 +149,55 @@
                 </div>
 
                 <div class="data-preview">
-                    <h4>Submission Details</h4>
+                    <header class="section-header">
+                        <h4>Submission Details</h4>
+                        <span class="type-tag" [class]="selectedItem.type">{{ selectedItem.type | uppercase }}</span>
+                    </header>
+                    
+                    <div class="route-summary" *ngIf="selectedItem.type === 'route_segment'">
+                        <div class="hub-item">
+                            <i class="fas fa-map-marker-alt text-primary"></i>
+                            <div class="hub-info">
+                                <span class="hub-label">From</span>
+                                <span class="hub-name">{{ selectedItem.data?.fromStop?.name }}</span>
+                            </div>
+                        </div>
+                        <div class="route-line-vertical"></div>
+                        <div class="hub-item">
+                            <i class="fas fa-location-arrow text-success"></i>
+                            <div class="hub-info">
+                                <span class="hub-label">To</span>
+                                <span class="hub-name">{{ selectedItem.data?.toStop?.name }}</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="data-grid">
                         <div class="data-item" *ngFor="let entry of (selectedItem?.data | keyvalue)">
-                            <span class="label">
-                                <ng-container [ngSwitch]="entry.key">
-                                    <span *ngSwitchCase="'transportMode'">Vehicle Type</span>
-                                    <span *ngSwitchCase="'priceRange'">Fare Estimates</span>
-                                    <span *ngSwitchCase="'riskScore'">AI Risk Score</span>
-                                    <span *ngSwitchCase="'fromStopId'">Departure Hub</span>
-                                    <span *ngSwitchCase="'toStopId'">Arrival Hub</span>
-                                    <span *ngSwitchDefault>{{ entry.key }}</span>
-                                </ng-container>
-                            </span>
-                            <span class="value" [title]="entry.value">
-                                <ng-container [ngSwitch]="entry.key">
-                                    <span *ngSwitchCase="'priceRange'">
-                                        ₦{{ $any(entry.value)?.min }} - ₦{{ $any(entry.value)?.max }}
-                                    </span>
-                                    <span *ngSwitchDefault>
-                                        {{ entry.value }}
-                                    </span>
-                                </ng-container>
-                            </span>
+                            <ng-container *ngIf="entry.key !== 'fromStop' && entry.key !== 'toStop' && entry.key !== 'location' && entry.key !== 'coordinates'">
+                                <span class="label">
+                                    <ng-container [ngSwitch]="entry.key">
+                                        <span *ngSwitchCase="'transportMode'">Vehicle Type</span>
+                                        <span *ngSwitchCase="'priceRange'">Fare Estimates</span>
+                                        <span *ngSwitchCase="'riskScore'">AI Risk Score</span>
+                                        <span *ngSwitchCase="'estimatedTime'">Travel Duration</span>
+                                        <span *ngSwitchDefault>{{ entry.key }}</span>
+                                    </ng-container>
+                                </span>
+                                <span class="value" [title]="entry.value">
+                                    <ng-container [ngSwitch]="entry.key">
+                                        <span *ngSwitchCase="'priceRange'">
+                                            ₦{{ $any(entry.value)?.min }} - ₦{{ $any(entry.value)?.max }}
+                                        </span>
+                                        <span *ngSwitchCase="'estimatedTime'">
+                                            {{ entry.value }} minutes
+                                        </span>
+                                        <span *ngSwitchDefault>
+                                            {{ entry.value }}
+                                        </span>
+                                    </ng-container>
+                                </span>
+                            </ng-container>
                         </div>
                     </div>
                 </div>
@@ -175,6 +237,40 @@
             <footer class="panel-footer">
                 <button class="reject-btn" (click)="reject(selectedItem)">Reject Submission</button>
                 <button class="approve-btn" (click)="approve(selectedItem)">Verify & Approve</button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Approval Message Modal -->
+    <div class="modal-overlay" *ngIf="showApproveModal" (click)="cancelApprove()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+            <header class="modal-header">
+                <div class="title-with-icon">
+                    <i class="fas fa-check-circle text-primary"></i>
+                    <h3>Verify Submission</h3>
+                </div>
+                <button class="close-btn" (click)="cancelApprove()">&times;</button>
+            </header>
+
+            <div class="modal-body">
+                <p class="modal-intro">Confirming this <strong>{{ pendingApprovalItem?.type }}</strong> contribution from <strong>{{ pendingApprovalItem?.submittedBy }}</strong>.</p>
+                
+                <div class="form-group">
+                    <label>Review Message (Optional)</label>
+                    <textarea 
+                        [(ngModel)]="approvalNotes" 
+                        placeholder="Add a note for the contributor or internal logs..."
+                        rows="3">
+                    </textarea>
+                    <span class="help-text">This message will be attached to the verified record.</span>
+                </div>
+            </div>
+
+            <footer class="modal-footer">
+                <button class="secondary-btn" (click)="cancelApprove()">Cancel</button>
+                <button class="primary-btn approve" (click)="confirmApprove()">
+                    <i class="fas fa-check"></i> Complete Verification
+                </button>
             </footer>
         </div>
     </div>
