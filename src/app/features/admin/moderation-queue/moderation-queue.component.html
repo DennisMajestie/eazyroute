@@ -129,7 +129,7 @@
                             <span class="value" [title]="entry.value">
                                 <ng-container [ngSwitch]="entry.key">
                                     <span *ngSwitchCase="'priceRange'">
-                                        ₦{{ entry.value?.min }} - ₦{{ entry.value?.max }}
+                                        ₦{{ $any(entry.value)?.min }} - ₦{{ $any(entry.value)?.max }}
                                     </span>
                                     <span *ngSwitchDefault>
                                         {{ entry.value }}
