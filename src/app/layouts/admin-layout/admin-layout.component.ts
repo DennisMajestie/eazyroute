@@ -4,12 +4,13 @@ import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { AuthService } from '../../core/services/auth.service';
 import { AdminAlertComponent } from '../../shared/components/admin-alert/admin-alert.component';
+import { ToastNotificationComponent } from '../../shared/components/toast-notification/toast-notification.component';
 import { WebSocketService } from '../../core/services/websocket.service';
 
 @Component({
   selector: 'app-admin-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, AdminAlertComponent],
+  imports: [CommonModule, RouterModule, AdminAlertComponent, ToastNotificationComponent],
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.scss']
 })
