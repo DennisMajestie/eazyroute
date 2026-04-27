@@ -29,8 +29,8 @@
                     <tr *ngFor="let item of filteredQueue" [class.flagged]="(item.flags?.length || 0) > 0">
                         <td>
                             <div class="submission-data">
-                                <span class="data-title">{{ item.data.name || item.data.title || 'Draft Submission' }}</span>
-                                <span class="data-subtitle">{{ item.data.location?.name || item.data.category || 'No location' }}</span>
+                                <span class="data-title">{{ item.data?.name || item.data?.title || item.data?.fromStop?.name || 'Draft Submission' }}</span>
+                                <span class="data-subtitle">{{ item.data?.location?.name || item.data?.category || item.data?.toStop?.name || 'No location' }}</span>
                             </div>
                         </td>
                         <td>
@@ -114,13 +114,13 @@
 
                 <div class="data-preview">
                     <h4>Payload Data</h4>
-                    <pre>{{ selectedItem.data | json }}</pre>
+                    <pre>{{ selectedItem?.data | json }}</pre>
                 </div>
 
                 <div class="audit-log">
                     <h4>Trust Intelligence Report</h4>
                     <div class="contributor-profile">
-                        <div class="avatar">{{ selectedItem.submittedBy.charAt(0) }}</div>
+                        <div class="avatar">{{ selectedItem?.submittedBy?.charAt(0) || '?' }}</div>
                         <div class="profile-info">
                             <strong>{{ selectedItem.submittedBy }}</strong>
                             <span class="reputation-score">Reputation: High Accuracy</span>

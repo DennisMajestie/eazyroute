@@ -233,9 +233,11 @@ export class AdminService {
                 ...item,
                 _id: item._id || item.id, // Support both _id and id
                 type: item.itemType,
+                data: item.data || item.metadata || {}, // Map metadata to data
                 status: item.action,
                 flags: item.flags || [],
                 autoFlags: item.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
+                submittedAt: item.submittedAt || new Date(),
                 submittedBy: typeof item.submittedBy === 'object' ? (item.submittedBy.name || item.submittedBy.email) : item.submittedBy
             } as ModerationItem)))
         );

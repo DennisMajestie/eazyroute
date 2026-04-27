@@ -50,8 +50,13 @@ export class ModerationQueueComponent implements OnInit {
           // Map backend format to frontend format
           const item = {
             ...notif.data,
-            type: notif.data.type || notif.data.itemType, // Support both formats
+            _id: notif.data._id || notif.data.id,
+            type: notif.data.type || notif.data.itemType,
+            data: notif.data.data || notif.data.metadata || {},
             status: notif.data.status || notif.data.action,
+            flags: notif.data.flags || [],
+            autoFlags: notif.data.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
+            submittedAt: notif.data.submittedAt || new Date(),
             submittedBy: typeof notif.data.submittedBy === 'object' ? 
               (notif.data.submittedBy.name || notif.data.submittedBy.email) : 
               notif.data.submittedBy
