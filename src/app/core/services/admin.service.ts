@@ -131,7 +131,16 @@ export class AdminService {
         return this.http.get<{ success: boolean; data: GraphReport }>(
             `${this.apiUrl}/graph/report`
         ).pipe(
-            map(response => response.data)
+            map(response => response.data || {
+                totalNodes: 0,
+                totalEdges: 0,
+                isolatedCount: 0,
+                semanticOrphanCount: 0,
+                semanticOrphans: [],
+                pendingHarvestCount: 0,
+                health: 'moderate',
+                issues: []
+            } as GraphReport)
         );
     }
 
@@ -175,7 +184,7 @@ export class AdminService {
         return this.http.get<{ success: boolean; data: GraphValidation }>(
             `${this.apiUrl}/graph/validate`
         ).pipe(
-            map(response => response.data)
+            map(response => response.data || { isValid: true, errors: [], warnings: [] })
         );
     }
 
@@ -237,7 +246,7 @@ export class AdminService {
                 status: item.action,
                 flags: item.flags || [],
                 autoFlags: item.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
-                submittedAt: item.submittedAt || new Date(),
+                submittedAt: (item.submittedAt && !isNaN(Date.parse(item.submittedAt))) ? new Date(item.submittedAt) : new Date(),
                 submittedBy: typeof item.submittedBy === 'object' ? (item.submittedBy.name || item.submittedBy.email) : item.submittedBy
             } as ModerationItem)))
         );

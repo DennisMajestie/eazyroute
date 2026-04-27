@@ -40,7 +40,7 @@
                             </div>
                         </td>
                         <td>
-                            <span class="type-tag" [class]="item.type">{{ item.type | uppercase }}</span>
+                            <span class="type-tag" [class]="item.type">{{ (item.type || 'unknown') | uppercase }}</span>
                         </td>
                         <td>
                             <div class="flags">

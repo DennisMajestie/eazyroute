@@ -56,7 +56,7 @@ export class ModerationQueueComponent implements OnInit {
             status: notif.data.status || notif.data.action,
             flags: notif.data.flags || [],
             autoFlags: notif.data.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
-            submittedAt: notif.data.submittedAt || new Date(),
+            submittedAt: (notif.data.submittedAt && !isNaN(Date.parse(notif.data.submittedAt))) ? new Date(notif.data.submittedAt) : new Date(),
             submittedBy: typeof notif.data.submittedBy === 'object' ?
               (notif.data.submittedBy.name || notif.data.submittedBy.email) :
               notif.data.submittedBy

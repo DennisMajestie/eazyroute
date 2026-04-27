@@ -276,7 +276,7 @@
             
             <div class="empty-feed" *ngIf="(liveFeed?.length || 0) === 0 && (suggestions?.length || 0) > 0">
                 <p>Waiting for live events... Showing recent topology snaps:</p>
-                <div class="feed-item" *ngFor="let suggestion of suggestions | slice:0:3">
+                <div class="feed-item" *ngFor="let suggestion of (suggestions || []) | slice:0:3">
                     <div class="time">Recent</div>
                     <div class="log">
                         <span style="color:#d1d5db; font-weight: 600;">Topology:</span> 
