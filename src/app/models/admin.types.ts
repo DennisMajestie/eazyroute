@@ -76,7 +76,7 @@ export interface GraphWarning {
  */
 export interface ModerationItem {
     _id: string;
-    type: 'pricing' | 'safety' | 'protocol' | 'bus_stop';
+    type: 'pricing' | 'safety' | 'protocol' | 'bus_stop' | 'route_segment';
     data: any;
     submittedBy: string;
     submittedAt: Date;
