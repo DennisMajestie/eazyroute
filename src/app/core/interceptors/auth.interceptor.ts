@@ -42,7 +42,9 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                     '/api/v1/user/profile',
                     '/api/v1/users/profile',
                     '/api/v1/trips',
-                    '/api/v1/rerouting'
+                    '/api/v1/rerouting',
+                    '/api/v1/moderation',
+                    '/api/v1/admin'
                 ];
 
                 const isAuthCritical = criticalAuthPaths.some(path => req.url.includes(path));
