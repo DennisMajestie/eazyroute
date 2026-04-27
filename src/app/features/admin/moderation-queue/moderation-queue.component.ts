@@ -33,6 +33,9 @@ export class ModerationQueueComponent implements OnInit {
   showApproveModal = false;
   approvalNotes = '';
   pendingApprovalItem: ModerationItem | null = null;
+  showRejectModal = false;
+  rejectionReason = '';
+  pendingRejectItem: ModerationItem | null = null;
   mapPreview: any;
 
   ngOnInit(): void {
@@ -322,28 +325,48 @@ export class ModerationQueueComponent implements OnInit {
   }
 
   reject(item: ModerationItem): void {
-    const reason = prompt('Please provide a reason for rejection:');
-    if (reason) {
-      this.adminService.rejectItem(item._id, reason).subscribe({
-        next: () => {
+    this.pendingRejectItem = item;
+    this.rejectionReason = '';
+    this.showRejectModal = true;
+  }
+
+  confirmReject(): void {
+    if (!this.pendingRejectItem || !this.rejectionReason.trim()) {
+      if (!this.rejectionReason.trim()) this.toastService.warning('Required', 'Please provide a reason for rejection.');
+      return;
+    }
+
+    const item = this.pendingRejectItem;
+    this.isLoading = true;
+    this.showRejectModal = false;
+
+    this.adminService.rejectItem(item._id, this.rejectionReason).subscribe({
+      next: () => {
+        this.queue = this.queue.filter(q => q._id !== item._id);
+        this.applyFilter();
+        this.selectedItem = null;
+        this.isLoading = false;
+        this.toastService.warning('Submission Rejected', 'The report has been declined and the user notified.');
+      },
+      error: (err) => {
+        this.isLoading = false;
+        if (environment.useMockAdminData) {
           this.queue = this.queue.filter(q => q._id !== item._id);
           this.applyFilter();
           this.selectedItem = null;
-          this.toastService.warning('Submission Rejected', 'The report has been declined and the user notified.');
-        },
-        error: (err) => {
-          if (environment.useMockAdminData) {
-            this.queue = this.queue.filter(q => q._id !== item._id);
-            this.applyFilter();
-            this.selectedItem = null;
-            this.toastService.info('Simulation Mode', 'Submission rejection simulation successful.');
-          } else {
-            console.error('[Moderation] Rejection failed:', err);
-            this.toastService.error('Process Error', 'Failed to decline the submission.');
-          }
+          this.toastService.info('Simulation Mode', 'Submission rejection simulation successful.');
+        } else {
+          console.error('[Moderation] Rejection failed:', err);
+          this.toastService.error('Process Error', 'Failed to decline the submission.');
         }
-      });
-    }
+      }
+    });
+  }
+
+  cancelReject(): void {
+    this.showRejectModal = false;
+    this.pendingRejectItem = null;
+    this.rejectionReason = '';
   }
 
   viewDetails(item: ModerationItem): void {

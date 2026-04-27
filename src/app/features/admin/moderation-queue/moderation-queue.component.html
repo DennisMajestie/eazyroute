@@ -273,5 +273,37 @@
                 </button>
             </footer>
         </div>
+        <!-- Rejection Message Modal -->
+    <div class="modal-overlay" *ngIf="showRejectModal" (click)="cancelReject()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+            <header class="modal-header">
+                <div class="title-with-icon">
+                    <i class="fas fa-exclamation-circle text-danger"></i>
+                    <h3 class="text-danger">Reject Submission</h3>
+                </div>
+                <button class="close-btn" (click)="cancelReject()">&times;</button>
+            </header>
+
+            <div class="modal-body">
+                <p class="modal-intro">Declining this <strong>{{ pendingRejectItem?.type }}</strong> contribution from <strong>{{ pendingRejectItem?.submittedBy }}</strong>.</p>
+                
+                <div class="form-group">
+                    <label class="text-danger">Rejection Reason (Required)</label>
+                    <textarea 
+                        [(ngModel)]="rejectionReason" 
+                        placeholder="State why this submission was declined (e.g. Duplicate location, Inaccurate pricing)..."
+                        rows="3">
+                    </textarea>
+                    <span class="help-text">This message will be sent to the contributor.</span>
+                </div>
+            </div>
+
+            <footer class="modal-footer">
+                <button class="secondary-btn" (click)="cancelReject()">Cancel</button>
+                <button class="primary-btn reject" (click)="confirmReject()" [disabled]="!rejectionReason.trim()">
+                    <i class="fas fa-times"></i> Confirm Rejection
+                </button>
+            </footer>
+        </div>
     </div>
 </div>

@@ -816,11 +816,31 @@
                 color: white;
                 box-shadow: 0 4px 6px -1px rgba($primary, 0.2);
                 
-                &:hover {
+                &:hover:not(:disabled) {
                     background: $primary-dark;
                     transform: translateY(-1px);
                     box-shadow: 0 10px 15px -3px rgba($primary, 0.3);
                 }
+            }
+
+            .primary-btn.reject {
+                background: $danger;
+                border: none;
+                color: white;
+                box-shadow: 0 4px 6px -1px rgba($danger, 0.2);
+                
+                &:hover:not(:disabled) {
+                    background: $danger-dark;
+                    transform: translateY(-1px);
+                    box-shadow: 0 10px 15px -3px rgba($danger, 0.3);
+                }
+            }
+
+            button:disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                transform: none !important;
+                box-shadow: none !important;
             }
         }
     }
