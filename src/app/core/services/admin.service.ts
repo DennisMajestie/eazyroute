@@ -231,8 +231,11 @@ export class AdminService {
         ).pipe(
             map(response => (response.data || []).map(item => ({
                 ...item,
+                _id: item._id || item.id, // Support both _id and id
                 type: item.itemType,
                 status: item.action,
+                flags: item.flags || [],
+                autoFlags: item.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
                 submittedBy: typeof item.submittedBy === 'object' ? (item.submittedBy.name || item.submittedBy.email) : item.submittedBy
             } as ModerationItem)))
         );

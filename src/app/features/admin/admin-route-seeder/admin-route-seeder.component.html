@@ -35,7 +35,7 @@
                             <i class="fas fa-plus"></i>
                         </button>
                     </div>
-                    <ul class="dropdown-list" *ngIf="fromResults.length > 0">
+                    <ul class="dropdown-list" *ngIf="(fromResults?.length || 0) > 0">
                         <li *ngFor="let stop of fromResults" (click)="selectFromStop(stop)">
                             <i class="fas fa-bus-alt"></i> {{ stop.name }}
                         </li>
@@ -135,7 +135,7 @@
                                 <i class="fas fa-plus"></i>
                             </button>
                         </div>
-                        <ul class="dropdown-list" *ngIf="toResults.length > 0">
+                        <ul class="dropdown-list" *ngIf="(toResults?.length || 0) > 0">
                             <li *ngFor="let stop of toResults" (click)="selectToStop(stop)">
                                 <i class="fas fa-bus-alt"></i> {{ stop.name }}
                             </li>

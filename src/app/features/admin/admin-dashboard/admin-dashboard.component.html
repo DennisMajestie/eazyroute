@@ -263,7 +263,7 @@
             <a routerLink="/admin/graph" class="action-link">Full History</a>
         </div>
         <div class="feed-container">
-            <div class="feed-item" *ngFor="let item of (liveFeed.length > 0 ? liveFeed : [
+            <div class="feed-item" *ngFor="let item of ((liveFeed?.length || 0) > 0 ? liveFeed : [
                 { id: 'fallback', title: 'System Heartbeat', message: 'Engine topology verified', timestamp: yesterday, severity: 'info' }
             ]) | slice:0:5" [attr.data-severity]="item.severity">
                 <div class="time">{{ item.timestamp | date:'shortTime' }}</div>
@@ -274,7 +274,7 @@
                 <div class="chip" [class]="item.severity">{{ item.severity | uppercase }}</div>
             </div>
             
-            <div class="empty-feed" *ngIf="liveFeed.length === 0 && suggestions.length > 0">
+            <div class="empty-feed" *ngIf="(liveFeed?.length || 0) === 0 && (suggestions?.length || 0) > 0">
                 <p>Waiting for live events... Showing recent topology snaps:</p>
                 <div class="feed-item" *ngFor="let suggestion of suggestions | slice:0:3">
                     <div class="time">Recent</div>

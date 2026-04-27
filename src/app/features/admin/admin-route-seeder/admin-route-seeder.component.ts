@@ -124,7 +124,7 @@ export class AdminRouteSeederComponent implements OnInit {
         this.isSearchingFrom = true;
         this.busStopService.searchBusStops(query, true).subscribe({
           next: (res: any) => {
-            this.fromResults = res.success ? res.data : [];
+            this.fromResults = (res.success && res.data) ? res.data : [];
             this.isSearchingFrom = false;
           },
           error: () => {
@@ -145,7 +145,7 @@ export class AdminRouteSeederComponent implements OnInit {
         this.isSearchingTo = true;
         this.busStopService.searchBusStops(query, true).subscribe({
           next: (res: any) => {
-            this.toResults = res.success ? res.data : [];
+            this.toResults = (res.success && res.data) ? res.data : [];
             this.isSearchingTo = false;
           },
           error: () => {
@@ -165,7 +165,7 @@ export class AdminRouteSeederComponent implements OnInit {
         this.isSearchingLeg[index] = true;
         this.busStopService.searchBusStops(query, true).subscribe({
           next: (res: any) => {
-            this.legResults[index] = res.success ? res.data : [];
+            this.legResults[index] = (res.success && res.data) ? res.data : [];
             this.isSearchingLeg[index] = false;
           },
           error: () => {

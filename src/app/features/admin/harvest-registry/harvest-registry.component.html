@@ -45,7 +45,7 @@
                             </a>
                         </td>
                     </tr>
-                    <tr *ngIf="harvestedStops.length === 0 && !isLoading">
+                    <tr *ngIf="(harvestedStops?.length || 0) === 0 && !isLoading">
                         <td colspan="5" class="empty-state">No harvested landmarks found matching your search.</td>
                     </tr>
                 </tbody>

@@ -36,7 +36,7 @@ export class HarvestRegistryComponent implements OnInit {
     this.isLoading = true;
     this.adminService.getHarvestedBusStops(this.page, this.limit, this.searchQuery).subscribe({
       next: (res: { data: any[]; total: number }) => {
-        this.harvestedStops = res.data;
+        this.harvestedStops = res.data || [];
         this.totalCount = res.total;
         this.isLoading = false;
       },
