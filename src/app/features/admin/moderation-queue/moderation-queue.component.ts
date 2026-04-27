@@ -59,7 +59,7 @@ export class ModerationQueueComponent implements OnInit {
           const item = {
             ...notif.data,
             _id: notif.data._id || notif.data.id,
-            type: notif.data.type || notif.data.itemType,
+            type: (notif.data.type || notif.data.itemType) === 'pricing_feedback' ? 'pricing' : (notif.data.type || notif.data.itemType),
             data: notif.data.data || notif.data.metadata || {},
             status: notif.data.status || notif.data.action,
             flags: notif.data.flags || [],

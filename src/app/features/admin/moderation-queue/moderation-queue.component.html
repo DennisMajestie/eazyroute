@@ -179,8 +179,12 @@
                                     <ng-container [ngSwitch]="entry.key">
                                         <span *ngSwitchCase="'transportMode'">Vehicle Type</span>
                                         <span *ngSwitchCase="'priceRange'">Fare Estimates</span>
+                                        <span *ngSwitchCase="'pricePaid'">Price Reported</span>
                                         <span *ngSwitchCase="'riskScore'">AI Risk Score</span>
                                         <span *ngSwitchCase="'estimatedTime'">Travel Duration</span>
+                                        <span *ngSwitchCase="'timeOfDay'">Time of Day</span>
+                                        <span *ngSwitchCase="'traffic'">Traffic Condition</span>
+                                        <span *ngSwitchCase="'wasSurge'">Surge Pricing?</span>
                                         <span *ngSwitchDefault>{{ entry.key }}</span>
                                     </ng-container>
                                 </span>
@@ -188,6 +192,12 @@
                                     <ng-container [ngSwitch]="entry.key">
                                         <span *ngSwitchCase="'priceRange'">
                                             ₦{{ $any(entry.value)?.min }} - ₦{{ $any(entry.value)?.max }}
+                                        </span>
+                                        <span *ngSwitchCase="'pricePaid'">
+                                            ₦{{ entry.value }}
+                                        </span>
+                                        <span *ngSwitchCase="'wasSurge'">
+                                            {{ entry.value ? 'YES' : 'NO' }}
                                         </span>
                                         <span *ngSwitchCase="'estimatedTime'">
                                             {{ entry.value }} minutes

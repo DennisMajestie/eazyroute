@@ -242,7 +242,7 @@ export class AdminService {
             map(response => (response.data || []).map(item => ({
                 ...item,
                 _id: item._id || item.id, // Support both _id and id
-                type: item.itemType,
+                type: (item.itemType === 'pricing_feedback') ? 'pricing' : item.itemType,
                 data: item.data || item.metadata || {}, // Map metadata to data
                 status: item.action,
                 flags: item.flags || [],
