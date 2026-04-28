@@ -3,7 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, from, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { DataSanitizer } from '../utils/data-sanitizer';
+// DataSanitizer is applied upstream by sanitizerInterceptor — do not import/use here.
 import { AlongRoute, ApiResponse, BoardingInference } from '../../models/transport.types';
 import { EnhancedRoute, EnhancedRouteResponse, TransportMode } from '../../models/enhanced-bus-stop.model';
 import { RouteResponse } from '../../models/route.model';
@@ -211,14 +211,18 @@ export class AlongService {
             return [];
         }
 
-        // CRITICAL FIX: Final safety check before normalizing segments
+        // CRITICAL FIX: Final safety check before returning routes
+        // NOTE: Do NOT call DataSanitizer.sanitize here — sanitizerInterceptor
+        // already sanitizes this response upstream. Double-sanitization corrupts
+        // route objects by re-processing already-normalized segments/legs fields,
+        // which was causing the TypeError: Cannot create property 'pricingMetadata'
+        // on string '[' crash in route-display.component.ts.
         if (!Array.isArray(routes)) {
             console.warn('[AlongService] routes is not an array in extractRoutes final step:', routes);
             return [];
         }
 
-        // Normalize all routes using DataSanitizer
-        return DataSanitizer.sanitize<AlongRoute[]>(routes, 'route');
+        return routes as AlongRoute[];
     }
 
     /**
