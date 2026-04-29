@@ -56,18 +56,19 @@ export class ModerationQueueComponent implements OnInit {
           console.log('[Moderation] Real-time item received:', notif.data);
 
           // Map backend format to frontend format
+          const rawData = notif.data.data || notif.data; // Handle wrapper or direct object
           const item = {
-            ...notif.data,
-            _id: notif.data._id || notif.data.id,
-            type: (notif.data.type || notif.data.itemType) === 'pricing_feedback' ? 'pricing' : (notif.data.type || notif.data.itemType),
-            data: notif.data.data || notif.data.metadata || {},
-            status: notif.data.status || notif.data.action,
-            flags: notif.data.flags || [],
-            autoFlags: notif.data.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
-            submittedAt: (notif.data.submittedAt && !isNaN(Date.parse(notif.data.submittedAt))) ? new Date(notif.data.submittedAt) : new Date(),
-            submittedBy: typeof notif.data.submittedBy === 'object' ?
-              (notif.data.submittedBy.name || notif.data.submittedBy.email) :
-              notif.data.submittedBy
+            ...rawData,
+            _id: rawData._id || rawData.id || notif.data.id,
+            type: (rawData.type || rawData.itemType) === 'pricing_feedback' ? 'pricing' : (rawData.type || rawData.itemType),
+            data: rawData.data || rawData.metadata || {}, // Flatten metadata/data
+            status: rawData.status || rawData.action,
+            flags: rawData.flags || [],
+            autoFlags: rawData.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
+            submittedAt: (rawData.submittedAt && !isNaN(Date.parse(rawData.submittedAt))) ? new Date(rawData.submittedAt) : new Date(),
+            submittedBy: typeof rawData.submittedBy === 'object' ?
+              (rawData.submittedBy.name || rawData.submittedBy.email) :
+              (rawData.submittedBy || notif.data.submittedBy)
           } as ModerationItem;
 
           // Add to beginning of queue if not already there
