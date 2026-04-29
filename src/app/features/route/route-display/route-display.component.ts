@@ -58,7 +58,8 @@ export class RouteDisplayComponent implements OnInit {
     reportValue: any = {
         fare: null,
         waitTime: 'medium',
-        riskAlert: '',
+        riskLevel: 'LOW',
+        riskDescription: '',
         stopAlias: ''
     };
     isSubmittingReport = false;
@@ -978,7 +979,8 @@ export class RouteDisplayComponent implements OnInit {
         this.reportValue = {
             fare: null,
             waitTime: 'medium',
-            riskAlert: '',
+            riskLevel: 'LOW',
+            riskDescription: '',
             stopAlias: ''
         };
     }
@@ -1010,7 +1012,7 @@ export class RouteDisplayComponent implements OnInit {
                 lat: resolvedLat,
                 lng: resolvedLng
             },
-            mode: this.getSegmentMode(this.currentReportingSegment).toLowerCase(),
+            mode: this.getSegmentMode(this.currentReportingSegment).toLowerCase() === 'walking' ? 'transit' : this.getSegmentMode(this.currentReportingSegment).toLowerCase(),
             nodeId: this.currentReportingSegment.fromStopId || (this.currentReportingSegment as any).fromId,
             corridorId: this.currentReportingSegment.backboneName ? undefined : (this.currentReportingSegment as any).corridorId,
             payload: {},
@@ -1027,8 +1029,10 @@ export class RouteDisplayComponent implements OnInit {
             report.payload.waitTime = waitMap[this.reportValue.waitTime] || 15;
         }
         if (this.reportType === 'risk_alert') {
-            report.payload.riskLevel = 0.8;
-            report.payload.riskDescription = this.reportValue.riskAlert;
+            const riskMap: { [key: string]: number } = { 'LOW': 0.1, 'MEDIUM': 0.5, 'HIGH': 0.8, 'CRITICAL': 1.0 };
+            report.payload.riskLevel = riskMap[this.reportValue.riskLevel] || 0.1;
+            report.payload.riskLabel = this.reportValue.riskLevel;
+            report.payload.riskDescription = this.reportValue.riskDescription;
         }
         if (this.reportType === 'stop_alias') {
             report.payload.aliasName = this.reportValue.stopAlias;

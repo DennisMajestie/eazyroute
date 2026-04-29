@@ -69,10 +69,14 @@ export class ModerationQueueComponent implements OnInit {
           }
           if (type === 'pricing_feedback') type = 'pricing';
 
-          // Ensure data object contains all relevant fields (flatten if necessary)
+          // Deep Unpacking Logic: Flatten payload and metadata into dataObject
+          const rawPayload = rawData.payload || {};
+          const rawMetadata = rawData.metadata || rawData.data || {};
+          
           const dataObject = {
-            ...(rawData.data || rawData.metadata || {}),
-            ...rawData // Spread rawData last to capture root-level fields like priceRange if not in data wrapper
+            ...rawMetadata,
+            ...rawPayload,
+            ...rawData // Ensure root fields aren't lost
           };
 
           // Extract readable submittedBy
@@ -175,9 +179,13 @@ export class ModerationQueueComponent implements OnInit {
           }
           if (type === 'pricing_feedback') type = 'pricing';
 
-          // Ensure data object contains all relevant fields
+          // Deep Unpacking Logic: Flatten payload and metadata into dataObject
+          const rawPayload = rawData.payload || {};
+          const rawMetadata = rawData.metadata || rawData.data || {};
+          
           const dataObject = {
-            ...(rawData.data || rawData.metadata || {}),
+            ...rawMetadata,
+            ...rawPayload,
             ...rawData
           };
 

@@ -486,9 +486,16 @@
                     </select>
                 </div>
                 <div class="input-group" *ngIf="reportType === 'risk_alert'">
-                    <label>Security Detail</label>
-                    <textarea [(ngModel)]="reportValue.riskAlert"
-                        placeholder="Describe the safety concern..."></textarea>
+                    <label>Risk Severity</label>
+                    <select [(ngModel)]="reportValue.riskLevel" class="risk-dropdown">
+                        <option value="LOW">Low (Normal / Safe)</option>
+                        <option value="MEDIUM">Moderate (Crowded / Delay)</option>
+                        <option value="HIGH">High (Active Incident / Risk)</option>
+                        <option value="CRITICAL">Critical (SOS / Immediate Danger)</option>
+                    </select>
+                    <label class="mt-2">Description (Optional)</label>
+                    <textarea [(ngModel)]="reportValue.riskDescription"
+                        placeholder="Briefly describe what's happening (e.g. Police checkpoint, Heavy congestion)..."></textarea>
                 </div>
                 <div class="input-group" *ngIf="reportType === 'stop_alias'">
                     <label>Common Name</label>
