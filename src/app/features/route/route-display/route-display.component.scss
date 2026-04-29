@@ -1032,7 +1032,7 @@
   bottom: 0;
   background: rgba(15, 23, 42, 0.7);
   backdrop-filter: blur(8px);
-  z-index: 1000;
+  z-index: 2000;
   display: flex;
   align-items: flex-end;
   animation: fade-in 0.3s ease;
@@ -1044,7 +1044,7 @@
   margin: 0 auto;
   background: white;
   border-radius: 2.5rem 2.5rem 0 0;
-  padding: 1.5rem 2rem 2.5rem;
+  padding: 1.5rem 2rem 5rem;
   max-height: 85vh;
   overflow-y: auto;
   animation: slide-up 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1432,7 +1432,7 @@
 /* Mobile Adjustments */
 @media (max-width: 600px) {
   .bottom-sheet {
-    padding: 1.25rem 1.5rem 2rem;
+    padding: 1.25rem 1.5rem 6rem; // Even more padding for mobile nav clearance
     border-radius: 2rem 2rem 0 0;
 
     .sheet-header h3 {
