@@ -207,7 +207,9 @@ export class ModerationQueueComponent implements OnInit {
             status: rawData.status || rawData.action || 'pending',
             flags: rawData.flags || [],
             autoFlags: typeof rawData.autoFlags === 'object' ? rawData.autoFlags : { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
-            submittedAt: (rawData.submittedAt && !isNaN(Date.parse(rawData.submittedAt))) ? new Date(rawData.submittedAt) : new Date(),
+            submittedAt: (rawData.submittedAt instanceof Date) ? rawData.submittedAt : 
+                        (rawData.submittedAt && typeof rawData.submittedAt === 'string' && !isNaN(Date.parse(rawData.submittedAt))) ? new Date(rawData.submittedAt) : 
+                        new Date(),
             submittedBy: submittedBy
           } as ModerationItem;
         });

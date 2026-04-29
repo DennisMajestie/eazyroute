@@ -11,6 +11,7 @@ export interface CommunityReport {
         waitTime?: number;        // minutes
         aliasName?: string;
         riskLevel?: number;       // 0-1
+        riskLabel?: string;       // e.g. LOW, HIGH
         riskDescription?: string;
         congestionLevel?: number; // 0-1
     };
