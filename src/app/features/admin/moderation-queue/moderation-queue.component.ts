@@ -87,7 +87,7 @@ export class ModerationQueueComponent implements OnInit {
 
           const item = {
             ...rawData,
-            _id: rawData._id || rawData.id || notif.data.id || `temp-${Date.now()}`,
+            _id: rawData._id || rawData.id || notif.data._id || notif.id,
             type: type,
             data: dataObject,
             status: rawData.status || rawData.action || 'pending',
@@ -112,6 +112,12 @@ export class ModerationQueueComponent implements OnInit {
 
     // Small delay to ensure container is rendered
     setTimeout(() => {
+      const container = document.getElementById('item-preview-map');
+      if (!container) {
+        console.warn('[Moderation] Map container not found in DOM yet.');
+        return;
+      }
+
       if (this.mapPreview) {
         this.mapPreview.remove();
       }
