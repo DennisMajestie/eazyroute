@@ -479,10 +479,10 @@
                 </div>
                 <div class="input-group" *ngIf="reportType === 'wait_time'">
                     <label>Wait Duration</label>
-                    <select [(ngModel)]="reportValue.waitTime">
-                        <option value="short">Short (< 5 mins)</option>
-                        <option value="medium">Medium (5-15 mins)</option>
-                        <option value="long">Long (> 15 mins)</option>
+                    <select [(ngModel)]="reportValue.waitTime" class="wait-dropdown">
+                        <option value="short">Short (⌚ < 5 mins)</option>
+                        <option value="medium">Medium (⌚ 5-15 mins)</option>
+                        <option value="long">Long (⌚ > 15 mins)</option>
                     </select>
                 </div>
                 <div class="input-group" *ngIf="reportType === 'risk_alert'">
