@@ -57,7 +57,7 @@ export class ModerationQueueComponent implements OnInit {
           console.log('[Moderation] Real-time item received:', notif.data);
 
           // Map backend format to frontend format
-          const rawData = notif.data.data || notif.data; // Handle wrapper or direct object
+          const rawData: any = notif.data.data || notif.data; // Handle wrapper or direct object
           
           // Heuristic for type if missing
           let type = (rawData.type || rawData.itemType);
@@ -97,7 +97,9 @@ export class ModerationQueueComponent implements OnInit {
             status: rawData.status || rawData.action || 'pending',
             flags: rawData.flags || [],
             autoFlags: typeof rawData.autoFlags === 'object' ? rawData.autoFlags : { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
-            submittedAt: (rawData.submittedAt && !isNaN(Date.parse(rawData.submittedAt))) ? new Date(rawData.submittedAt) : new Date(),
+            submittedAt: (rawData.submittedAt instanceof Date) ? rawData.submittedAt : 
+                        (rawData.submittedAt && typeof rawData.submittedAt === 'string' && !isNaN(Date.parse(rawData.submittedAt))) ? new Date(rawData.submittedAt) : 
+                        new Date(),
             submittedBy: submittedBy
           } as ModerationItem;
 
@@ -168,7 +170,7 @@ export class ModerationQueueComponent implements OnInit {
     this.adminService.getModerationQueue().subscribe({
       next: (items) => {
         // Map items to handle nested objects safely
-        this.queue = items.map(rawData => {
+        this.queue = items.map((rawData: any) => {
           // Heuristic for type if missing
           let type = (rawData.type || rawData.itemType);
           if (!type) {
