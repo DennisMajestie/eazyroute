@@ -52,23 +52,35 @@ export class ModerationQueueComponent implements OnInit {
     this.notifService.notifications$
       .pipe(takeUntil(this.destroy$))
       .subscribe(notif => {
-        if (notif.id.startsWith('mod-') && notif.data) {
+        // Handle both moderation (mod-) and community (comm-) notifications
+        if ((notif.id.startsWith('mod-') || notif.id.startsWith('comm-')) && notif.data) {
           console.log('[Moderation] Real-time item received:', notif.data);
 
           // Map backend format to frontend format
           const rawData = notif.data.data || notif.data; // Handle wrapper or direct object
+          
+          // Heuristic for type if missing
+          let type = (rawData.type || rawData.itemType);
+          if (!type) {
+            if (rawData.fromStopId && rawData.toStopId) type = 'route_segment';
+            else if (rawData.location && rawData.name) type = 'bus_stop';
+            else if (rawData.priceRange || rawData.pricePaid) type = 'pricing';
+            else type = 'protocol';
+          }
+          if (type === 'pricing_feedback') type = 'pricing';
+
           const item = {
             ...rawData,
-            _id: rawData._id || rawData.id || notif.data.id,
-            type: (rawData.type || rawData.itemType) === 'pricing_feedback' ? 'pricing' : (rawData.type || rawData.itemType),
-            data: rawData.data || rawData.metadata || {}, // Flatten metadata/data
-            status: rawData.status || rawData.action,
+            _id: rawData._id || rawData.id || notif.data.id || `temp-${Date.now()}`,
+            type: type,
+            data: rawData.data || rawData.metadata || rawData, // Use rawData as fallback for data
+            status: rawData.status || rawData.action || 'pending',
             flags: rawData.flags || [],
             autoFlags: rawData.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
             submittedAt: (rawData.submittedAt && !isNaN(Date.parse(rawData.submittedAt))) ? new Date(rawData.submittedAt) : new Date(),
             submittedBy: typeof rawData.submittedBy === 'object' ?
               (rawData.submittedBy.name || rawData.submittedBy.email) :
-              (rawData.submittedBy || notif.data.submittedBy)
+              (rawData.submittedBy || notif.data.submittedBy || 'Community Contributor')
           } as ModerationItem;
 
           // Add to beginning of queue if not already there

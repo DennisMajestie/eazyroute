@@ -57,15 +57,15 @@
                             <div class="submission-data">
                                 <ng-container *ngIf="item.type === 'route_segment'">
                                     <div class="route-display">
-                                        <span class="data-title">{{ item.data?.fromStop?.name }}</span>
+                                        <span class="data-title">{{ item.data?.fromStop?.name || item.data?.fromStopId || 'Unknown Origin' }}</span>
                                         <i class="fas fa-arrow-right route-arrow"></i>
-                                        <span class="data-title">{{ item.data?.toStop?.name }}</span>
+                                        <span class="data-title">{{ item.data?.toStop?.name || item.data?.toStopId || 'Unknown Destination' }}</span>
                                     </div>
-                                    <span class="data-subtitle">{{ item.data?.transportMode }} • {{ item.data?.estimatedTime }} mins</span>
+                                    <span class="data-subtitle">{{ item.data?.transportMode || 'Transport' }} • {{ item.data?.estimatedTime || '??' }} mins</span>
                                 </ng-container>
                                 <ng-container *ngIf="item.type !== 'route_segment'">
-                                    <span class="data-title">{{ item.data?.name || item.data?.title || 'Draft Submission' }}</span>
-                                    <span class="data-subtitle">{{ item.data?.location?.name || item.data?.category || 'No location' }}</span>
+                                    <span class="data-title">{{ item.data?.name || item.data?.title || item.data?.fromStopId || 'Community Intel' }}</span>
+                                    <span class="data-subtitle">{{ item.data?.location?.name || item.data?.category || item.data?.transportMode || 'Uncategorized' }}</span>
                                 </ng-container>
                             </div>
                         </td>
@@ -159,7 +159,7 @@
                             <i class="fas fa-map-marker-alt text-primary"></i>
                             <div class="hub-info">
                                 <span class="hub-label">From</span>
-                                <span class="hub-name">{{ selectedItem.data?.fromStop?.name }}</span>
+                                <span class="hub-name">{{ selectedItem.data?.fromStop?.name || selectedItem.data?.fromStopId || 'Unknown' }}</span>
                             </div>
                         </div>
                         <div class="route-line-vertical"></div>
@@ -167,7 +167,7 @@
                             <i class="fas fa-location-arrow text-success"></i>
                             <div class="hub-info">
                                 <span class="hub-label">To</span>
-                                <span class="hub-name">{{ selectedItem.data?.toStop?.name }}</span>
+                                <span class="hub-name">{{ selectedItem.data?.toStop?.name || selectedItem.data?.toStopId || 'Unknown' }}</span>
                             </div>
                         </div>
                     </div>

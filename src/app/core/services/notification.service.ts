@@ -43,10 +43,13 @@ export class NotificationService {
 
         // 2. Listen for New Moderation Items
         this.wsService.on('moderation:new').subscribe(data => {
+            const itemType = (data.type || data.itemType || 'item').replace('_', ' ');
+            const contributor = data.submittedBy || 'A user';
+            
             this.notify({
                 id: `mod-${Date.now()}`,
                 title: 'New Moderation Request',
-                message: `New ${data.type} submission from ${data.submittedBy}.`,
+                message: `New ${itemType} submission from ${contributor}.`,
                 severity: 'info',
                 timestamp: new Date(),
                 actionLink: '/admin/moderation',
@@ -71,14 +74,34 @@ export class NotificationService {
         this.wsService.on('community:report:new').subscribe(data => {
             const reportType = (data.type || 'Intel').replace('_', ' ');
             const capitalizedType = reportType.charAt(0).toUpperCase() + reportType.slice(1);
+            const contributor = data.submittedBy || 'A contributor';
             
+            let message = `Incoming ${reportType} report for ${data.mode || 'transit'}.`;
+            if (data.fromStopId && data.toStopId) {
+                message = `New route intelligence: ${data.fromStopId} → ${data.toStopId} by ${contributor}.`;
+            }
+
             this.notify({
                 id: `comm-${Date.now()}`,
                 title: `New Community ${capitalizedType}`,
-                message: `Incoming ${reportType} report for ${data.mode || 'transit'}.`,
+                message,
                 severity: 'success',
                 timestamp: new Date(),
-                actionLink: '/admin/community',
+                actionLink: '/admin/moderation', // Redirect to moderation for verification
+                data
+            });
+        });
+
+        // 5. Listen for explicit Community Submissions (Route Segments)
+        this.wsService.on('community:submission:new').subscribe(data => {
+            const contributor = data.submittedBy || 'A contributor';
+            this.notify({
+                id: `comm-${Date.now()}`,
+                title: 'New Community Submission',
+                message: `New route segment proposed: ${data.fromStopId || 'Start'} to ${data.toStopId || 'End'} by ${contributor}.`,
+                severity: 'success',
+                timestamp: new Date(),
+                actionLink: '/admin/moderation',
                 data
             });
         });
