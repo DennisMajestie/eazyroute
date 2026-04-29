@@ -7,6 +7,7 @@ import { ModerationItem } from '../../../models/admin.types';
 import { environment } from '../../../../environments/environment';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { WebSocketService } from '../../../core/services/websocket.service'; // Added import
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -22,6 +23,7 @@ export class ModerationQueueComponent implements OnInit {
   private mapService = inject(LeafletMapService);
   private toastService = inject(ToastNotificationService);
   private notifService = inject(NotificationService);
+  private wsService = inject(WebSocketService); // Added injection
   private destroy$ = new Subject<void>();
 
   queue: ModerationItem[] = [];

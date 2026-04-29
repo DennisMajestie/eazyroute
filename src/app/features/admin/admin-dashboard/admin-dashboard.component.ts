@@ -16,6 +16,7 @@ import { interval, Subject } from 'rxjs';
 import { takeUntil, startWith } from 'rxjs/operators';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 import { NotificationService, AdminNotification } from '../../../core/services/notification.service';
+import { WebSocketService } from '../../../core/services/websocket.service';
 
 @Component({
   selector: 'app-admin-dashboard',
