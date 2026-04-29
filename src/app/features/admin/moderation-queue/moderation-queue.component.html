@@ -190,7 +190,7 @@
 
                     <div class="data-grid">
                         <div class="data-item" *ngFor="let entry of (selectedItem?.data | keyvalue)">
-                            <ng-container *ngIf="entry.key !== 'fromStop' && entry.key !== 'toStop' && entry.key !== 'location' && entry.key !== 'coordinates'">
+                            <ng-container *ngIf="entry.key !== 'fromStop' && entry.key !== 'toStop' && entry.key !== 'location' && entry.key !== 'coordinates' && entry.key !== 'autoFlags' && entry.key !== 'flags' && entry.key !== 'submittedBy' && entry.key !== 'submittedAt' && entry.key !== 'createdAt' && entry.key !== 'updatedAt' && entry.key !== '_id' && entry.key !== 'id' && entry.key !== '__v' && entry.key !== 'itemType' && entry.key !== 'action' && entry.key !== 'payload' && entry.key !== 'metadata'">
                                 <span class="label">
                                     <ng-container [ngSwitch]="entry.key">
                                         <span *ngSwitchCase="'transportMode'">Vehicle Type</span>
@@ -201,6 +201,8 @@
                                         <span *ngSwitchCase="'timeOfDay'">Time of Day</span>
                                         <span *ngSwitchCase="'traffic'">Traffic Condition</span>
                                         <span *ngSwitchCase="'wasSurge'">Surge Pricing?</span>
+                                        <span *ngSwitchCase="'fromStopId'">Origin ID</span>
+                                        <span *ngSwitchCase="'toStopId'">Destination ID</span>
                                         <span *ngSwitchDefault>{{ entry.key }}</span>
                                     </ng-container>
                                 </span>
@@ -219,7 +221,7 @@
                                             {{ entry.value }} minutes
                                         </span>
                                         <span *ngSwitchDefault>
-                                            {{ entry.value }}
+                                            {{ isObject(entry.value) ? '(Complex Data)' : entry.value }}
                                         </span>
                                     </ng-container>
                                 </span>

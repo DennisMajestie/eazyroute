@@ -458,4 +458,8 @@ export class ModerationQueueComponent implements OnInit {
       this.initPreviewMap({ lat: item.data.coordinates[1], lng: item.data.coordinates[0] });
     }
   }
+
+  isObject(val: any): boolean {
+    return val !== null && typeof val === 'object' && !Array.isArray(val);
+  }
 }
