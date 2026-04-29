@@ -239,17 +239,24 @@ export class AdminService {
         return this.http.get<{ success: boolean; data: any[] }>(
             `${this.apiUrl}/moderation/queue`
         ).pipe(
-            map(response => (response.data || []).map(item => ({
-                ...item,
-                _id: item._id || item.id, // Support both _id and id
-                type: (item.itemType === 'pricing_feedback') ? 'pricing' : item.itemType,
-                data: item.data || item.metadata || {}, // Map metadata to data
-                status: item.action,
-                flags: item.flags || [],
-                autoFlags: item.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
-                submittedAt: (item.submittedAt && !isNaN(Date.parse(item.submittedAt))) ? new Date(item.submittedAt) : new Date(),
-                submittedBy: typeof item.submittedBy === 'object' ? (item.submittedBy.name || item.submittedBy.email) : item.submittedBy
-            } as ModerationItem)))
+            map(response => (response.data || []).map(item => {
+                const dataObject = {
+                    ...(item.data || item.metadata || {}),
+                    ...item // Capture root-level fields like priceRange
+                };
+                
+                return {
+                    ...item,
+                    _id: item._id || item.id,
+                    type: (item.itemType === 'pricing_feedback') ? 'pricing' : (item.itemType || item.type),
+                    data: dataObject,
+                    status: item.action || item.status,
+                    flags: item.flags || [],
+                    autoFlags: item.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
+                    submittedAt: (item.submittedAt && !isNaN(Date.parse(item.submittedAt))) ? new Date(item.submittedAt) : new Date(),
+                    submittedBy: typeof item.submittedBy === 'object' ? (item.submittedBy.name || item.submittedBy.email) : item.submittedBy
+                } as ModerationItem;
+            }))
         );
     }
 

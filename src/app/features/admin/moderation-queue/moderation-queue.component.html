@@ -61,11 +61,27 @@
                                         <i class="fas fa-arrow-right route-arrow"></i>
                                         <span class="data-title">{{ item.data?.toStop?.name || item.data?.toStopId || 'Unknown Destination' }}</span>
                                     </div>
-                                    <span class="data-subtitle">{{ item.data?.transportMode || 'Transport' }} • {{ item.data?.estimatedTime || '??' }} mins</span>
+                                    <span class="data-subtitle">
+                                        {{ item.data?.transportMode || 'Transport' }} • {{ item.data?.estimatedTime || '??' }} mins
+                                        <ng-container *ngIf="item.data?.priceRange">
+                                            • <i class="fas fa-coins text-warning ms-1"></i> ₦{{ item.data.priceRange.min }} - ₦{{ item.data.priceRange.max }}
+                                        </ng-container>
+                                        <ng-container *ngIf="item.data?.pricePaid">
+                                            • <i class="fas fa-receipt text-success ms-1"></i> ₦{{ item.data.pricePaid }}
+                                        </ng-container>
+                                    </span>
                                 </ng-container>
                                 <ng-container *ngIf="item.type !== 'route_segment'">
                                     <span class="data-title">{{ item.data?.name || item.data?.title || item.data?.fromStopId || 'Community Intel' }}</span>
-                                    <span class="data-subtitle">{{ item.data?.location?.name || item.data?.category || item.data?.transportMode || 'Uncategorized' }}</span>
+                                    <span class="data-subtitle">
+                                        {{ item.data?.location?.name || item.data?.category || item.data?.transportMode || 'Uncategorized' }}
+                                        <ng-container *ngIf="item.data?.priceRange">
+                                            • <i class="fas fa-coins text-warning ms-1"></i> ₦{{ item.data.priceRange.min }} - ₦{{ item.data.priceRange.max }}
+                                        </ng-container>
+                                        <ng-container *ngIf="item.data?.pricePaid">
+                                            • <i class="fas fa-receipt text-success ms-1"></i> ₦{{ item.data.pricePaid }}
+                                        </ng-container>
+                                    </span>
                                 </ng-container>
                             </div>
                         </td>

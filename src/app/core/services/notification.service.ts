@@ -79,6 +79,9 @@ export class NotificationService {
             let message = `Incoming ${reportType} report for ${data.mode || 'transit'}.`;
             if (data.fromStopId && data.toStopId) {
                 message = `New route intelligence: ${data.fromStopId} → ${data.toStopId} by ${contributor}.`;
+                if (data.priceRange) {
+                    message += ` Est: ₦${data.priceRange.min}-₦${data.priceRange.max}`;
+                }
             }
 
             this.notify({

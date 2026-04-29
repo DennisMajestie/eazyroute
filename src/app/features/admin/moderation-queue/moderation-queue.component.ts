@@ -62,18 +62,24 @@ export class ModerationQueueComponent implements OnInit {
           // Heuristic for type if missing
           let type = (rawData.type || rawData.itemType);
           if (!type) {
-            if (rawData.fromStopId && rawData.toStopId) type = 'route_segment';
+            if (rawData.fromStopId && rawData.toStopId || rawData.fromStop) type = 'route_segment';
             else if (rawData.location && rawData.name) type = 'bus_stop';
             else if (rawData.priceRange || rawData.pricePaid) type = 'pricing';
             else type = 'protocol';
           }
           if (type === 'pricing_feedback') type = 'pricing';
 
+          // Ensure data object contains all relevant fields (flatten if necessary)
+          const dataObject = {
+            ...(rawData.data || rawData.metadata || {}),
+            ...rawData // Spread rawData last to capture root-level fields like priceRange if not in data wrapper
+          };
+
           const item = {
             ...rawData,
             _id: rawData._id || rawData.id || notif.data.id || `temp-${Date.now()}`,
             type: type,
-            data: rawData.data || rawData.metadata || rawData, // Use rawData as fallback for data
+            data: dataObject,
             status: rawData.status || rawData.action || 'pending',
             flags: rawData.flags || [],
             autoFlags: rawData.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
