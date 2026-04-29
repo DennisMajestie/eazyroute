@@ -41,6 +41,10 @@ export class ModerationQueueComponent implements OnInit {
   ngOnInit(): void {
     this.loadQueue();
     this.initRealTimeListeners();
+    
+    // Join admin and moderation rooms for real-time updates
+    this.wsService.joinRoom('admin');
+    this.wsService.joinRoom('moderation');
   }
 
   ngOnDestroy(): void {

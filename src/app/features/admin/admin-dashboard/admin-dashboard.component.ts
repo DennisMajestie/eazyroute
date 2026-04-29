@@ -29,6 +29,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   private busStopService = inject(BusStopService);
   private toastService = inject(ToastNotificationService);
   private notifService = inject(NotificationService);
+  private wsService = inject(WebSocketService); // Inject for room joining
   private destroy$ = new Subject<void>();
   
   report: GraphReport | null = null;
@@ -83,6 +84,10 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
       });
 
     this.initRealTimeListeners();
+
+    // Join admin and moderation rooms for real-time updates
+    this.wsService.joinRoom('admin');
+    this.wsService.joinRoom('moderation');
   }
 
   private initRealTimeListeners(): void {

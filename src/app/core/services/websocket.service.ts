@@ -151,6 +151,11 @@ export class WebSocketService {
         this.socket.on('deviation_update', (update: any) => {
             console.log('⚠️ Deviation Update:', update);
         });
+
+        // Catch-all for diagnostics
+        this.socket.onAny((eventName, ...args) => {
+            console.log(`📡 [Socket Event] ${eventName}:`, args[0]);
+        });
     }
 
     private async handleTokenExpiry(): Promise<void> {
