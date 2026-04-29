@@ -7,7 +7,6 @@ import { ModerationItem } from '../../../models/admin.types';
 import { environment } from '../../../../environments/environment';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { WebSocketService } from '../../../core/services/websocket.service'; // Added import
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -23,7 +22,6 @@ export class ModerationQueueComponent implements OnInit {
   private mapService = inject(LeafletMapService);
   private toastService = inject(ToastNotificationService);
   private notifService = inject(NotificationService);
-  private wsService = inject(WebSocketService); // Added injection
   private destroy$ = new Subject<void>();
 
   queue: ModerationItem[] = [];
@@ -43,10 +41,6 @@ export class ModerationQueueComponent implements OnInit {
   ngOnInit(): void {
     this.loadQueue();
     this.initRealTimeListeners();
-    
-    // Join admin and moderation rooms for real-time updates
-    this.wsService.joinRoom('admin');
-    this.wsService.joinRoom('moderation');
   }
 
   ngOnDestroy(): void {
@@ -81,6 +75,16 @@ export class ModerationQueueComponent implements OnInit {
             ...rawData // Spread rawData last to capture root-level fields like priceRange if not in data wrapper
           };
 
+          // Extract readable submittedBy
+          let submittedBy = 'Community Contributor';
+          if (rawData.submittedBy) {
+            if (typeof rawData.submittedBy === 'object') {
+              submittedBy = rawData.submittedBy.name || rawData.submittedBy.email || submittedBy;
+            } else {
+              submittedBy = rawData.submittedBy;
+            }
+          }
+
           const item = {
             ...rawData,
             _id: rawData._id || rawData.id || notif.data.id || `temp-${Date.now()}`,
@@ -88,11 +92,9 @@ export class ModerationQueueComponent implements OnInit {
             data: dataObject,
             status: rawData.status || rawData.action || 'pending',
             flags: rawData.flags || [],
-            autoFlags: rawData.autoFlags || { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
+            autoFlags: typeof rawData.autoFlags === 'object' ? rawData.autoFlags : { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
             submittedAt: (rawData.submittedAt && !isNaN(Date.parse(rawData.submittedAt))) ? new Date(rawData.submittedAt) : new Date(),
-            submittedBy: typeof rawData.submittedBy === 'object' ?
-              (rawData.submittedBy.name || rawData.submittedBy.email) :
-              (rawData.submittedBy || notif.data.submittedBy || 'Community Contributor')
+            submittedBy: submittedBy
           } as ModerationItem;
 
           // Add to beginning of queue if not already there
@@ -155,7 +157,47 @@ export class ModerationQueueComponent implements OnInit {
     this.isLoading = true;
     this.adminService.getModerationQueue().subscribe({
       next: (items) => {
-        this.queue = items;
+        // Map items to handle nested objects safely
+        this.queue = items.map(rawData => {
+          // Heuristic for type if missing
+          let type = (rawData.type || rawData.itemType);
+          if (!type) {
+            if (rawData.fromStopId && rawData.toStopId || rawData.fromStop) type = 'route_segment';
+            else if (rawData.location && rawData.name) type = 'bus_stop';
+            else if (rawData.priceRange || rawData.pricePaid) type = 'pricing';
+            else type = 'protocol';
+          }
+          if (type === 'pricing_feedback') type = 'pricing';
+
+          // Ensure data object contains all relevant fields
+          const dataObject = {
+            ...(rawData.data || rawData.metadata || {}),
+            ...rawData
+          };
+
+          // Extract readable submittedBy
+          let submittedBy = 'Community Contributor';
+          if (rawData.submittedBy) {
+            if (typeof rawData.submittedBy === 'object') {
+              submittedBy = rawData.submittedBy.name || rawData.submittedBy.email || submittedBy;
+            } else {
+              submittedBy = rawData.submittedBy;
+            }
+          }
+
+          return {
+            ...rawData,
+            _id: rawData._id || rawData.id,
+            type: type,
+            data: dataObject,
+            status: rawData.status || rawData.action || 'pending',
+            flags: rawData.flags || [],
+            autoFlags: typeof rawData.autoFlags === 'object' ? rawData.autoFlags : { suspiciousActivity: false, duplicateSubmission: false, rapidUpvotes: false },
+            submittedAt: (rawData.submittedAt && !isNaN(Date.parse(rawData.submittedAt))) ? new Date(rawData.submittedAt) : new Date(),
+            submittedBy: submittedBy
+          } as ModerationItem;
+        });
+        
         this.applyFilter();
         this.isLoading = false;
       },
