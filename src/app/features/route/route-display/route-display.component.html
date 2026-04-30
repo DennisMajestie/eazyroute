@@ -74,7 +74,7 @@
         </div>
         <div class="summary-divider" *ngIf="getDynamicBadge(route)"></div>
         <div class="summary-item night-safe-badge" *ngIf="getDynamicBadge(route) as badge" [class]="badge.type">
-            <span class="summary-icon"><i class="fas" [ngClass]="{'fa-shield-alt': badge.type === 'security', 'fa-bolt': badge.type === 'fare'}"></i></span>
+            <span class="summary-icon"><i class="fas" [ngClass]="{'fa-shield-alt': badge.type === 'security', 'fa-bolt': badge.type === 'fare', 'fa-check-circle': badge.type === 'verified'}"></i></span>
             <span class="summary-value">{{ badge.label }}</span>
         </div>
     </div>
@@ -165,11 +165,11 @@
                 <div class="dynamic-badge" *ngIf="getDynamicBadge(recommendedRoute) as badge"
                     [class]="badge.type">
                     <span class="badge-icon">
-                        <i class="fas" [ngClass]="{
                             'fa-bolt': badge.type === 'fare',
                             'fa-clock': badge.type === 'wait',
                             'fa-exclamation-triangle': badge.type === 'risk',
-                            'fa-traffic-light': badge.type === 'traffic'
+                            'fa-traffic-light': badge.type === 'traffic',
+                            'fa-check-circle': badge.type === 'verified'
                         }"></i>
                     </span>
                     {{ badge.label }}

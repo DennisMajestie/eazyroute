@@ -19,15 +19,29 @@
   }
 }
 
-.badge {
+.badge-row {
   position: absolute;
-  top: -8px;
+  top: -10px;
   left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 15;
+
+  app-verification-badge {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transform: translateY(2px); // Slight adjustment to align with classification badge
+  }
+}
+
+.badge {
   padding: 4px 12px;
   font-size: 12px;
   font-weight: 600;
   border-radius: 20px;
   color: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  white-space: nowrap;
 
   &.fastest {
     background: linear-gradient(135deg, #3B82F6, #60A5FA);
@@ -39,6 +53,10 @@
 
   &.balanced {
     background: linear-gradient(135deg, #8B5CF6, #A78BFA);
+  }
+
+  &.safe {
+    background: linear-gradient(135deg, #10B981, #34D399);
   }
 }
 

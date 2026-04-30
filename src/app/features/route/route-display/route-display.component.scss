@@ -488,6 +488,12 @@
       border-color: #fecaca;
       .summary-value, .summary-icon { color: #991b1b !important; }
     }
+
+    &.verified {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border-color: #86efac;
+      .summary-value, .summary-icon { color: #166534 !important; }
+    }
   }
 }
 
@@ -936,6 +942,13 @@
     background: rgba(79, 70, 229, 0.15);
     color: #4f46e5; // Indigo
     border: 1px solid rgba(79, 70, 229, 0.3);
+  }
+
+  &.verified {
+    background: rgba(22, 163, 74, 0.15);
+    color: #166534; // Deep Green
+    border: 1px solid rgba(22, 163, 74, 0.4);
+    box-shadow: 0 4px 10px rgba(22, 163, 74, 0.1);
   }
 
   &.mini {

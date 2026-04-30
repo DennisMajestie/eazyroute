@@ -330,12 +330,10 @@ export class RouteDisplayComponent implements OnInit {
                                 };
                                 // Mock a village segment
                                 if (r.segments.length > 0) {
-                                    r.segments[0].pricingMetadata = { 
-                                        isSurge: false, 
-                                        villageSurcharge: 300 
-                                    };
                                     (r.segments[0] as any).isVillageExit = true;
+                                    r.segments[0].isVerified = true;
                                 }
+                                r.isVerified = true;
                             }
 
                             r.instructions = (r.instructions || [])
@@ -404,6 +402,7 @@ export class RouteDisplayComponent implements OnInit {
                             surgeAmount: 450,
                             fuelBaseLabel: 'April 2026 Fuel Hike'
                         },
+                        isVerified: true,
                         metadata: { strategy: 'RECOMENDED', alternativeRoutes: false, ribExitApplied: true, ribExitFee: 300 }
                     };
                     
@@ -548,8 +547,13 @@ export class RouteDisplayComponent implements OnInit {
     /**
      * Get dynamic badge for route (Night-Safe, Peak Hour, etc)
      */
-    getDynamicBadge(route: AlongRoute | undefined): { label: string, type: 'fare' | 'wait' | 'risk' | 'traffic' | 'security' } | null {
+    getDynamicBadge(route: AlongRoute | undefined): { label: string, type: 'fare' | 'wait' | 'risk' | 'traffic' | 'security' | 'verified' } | null {
         if (!route) return null;
+
+        // 0. Check Verification (Ground Truth Priority)
+        if (route.isVerified) {
+            return { label: 'Verified Pricing', type: 'verified' };
+        }
 
         // 1. Check Night-Safe (Harness Priority)
         const hr = new Date().getHours();

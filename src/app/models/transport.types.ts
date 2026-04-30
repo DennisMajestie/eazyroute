@@ -35,6 +35,8 @@ export interface IPricingMetadata {
     villageSurcharge?: number;
     baseFare?: number;
     surgeAmount?: number;
+    isVerified?: boolean;
+    segmentId?: string;
 }
 
 export interface IBusStop {
@@ -106,6 +108,7 @@ export interface AlongSegment {
     isTerminalNode?: boolean;
     dynamicAdjustment?: IDynamicAdjustment;
     pricingMetadata?: IPricingMetadata;
+    isVerified?: boolean;
 }
 
 

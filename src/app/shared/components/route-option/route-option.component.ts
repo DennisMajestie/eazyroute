@@ -4,6 +4,7 @@ import { StressMeterComponent } from '../stress-meter/stress-meter.component';
 import { NairaPipe } from '../../pipes/naira.pipe';
 import { DurationPipe } from '../../pipes/duration.pipe';
 import { TRANSPORT_ICONS } from '../../constants/transport-icons';
+import { VerificationBadgeComponent } from '../verification-badge/verification-badge.component';
 
 /**
  * Route leg interface
@@ -18,6 +19,7 @@ export interface RouteLeg {
     distance: number;
     cost: number;
     instruction: string;
+    isVerified?: boolean;
     intermediateStops?: { id: string; name: string }[];
     safetyData?: {
         riskLevel: 'safe' | 'caution' | 'high_risk';
@@ -44,6 +46,7 @@ export interface RouteResult {
         strategy: string;
     };
     warnings: string[];
+    isVerified?: boolean;
 }
 
 /**
@@ -53,7 +56,7 @@ export interface RouteResult {
 @Component({
     selector: 'app-route-option',
     standalone: true,
-    imports: [CommonModule, StressMeterComponent, NairaPipe, DurationPipe],
+    imports: [CommonModule, StressMeterComponent, NairaPipe, DurationPipe, VerificationBadgeComponent],
     templateUrl: './route-option.component.html',
     styleUrl: './route-option.component.scss'
 })

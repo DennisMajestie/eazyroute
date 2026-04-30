@@ -174,6 +174,7 @@ export class AlongService {
                 totalTime: route.totalDuration || route.totalTime || 0,
                 totalCost: route.totalCost || 0,
                 instructions: (route.instructions || []) as string[],
+                isVerified: !!route.isVerified,
                 metadata: { strategy: 'standard', alternativeRoutes: false, ...(route.metadata || {}) }
             }];
         }
@@ -187,6 +188,7 @@ export class AlongService {
                 totalTime: response.totalDuration || response.totalTime || 0,
                 totalCost: response.totalCost || 0,
                 instructions: (response.instructions || []) as string[],
+                isVerified: !!response.isVerified,
                 metadata: { strategy: 'standard', alternativeRoutes: false, ...(response.metadata || {}) }
             }];
         }
@@ -201,6 +203,7 @@ export class AlongService {
                     totalTime: 0,
                     totalCost: 0,
                     instructions: [] as string[],
+                    isVerified: !!(response[0] as any).isVerified,
                     metadata: { strategy: 'standard', alternativeRoutes: false }
                 }];
             } else {

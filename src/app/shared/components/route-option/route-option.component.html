@@ -1,7 +1,13 @@
 <div class="route-card" [class.selected]="selected" (click)="onSelect()">
-    <!-- Classification Badge -->
-    <div class="badge" [class]="getBadgeClass()">
-        {{ getBadgeLabel() }}
+    <!-- Badges Row -->
+    <div class="badge-row">
+        <div class="badge" [class]="getBadgeClass()">
+            {{ getBadgeLabel() }}
+        </div>
+        
+        @if (route.isVerified) {
+            <app-verification-badge status="verified"></app-verification-badge>
+        }
     </div>
 
     <!-- Commuter Guardian Risk Badge -->
