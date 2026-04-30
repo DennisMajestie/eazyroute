@@ -708,25 +708,37 @@ export class RouteDisplayComponent implements OnInit {
 
     /**
      * Format cost value safely (Handles single number or {min, max})
+     * Automatically converts single numbers to a realistic range to account for street negotiations.
      */
     formatCost(cost: any): string {
         if (cost === null || cost === undefined) return '0';
+
+        const formatNum = (num: number) => num.toLocaleString('en-NG');
 
         // Handle { min, max } object (Street Economics)
         if (typeof cost === 'object' && (cost.min !== undefined || cost.max !== undefined)) {
             const min = cost.min ?? 0;
             const max = cost.max ?? 0;
-            if (min === max) return min.toString();
-            return `${min} - ${max}`;
+            if (min === max) return formatNum(min);
+            return `${formatNum(min)} - ₦${formatNum(max)}`;
         }
 
-        if (typeof cost === 'number') return cost.toString();
-        if (typeof cost === 'string') return cost;
-
-        // Legacy object support
-        if (typeof cost === 'object') {
-            return (cost.amount || cost.value || cost.total || '0').toString();
+        let baseVal = 0;
+        if (typeof cost === 'number') {
+            baseVal = cost;
+        } else if (typeof cost === 'string') {
+            baseVal = parseFloat(cost.replace(/[^0-9.]/g, '')) || 0;
+        } else if (typeof cost === 'object') {
+            baseVal = parseFloat((cost.amount || cost.value || cost.total || '0').toString()) || 0;
         }
+
+        if (baseVal > 0) {
+            // Generate a realistic upper bound for the range (25% markup, rounded to nearest 50)
+            const maxVal = Math.ceil((baseVal * 1.25) / 50) * 50;
+            if (baseVal === maxVal) return formatNum(baseVal);
+            return `${formatNum(baseVal)} - ₦${formatNum(maxVal)}`;
+        }
+
         return '0';
     }
 
@@ -735,15 +747,7 @@ export class RouteDisplayComponent implements OnInit {
      */
     getCostDisplay(): string {
         if (!this.route) return '₦0';
-
-        const cost = this.route.totalCost;
-
-        if (typeof cost === 'object' && cost !== null) {
-            if (cost.min === cost.max) return `₦${cost.min}`;
-            return `₦${cost.min} - ₦${cost.max}`;
-        }
-
-        return `₦${this.formatCost(cost)}`;
+        return `₦${this.formatCost(this.route.totalCost)}`;
     }
 
     /**
