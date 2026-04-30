@@ -276,8 +276,8 @@
                                     <span class="mode-cost" *ngIf="segment.cost">₦{{ formatCost(segment.cost) }}</span>
                                 </div>
                                 <div class="mode-meta">
-                                    <span *ngIf="segment.distance">{{ segment.distance }}m</span>
-                                    <span *ngIf="segment.estimatedTime">• {{ segment.estimatedTime }} min</span>
+                                    <span *ngIf="segment.distance">{{ formatSegmentDistance(segment.distance) }}</span>
+                                    <span *ngIf="segment.estimatedTime">• {{ formatSegmentTime(segment.estimatedTime) }}</span>
                                     <span class="bridge-tag" *ngIf="segment.portalType === 'PEDESTRIAN_BRIDGE'">🌉 Pedestrian Bridge</span>
                                     <span class="bridge-tag flyover" *ngIf="segment.portalType === 'VEHICULAR_FLYOVER'">🚘 Flyover</span>
                                 </div>

@@ -718,13 +718,29 @@ export class RouteDisplayComponent implements OnInit {
         }
 
         if (baseVal > 0) {
-            // Generate a realistic upper bound for the range (25% markup, rounded to nearest 50)
-            const maxVal = Math.ceil((baseVal * 1.25) / 50) * 50;
+            // Generate a realistic upper bound for the range (20% markup, rounded to nearest 50)
+            const maxVal = Math.ceil((baseVal * 1.20) / 50) * 50;
             if (baseVal === maxVal) return formatNum(baseVal);
             return `${formatNum(baseVal)} - ₦${formatNum(maxVal)}`;
         }
 
         return '0';
+    }
+
+    formatSegmentDistance(distance: any): string {
+        if (!distance) return '';
+        const num = parseFloat(distance);
+        if (isNaN(num)) return '';
+        if (num > 100) return (num / 1000).toFixed(1) + 'km';
+        if (num > 0) return num.toFixed(1) + 'km';
+        return num + 'm';
+    }
+
+    formatSegmentTime(time: any): string {
+        if (!time) return '';
+        const num = parseFloat(time);
+        if (isNaN(num)) return '';
+        return Math.round(num) + ' min';
     }
 
     /**
