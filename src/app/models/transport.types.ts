@@ -145,6 +145,7 @@ export interface AlongRoute {
     };
     dynamicAdjustment?: IDynamicAdjustment;
     pricingMetadata?: IPricingMetadata;
+    isVerified?: boolean;
 }
 
 export interface Corridor {

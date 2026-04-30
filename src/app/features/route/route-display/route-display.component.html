@@ -165,6 +165,7 @@
                 <div class="dynamic-badge" *ngIf="getDynamicBadge(recommendedRoute) as badge"
                     [class]="badge.type">
                     <span class="badge-icon">
+                        <i class="fas" [ngClass]="{
                             'fa-bolt': badge.type === 'fare',
                             'fa-clock': badge.type === 'wait',
                             'fa-exclamation-triangle': badge.type === 'risk',

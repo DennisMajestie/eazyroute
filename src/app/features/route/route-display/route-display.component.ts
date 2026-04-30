@@ -319,22 +319,7 @@ export class RouteDisplayComponent implements OnInit {
                         this.routes.forEach((r, idx) => {
                             if (!r) return;
 
-                            // DEVELOPER MOCK: Inject pricing metadata for verification
-                            if (idx === 0) {
-                                r.pricingMetadata = {
-                                    isSurge: true,
-                                    surgeLabel: '🔥 Peak Hour Surge',
-                                    baseFare: 1200,
-                                    surgeAmount: 450,
-                                    fuelBaseLabel: 'April 2026 Fuel Hike'
-                                };
-                                // Mock a village segment
-                                if (r.segments.length > 0) {
-                                    (r.segments[0] as any).isVillageExit = true;
-                                    r.segments[0].isVerified = true;
-                                }
-                                r.isVerified = true;
-                            }
+
 
                             r.instructions = (r.instructions || [])
                                 .filter(i => !!i);
