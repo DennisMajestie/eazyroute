@@ -69,4 +69,24 @@ export class HarvestRegistryComponent implements OnInit {
     }
     return 'N/A';
   }
+
+  triggerHarvest(): void {
+    if (this.isLoading) return;
+    
+    this.isLoading = true;
+    this.toastService.info('Harvesting', 'Scanning Abuja for new landmarks. This may take a moment...');
+    
+    this.adminService.triggerLandmarkHarvest().subscribe({
+      next: (res: any) => {
+        this.toastService.success('Success', `Harvest complete! Found ${res.totalNew} new potential landmarks.`);
+        this.page = 1;
+        this.loadHarvestedStops();
+      },
+      error: (err: any) => {
+        console.error('Harvest error:', err);
+        this.toastService.error('Error', 'Failed to complete landmark harvest.');
+        this.isLoading = false;
+      }
+    });
+  }
 }

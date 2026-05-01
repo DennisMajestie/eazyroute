@@ -11,6 +11,7 @@ import { Subject, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
 import { AdminService } from '../../../core/services/admin.service';
 import { BusStopService } from '../../../core/services/bus-stop.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-admin-route-seeder',
@@ -23,6 +24,7 @@ export class AdminRouteSeederComponent implements OnInit {
   private fb = inject(FormBuilder);
   private adminService = inject(AdminService);
   private busStopService = inject(BusStopService);
+  private route = inject(ActivatedRoute);
 
   seederForm!: FormGroup;
   isSubmitting = false;
@@ -74,6 +76,22 @@ export class AdminRouteSeederComponent implements OnInit {
     }, { validators: this.rootPriceRangeValidator });
 
     this.setupAutocomplete();
+    this.checkQueryParams();
+  }
+
+  private checkQueryParams() {
+    this.route.queryParams.subscribe(params => {
+      if (params['from']) {
+        this.busStopService.getBusStopById(params['from']).subscribe({
+          next: (res: any) => {
+            if (res.success && res.data) {
+              this.selectFromStop(res.data);
+            }
+          },
+          error: (err: any) => console.error('Error loading stop from query param:', err)
+        });
+      }
+    });
   }
 
   get legs(): FormArray {

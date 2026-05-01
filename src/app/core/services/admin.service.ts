@@ -334,4 +334,14 @@ export class AdminService {
             }))
         );
     }
+
+    /**
+     * Trigger a new global landmark harvest from external Map APIs (OSM)
+     */
+    triggerLandmarkHarvest(): Observable<any> {
+        return this.http.post<{ success: boolean; message: string; totalNew: number }>(
+            `${this.apiUrl}/bus-stops/harvest`,
+            {}
+        );
+    }
 }

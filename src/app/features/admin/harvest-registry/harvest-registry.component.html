@@ -10,6 +10,12 @@
             <i class="fas fa-search"></i>
             <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search by name or category...">
         </div>
+        <div class="actions">
+            <button class="btn-harvest" (click)="triggerHarvest()" [disabled]="isLoading">
+                <i class="fas fa-satellite" [class.fa-spin]="isLoading"></i>
+                TRIGGER GLOBAL HARVEST
+            </button>
+        </div>
     </div>
 
     <div class="registry-card premium-glass">
