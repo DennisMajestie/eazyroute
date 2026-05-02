@@ -397,7 +397,8 @@ export class ModerationQueueComponent implements OnInit {
           this.toastService.info('Simulation Mode', 'Submission approval simulation successful.');
         } else {
           console.error('[Moderation] Approval failed:', err);
-          this.toastService.error('Process Error', 'Failed to approve the submission.');
+          const errMsg = err.error?.message || 'Failed to approve the submission.';
+          this.toastService.error('Process Error', errMsg);
         }
       }
     });

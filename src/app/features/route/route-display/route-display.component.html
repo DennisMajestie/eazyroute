@@ -121,7 +121,13 @@
 
     <!-- Enhanced Route Not Found Experience -->
     <div class="error-container" *ngIf="error && !isLoading">
-        <app-route-not-found-card 
+        <div class="db-error-card" *ngIf="error.includes('Database Error')">
+            <div class="error-icon">🛑</div>
+            <h3>Missing Route Data</h3>
+            <p>{{ error }}</p>
+            <button class="btn btn-primary mt-3" (click)="goBack()">Go Back</button>
+        </div>
+        <app-route-not-found-card *ngIf="!error.includes('Database Error')"
             [errorHubs]="errorHubs"
             [stats]="coverageStats"
             [fromName]="fromLocation?.name || 'Current Point'"
