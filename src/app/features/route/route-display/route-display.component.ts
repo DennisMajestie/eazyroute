@@ -358,7 +358,7 @@ export class RouteDisplayComponent implements OnInit {
                 error: (err) => {
                     console.error('[RouteDisplay] Subscription Failed:', err);
                     
-                    const errMsg = err.error?.message || err.message || '';
+                    const errMsg = err.error?.error || err.error?.message || err.message || '';
                     if (errMsg.includes('MISSING_DB_SEGMENT')) {
                         this.error = errMsg.replace('MISSING_DB_SEGMENT: ', '🚨 Database Error: ');
                         this.isLoading = false;
