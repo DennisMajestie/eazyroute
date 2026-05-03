@@ -101,6 +101,15 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
         this.routeLayers = [];
 
         this.mapService.loadLeaflet().then(L => {
+            // Properly unwrap ES module if needed
+            const L_Namespace = (window as any).L || (L && L.default ? L.default : L);
+            const _L = L_Namespace;
+            
+            if (!_L || typeof _L.polyline !== 'function') {
+                console.error('Critical: Leaflet polyline function not found.', _L);
+                return;
+            }
+
             this.polylines.forEach(p => {
                 if (!p.path || p.path.length < 2) return;
 
@@ -110,7 +119,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
 
                 // Add glowing effect to backbone
                 if (p.isBackbone) {
-                    const glowLayer = L.polyline(p.path, {
+                    const glowLayer = _L.polyline(p.path, {
                         color: '#8b5cf6',
                         weight: weight + 4,
                         opacity: 0.3
@@ -118,7 +127,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnChanges {
                     this.routeLayers.push(glowLayer);
                 }
 
-                const polyline = L.polyline(p.path, {
+                const polyline = _L.polyline(p.path, {
                     color: color,
                     weight: weight,
                     opacity: opacity,

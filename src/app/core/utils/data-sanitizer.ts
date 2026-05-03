@@ -35,7 +35,20 @@ export class DataSanitizer {
                 sanitized.id = data.id || `route-${Date.now()}`;
                 sanitized.generatedAt = data.generatedAt || new Date();
                 sanitized.segments = this.sanitize(data.segments || data.legs || [], 'segment');
-                sanitized.totalCost = this.normalizeNumber(data.totalCost || data.cost || 0);
+                sanitized.totalCost = data.totalCost || data.cost || 0;
+                const rawCost = data.totalCost || data.cost || 0;
+                if (typeof rawCost === 'object' && rawCost !== null && 'min' in rawCost) {
+                    sanitized.totalCost = rawCost;
+                    sanitized.cost = rawCost.min || 0;
+                    sanitized.minCost = rawCost.min || 0;
+                    sanitized.maxCost = rawCost.max || 0;
+                } else {
+                    const flatCost = this.normalizeNumber(rawCost);
+                    sanitized.totalCost = flatCost;
+                    sanitized.cost = flatCost;
+                    sanitized.minCost = flatCost;
+                    sanitized.maxCost = flatCost;
+                }
                 sanitized.totalTime = this.normalizeNumber(data.totalTime || data.totalDuration || data.time || 0);
                 sanitized.totalDistance = this.normalizeNumber(data.totalDistance || data.distance || 0);
                 sanitized.instructions = Array.isArray(data.instructions) ? data.instructions.filter((i: any) => !!i) : [];
@@ -52,7 +65,17 @@ export class DataSanitizer {
             }
 
             if (schemaIdentifier === 'segment') {
-                sanitized.cost = this.normalizeNumber(data.cost || 0);
+                const rawPrice = data.priceRange || (data.cost && typeof data.cost === 'object' ? data.cost : null);
+                if (rawPrice && typeof rawPrice === 'object' && 'min' in rawPrice) {
+                    sanitized.priceRange = { min: Number(rawPrice.min) || 0, max: Number(rawPrice.max) || 0 };
+                    sanitized.cost = sanitized.priceRange.min;
+                } else {
+                    sanitized.cost = this.normalizeNumber(data.cost || 0);
+                    sanitized.priceRange = sanitized.cost > 0
+                        ? { min: sanitized.cost, max: Math.round(sanitized.cost * 1.2) }
+                        : undefined;
+                }
+                sanitized.isVerified = data.isVerified || false;
                 sanitized.distance = this.normalizeNumber(data.distance || 0);
                 sanitized.estimatedTime = this.normalizeNumber(data.estimatedTime || data.duration || 0);
                 sanitized.instructions = data.instruction || data.instructions || '';
