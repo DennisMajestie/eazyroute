@@ -544,7 +544,10 @@ export class RouteDisplayComponent implements OnInit {
 
         // 0. Check Verification (Ground Truth Priority)
         if (route.isVerified) {
-            return { label: 'Verified Pricing', type: 'verified' };
+            return { 
+                label: route.pricingMetadata?.surgeLabel || 'Verified Pricing', 
+                type: 'verified' 
+            };
         }
 
         // 1. Check Night-Safe (Harness Priority)
@@ -726,6 +729,11 @@ export class RouteDisplayComponent implements OnInit {
 
         if (baseVal > 0) {
             // Generate a realistic upper bound for the range (20% markup, rounded to nearest 50)
+            // Skip this if the route is verified (Ground Truth)
+            if (this.route?.isVerified) {
+                return formatNum(baseVal);
+            }
+
             const maxVal = Math.ceil((baseVal * 1.20) / 50) * 50;
             if (baseVal === maxVal) return formatNum(baseVal);
             return `${formatNum(baseVal)} - ₦${formatNum(maxVal)}`;
