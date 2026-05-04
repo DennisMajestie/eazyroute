@@ -103,7 +103,7 @@ export class AuthService {
                 tap(response => {
                     if (response.success) {
                         this.router.navigate(['/auth/verify-otp'], {
-                            state: { email: data.email }
+                            queryParams: { email: data.email, fromRegistration: 'true' }
                         });
                     }
                 })
