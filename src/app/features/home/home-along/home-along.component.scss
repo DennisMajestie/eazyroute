@@ -206,7 +206,7 @@
 
 .name-place-btn {
   position: absolute;
-  right: 86px; // Adjust based on refine-btn and clear-btn
+  right: 86px;
   padding: 0 10px;
   height: 32px;
   background-color: #0ea5e9;
@@ -413,12 +413,12 @@
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: all var(--transition-base);
-}
 
-.popular-route-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-  background-color: rgba(var(--primary-rgb), 0.02);
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+    background-color: rgba(var(--primary-rgb), 0.02);
+  }
 }
 
 .route-emoji {
@@ -473,12 +473,12 @@
   border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-base);
-}
 
-.quick-action-btn:hover {
-  border-color: var(--primary);
-  background-color: rgba(var(--primary-rgb), 0.05);
-  transform: translateY(-2px);
+  &:hover {
+    border-color: var(--primary);
+    background-color: rgba(var(--primary-rgb), 0.05);
+    transform: translateY(-2px);
+  }
 }
 
 .action-icon {
@@ -512,225 +512,15 @@
 /* ==================== RESPONSIVE ==================== */
 
 @media (max-width: 768px) {
-  .app-title {
-    font-size: var(--text-3xl);
-  }
-  
-  .tagline {
-    font-size: var(--text-lg);
-  }
-  
-  .quick-actions {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .action-text {
-    font-size: var(--text-xs);
-  }
+  .app-title { font-size: var(--text-3xl); }
+  .tagline { font-size: var(--text-lg); }
+  .quick-actions { grid-template-columns: repeat(3, 1fr); }
+  .action-text { font-size: var(--text-xs); }
 }
 
 @media (max-width: 480px) {
-  .detect-btn {
-    font-size: var(--text-xs);
-    padding: var(--space-2) var(--space-3);
-  }
+  .detect-btn { font-size: var(--text-xs); padding: var(--space-2) var(--space-3); }
 }
-
-/* ==================== SMART BOARDING CARD ==================== */
-
-.smart-boarding-card {
-  background: linear-gradient(135deg, #1a4d2e 0%, #2f855a 100%);
-  color: white;
-  border-radius: var(--radius-lg);
-  padding: var(--space-4);
-  margin-bottom: var(--space-4);
-  box-shadow: 0 4px 15px rgba(47, 133, 90, 0.3);
-  cursor: pointer;
-  animation: slideDown 0.5s ease-out;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.boarding-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-}
-
-.boarding-icon {
-  font-size: 1.2rem;
-}
-
-.boarding-title {
-  font-weight: 600;
-  font-size: 0.9rem;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  opacity: 0.9;
-}
-
-.boarding-message {
-  font-size: 1.1rem;
-  font-weight: 600;
-  line-height: 1.4;
-  margin-bottom: var(--space-3);
-}
-
-.boarding-action {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.9rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(245, 245, 250, 0.8) 100%);
-  border-radius: var(--radius-xl);
-  overflow: hidden;
-  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  margin-bottom: var(--space-4);
-
-  &.expanded {
-.popular-routes-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-}
-
-.popular-route-card {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background-color: white;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  cursor: pointer;
-  transition: all var(--transition-base);
-}
-
-.popular-route-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-  background-color: rgba(var(--primary-rgb), 0.02);
-}
-
-.route-emoji {
-  font-size: var(--text-3xl);
-  flex-shrink: 0;
-}
-
-.route-details {
-  flex: 1;
-}
-
-.route-path {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-}
-
-.route-from,
-.route-to {
-  color: var(--text-primary);
-}
-
-.route-arrow {
-  color: var(--primary);
-  font-weight: var(--font-bold);
-}
-
-.route-action {
-  font-size: var(--text-3xl);
-  color: var(--text-tertiary);
-}
-
-/* ==================== QUICK ACTIONS ==================== */
-
-.quick-actions {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-3);
-  margin-bottom: var(--space-8);
-}
-
-.quick-action-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-4);
-  background-color: white;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all var(--transition-base);
-}
-
-.quick-action-btn:hover {
-  border-color: var(--primary);
-  background-color: rgba(var(--primary-rgb), 0.05);
-  transform: translateY(-2px);
-}
-
-.action-icon {
-  font-size: var(--text-3xl);
-}
-
-.action-text {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-}
-
-/* ==================== FOOTER INFO ==================== */
-
-.footer-info {
-  max-width: 600px;
-  margin: 0 auto;
-  padding: 0 var(--space-4);
-}
-
-.info-text {
-  background-color: rgba(var(--accent), 0.1);
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  border-left: 4px solid var(--accent);
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  line-height: var(--leading-relaxed);
-}
-
-/* ==================== RESPONSIVE ==================== */
-
-@media (max-width: 768px) {
-  .app-title {
-    font-size: var(--text-3xl);
-  }
-  
-  .tagline {
-    font-size: var(--text-lg);
-  }
-  
-  .quick-actions {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  
-  .action-text {
-    font-size: var(--text-xs);
-  }
-}
-
-@media (max-width: 480px) {
-  .detect-btn {
-    font-size: var(--text-xs);
-    padding: var(--space-2) var(--space-3);
-  }
-}
-
-/* ==================== SMART BOARDING CARD ==================== */
 
 /* ==================== SMART BOARDING CARD ==================== */
 
