@@ -113,7 +113,8 @@ export class HarvestRegistryComponent implements OnInit {
       error: (err) => {
         this.isEnriching = false;
         console.error('AI Enrichment Error:', err);
-        this.toastService.error('Error', 'Failed to enrich landmarks.');
+        const errorMsg = err.error?.message || err.error?.error || 'Failed to enrich landmarks.';
+        this.toastService.error('Error', errorMsg);
       }
     });
   }

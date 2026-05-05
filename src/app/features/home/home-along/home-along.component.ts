@@ -192,7 +192,8 @@ export class HomeAlongComponent implements OnInit {
       error: (err) => {
         console.error('AI Dispatch Error:', err);
         this.isAiProcessing = false;
-        this.aiInterpretation = err.error?.explanation || 'Gemini encountered an error processing your request.';
+        // Robust error extraction: checks explanation, message, then error string
+        this.aiInterpretation = err.error?.explanation || err.error?.message || err.error?.error || 'Gemini Intelligence is currently unavailable. Please try again.';
       }
     });
   }
