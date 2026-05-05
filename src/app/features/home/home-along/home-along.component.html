@@ -24,36 +24,42 @@
     <!-- Main Content -->
     <div class="main-content">
 
-        <!-- 🔮 AI Magic Dispatch (§STABILIZATION-V10) -->
-        <div class="ai-dispatch-card premium-glass mb-4" [class.expanded]="isAiDispatchOpen">
-            <div class="ai-header" (click)="toggleAiDispatch()">
+        <!-- 🔮 Quick Assistant (§STABILIZATION-V11) -->
+        <div class="ai-dispatch-card premium-glass mb-4" [class.expanded]="isAiAssistantOpen" [class.listening]="isListening">
+            <div class="ai-header" (click)="toggleAiAssistant()">
                 <div class="ai-title">
-                    <span class="ai-icon">✨</span>
+                    <span class="ai-icon" *ngIf="!isListening">✨</span>
+                    <span class="ai-icon listening-icon" *ngIf="isListening">🎙️</span>
                     <div class="ai-text">
-                        <span class="label">AI Intelligent Dispatch</span>
-                        <span class="sub">Tell Gemini where you're going...</span>
+                        <span class="label">Quick Route Assistant</span>
+                        <span class="sub">Tell EazyRoute "Where you dey go?"</span>
                     </div>
                 </div>
                 <div class="ai-toggle">
-                    <i class="fas" [class.fa-chevron-down]="!isAiDispatchOpen" [class.fa-chevron-up]="isAiDispatchOpen"></i>
+                    <i class="fas" [class.fa-chevron-down]="!isAiAssistantOpen" [class.fa-chevron-up]="isAiAssistantOpen"></i>
                 </div>
             </div>
 
-            <div class="ai-body" *ngIf="isAiDispatchOpen">
-                <textarea 
-                    class="ai-input" 
-                    [(ngModel)]="aiRequest" 
-                    placeholder="e.g. 'I'm at Berger and I want to go to Lokogoma' or 'Take me to Wuse from Area 1'"
-                    rows="2"
-                    [disabled]="isAiProcessing">
-                </textarea>
-                <div class="ai-actions">
-                    <button class="btn-ai-submit" (click)="submitAiDispatch()" [disabled]="!aiRequest || isAiProcessing">
-                        <span *ngIf="!isAiProcessing">🚀 Dispatch Me</span>
-                        <span *ngIf="isAiProcessing">🧠 Gemini is thinking...</span>
+            <div class="ai-body" *ngIf="isAiAssistantOpen">
+                <div class="ai-input-container">
+                    <textarea 
+                        class="ai-input" 
+                        [(ngModel)]="aiRequest" 
+                        placeholder="e.g. 'I'm at Berger and I want to go to Lokogoma'"
+                        rows="2"
+                        [disabled]="isAiProcessing || isListening">
+                    </textarea>
+                    <button class="voice-btn" (click)="startVoiceAssistant()" [class.active]="isListening" title="Voice Search">
+                        <i class="fas fa-microphone"></i>
                     </button>
                 </div>
-                <div class="ai-interpretation" *ngIf="aiInterpretation">
+                <div class="ai-actions">
+                    <button class="btn-ai-submit" (click)="submitAiAssistant()" [disabled]="!aiRequest || isAiProcessing || isListening">
+                        <span *ngIf="!isAiProcessing">🚀 Send Request</span>
+                        <span *ngIf="isAiProcessing">🧠 Thinking...</span>
+                    </button>
+                </div>
+                <div class="ai-interpretation" *ngIf="aiInterpretation" [class.error]="aiInterpretation.includes('⚠️') || aiInterpretation.includes('❌')">
                     <i class="fas fa-robot"></i> {{ aiInterpretation }}
                 </div>
             </div>

@@ -77,11 +77,12 @@ export class HomeAlongComponent implements OnInit {
   showSmartBoarding: boolean = false;
   isNightMode: boolean = false;
 
-  // AI Dispatch State
-  isAiDispatchOpen: boolean = false;
+  // Quick Assistant State
+  isAiAssistantOpen: boolean = false;
   aiRequest: string = '';
   isAiProcessing: boolean = false;
   aiInterpretation: string = '';
+  isListening: boolean = false;
 
   // Search debounce
   private searchSubject = new Subject<{ field: 'from' | 'to'; query: string }>();
@@ -155,13 +156,13 @@ export class HomeAlongComponent implements OnInit {
   }
 
   /**
-   * AI Intelligent Dispatch
+   * Quick Assistant (Voice/Text)
    */
-  toggleAiDispatch() {
-    this.isAiDispatchOpen = !this.isAiDispatchOpen;
+  toggleAiAssistant() {
+    this.isAiAssistantOpen = !this.isAiAssistantOpen;
   }
 
-  submitAiDispatch() {
+  submitAiAssistant() {
     if (!this.aiRequest.trim() || this.isAiProcessing) return;
 
     this.isAiProcessing = true;
@@ -190,7 +191,7 @@ export class HomeAlongComponent implements OnInit {
         }
       },
       error: (err) => {
-        console.error('AI Dispatch Error:', err);
+        console.error('Quick Assistant Error:', err);
         this.isAiProcessing = false;
 
         // A 422 means the AI understood the request but couldn't build a route.
@@ -202,10 +203,56 @@ export class HomeAlongComponent implements OnInit {
         } else if (err.status === 0) {
           this.aiInterpretation = '🔌 Cannot reach the server. Please check your connection.';
         } else {
-          this.aiInterpretation = backendMsg || 'Gemini Intelligence is currently unavailable. Please try again.';
+          this.aiInterpretation = backendMsg || 'Quick Assistant is currently unavailable. Please try again.';
         }
       }
     });
+  }
+
+  /**
+   * Voice Assistant: Web Speech API implementation
+   */
+  startVoiceAssistant() {
+    if (this.isListening) return;
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      this.aiInterpretation = "Voice search is not supported in this browser. Try Chrome or Safari.";
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-NG'; // Nigerian English context
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    this.isListening = true;
+    this.aiInterpretation = "🎤 Listening... Say where you are and where you're going.";
+
+    recognition.start();
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      this.aiRequest = transcript;
+      this.isListening = false;
+      this.aiInterpretation = `🎙️ I heard: "${transcript}"`;
+      
+      // Auto-submit after a brief pause
+      setTimeout(() => {
+        this.submitAiAssistant();
+      }, 1000);
+    };
+
+    recognition.onerror = (event: any) => {
+      this.isListening = false;
+      this.aiInterpretation = "❌ Sorry, I didn't catch that. Please try again.";
+      console.error('Speech recognition error', event.error);
+    };
+
+    recognition.onend = () => {
+      this.isListening = false;
+    };
   }
 
   /**
