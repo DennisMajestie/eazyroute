@@ -22,6 +22,7 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
   private destroy$ = new Subject<void>();
 
   map: any;
+  private L: any; // Store Leaflet instance locally
   analytics: SafetyAnalytics | null = null;
   incidents: SafetyIncident[] = [];
   isLoading = false;
@@ -84,12 +85,12 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   async initMap(): Promise<void> {
-    const L = await this.mapService.loadLeaflet();
-    if (!L) return;
+    this.L = await this.mapService.loadLeaflet();
+    if (!this.L) return;
 
     this.map = this.mapService.initMap('safety-map', { lat: 9.0765, lng: 7.3986 }, 12);
-    this.hotspotLayer = L.layerGroup().addTo(this.map);
-    this.incidentLayer = L.layerGroup().addTo(this.map);
+    this.hotspotLayer = this.L.layerGroup().addTo(this.map);
+    this.incidentLayer = this.L.layerGroup().addTo(this.map);
     
     // Add markers once data is loaded
     if (this.analytics) this.renderHotspots();
@@ -136,14 +137,12 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   async renderHotspots() {
-    if (!this.map || !this.hotspotLayer || !this.analytics) return;
-    const L = (window as any).L;
-    if (!L) return;
+    if (!this.map || !this.hotspotLayer || !this.analytics || !this.L) return;
 
     this.hotspotLayer.clearLayers();
 
     this.analytics.hotspots.forEach(spot => {
-      const circle = L.circle([spot.lat, spot.lng], {
+      const circle = this.L.circle([spot.lat, spot.lng], {
         radius: spot.radius,
         color: '#dc2626',
         fillColor: '#ef4444',
@@ -157,9 +156,7 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
   }
 
   async renderIncidents() {
-    if (!this.map || !this.incidentLayer) return;
-    const L = (window as any).L;
-    if (!L) return;
+    if (!this.map || !this.incidentLayer || !this.L) return;
 
     this.incidentLayer.clearLayers();
 
@@ -170,7 +167,7 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
     filtered.forEach(incident => {
       const color = this.getIncidentColor(incident.severity);
       
-      const marker = L.circleMarker([incident.location.lat, incident.location.lng], {
+      const marker = this.L.circleMarker([incident.location.lat, incident.location.lng], {
         radius: 8,
         fillColor: color,
         color: 'white',
