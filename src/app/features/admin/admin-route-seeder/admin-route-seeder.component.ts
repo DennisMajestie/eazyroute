@@ -32,6 +32,7 @@ export class AdminRouteSeederComponent implements OnInit {
   submitError = '';
   processedLegsCount = 0;
   totalSegmentsToSeed = 0;
+  showSuccessModal = false;
 
   // Autocomplete state
   fromSearch$ = new Subject<string>();
@@ -310,7 +311,11 @@ export class AdminRouteSeederComponent implements OnInit {
   private finishSubmission() {
     this.isSubmitting = false;
     this.submitSuccess = true;
+    this.showSuccessModal = true;
     
+    // Trigger global stats refresh
+    this.adminService.triggerRefresh();
+
     // Reset form
     this.resetForm();
     

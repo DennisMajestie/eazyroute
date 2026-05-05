@@ -90,6 +90,13 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     // Join admin and moderation rooms for real-time updates
     this.wsService.joinRoom('admin');
     this.wsService.joinRoom('moderation');
+
+    // Listen for manual refresh triggers (e.g. from Seeder)
+    this.adminService.refreshStats$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.loadAllData();
+      });
   }
 
   private initRealTimeListeners(): void {

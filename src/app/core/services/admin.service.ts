@@ -12,7 +12,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import {
@@ -35,8 +35,14 @@ import { CommunityReport } from '../../models/community.types';
 })
 export class AdminService {
     private apiUrl = `${environment.apiUrl}`;
+    private refreshStatsSubject = new Subject<void>();
+    public refreshStats$ = this.refreshStatsSubject.asObservable();
 
     constructor(private http: HttpClient) { }
+
+    triggerRefresh() {
+        this.refreshStatsSubject.next();
+    }
 
     // ═══════════════════════════════════════════════════════════════
     // SYSTEM DIAGNOSTICS & ANALYTICS

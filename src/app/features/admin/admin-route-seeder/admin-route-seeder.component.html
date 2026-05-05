@@ -224,4 +224,31 @@
             </button>
         </div>
     </form>
+
+    <!-- Success Modal -->
+    <div class="success-modal-overlay" *ngIf="showSuccessModal">
+        <div class="success-modal">
+            <div class="success-icon">
+                <i class="fas fa-check-double"></i>
+            </div>
+            <h3>Route Seeded Successfully!</h3>
+            <p>The graph has been updated. All admin statistics across the dashboard have been synchronized.</p>
+            
+            <div class="modal-stats" *ngIf="totalSegmentsToSeed > 0">
+                <div class="m-stat">
+                    <span class="m-val">{{ totalSegmentsToSeed }}</span>
+                    <span class="m-lab">Segments Injected</span>
+                </div>
+                <div class="m-stat">
+                    <span class="m-val">Verified</span>
+                    <span class="m-lab">Status</span>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" (click)="showSuccessModal = false">Seed Another</button>
+                <button class="btn btn-primary" routerLink="/admin/dashboard">Back to Dashboard</button>
+            </div>
+        </div>
+    </div>
 </div>
