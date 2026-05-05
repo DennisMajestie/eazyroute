@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
+import { AiService } from '../../../core/services/ai.service';
 
 @Component({
   selector: 'app-harvest-registry',
@@ -19,13 +20,15 @@ export class HarvestRegistryComponent implements OnInit {
   limit: number = 20;
   searchQuery: string = '';
   isLoading: boolean = false;
+  isEnriching: boolean = false;
   
   // Expose Math to the template to fix TS2339
   protected readonly Math = Math;
 
   constructor(
     private adminService: AdminService,
-    private toastService: ToastNotificationService
+    private toastService: ToastNotificationService,
+    private aiService: AiService
   ) {}
 
   ngOnInit(): void {
@@ -85,7 +88,32 @@ export class HarvestRegistryComponent implements OnInit {
       error: (err: any) => {
         console.error('Harvest error:', err);
         this.toastService.error('Error', 'Failed to complete landmark harvest.');
-        this.isLoading = false;
+      }
+    });
+  }
+
+  triggerAiEnrichment(): void {
+    if (this.isEnriching || this.harvestedStops.length === 0) return;
+
+    this.isEnriching = true;
+    this.toastService.info('AI Enrichment', 'Gemini is processing landmarks. Please wait...');
+
+    const ids = this.harvestedStops.map(s => s._id);
+
+    this.aiService.enrichLandmarks(ids).subscribe({
+      next: (res) => {
+        this.isEnriching = false;
+        if (res.success) {
+          this.toastService.success('AI Enrichment', `Processed ${res.processed} landmarks successfully.`);
+          this.loadHarvestedStops(); // Refresh the list
+        } else {
+          this.toastService.warning('AI Enrichment', 'Completed with issues or no updates were made.');
+        }
+      },
+      error: (err) => {
+        this.isEnriching = false;
+        console.error('AI Enrichment Error:', err);
+        this.toastService.error('Error', 'Failed to enrich landmarks.');
       }
     });
   }

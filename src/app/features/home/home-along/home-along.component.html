@@ -24,6 +24,41 @@
     <!-- Main Content -->
     <div class="main-content">
 
+        <!-- 🔮 AI Magic Dispatch (§STABILIZATION-V10) -->
+        <div class="ai-dispatch-card premium-glass mb-4" [class.expanded]="isAiDispatchOpen">
+            <div class="ai-header" (click)="toggleAiDispatch()">
+                <div class="ai-title">
+                    <span class="ai-icon">✨</span>
+                    <div class="ai-text">
+                        <span class="label">AI Intelligent Dispatch</span>
+                        <span class="sub">Tell Gemini where you're going...</span>
+                    </div>
+                </div>
+                <div class="ai-toggle">
+                    <i class="fas" [class.fa-chevron-down]="!isAiDispatchOpen" [class.fa-chevron-up]="isAiDispatchOpen"></i>
+                </div>
+            </div>
+
+            <div class="ai-body" *ngIf="isAiDispatchOpen">
+                <textarea 
+                    class="ai-input" 
+                    [(ngModel)]="aiRequest" 
+                    placeholder="e.g. 'I'm at Berger and I want to go to Lokogoma' or 'Take me to Wuse from Area 1'"
+                    rows="2"
+                    [disabled]="isAiProcessing">
+                </textarea>
+                <div class="ai-actions">
+                    <button class="btn-ai-submit" (click)="submitAiDispatch()" [disabled]="!aiRequest || isAiProcessing">
+                        <span *ngIf="!isAiProcessing">🚀 Dispatch Me</span>
+                        <span *ngIf="isAiProcessing">🧠 Gemini is thinking...</span>
+                    </button>
+                </div>
+                <div class="ai-interpretation" *ngIf="aiInterpretation">
+                    <i class="fas fa-robot"></i> {{ aiInterpretation }}
+                </div>
+            </div>
+        </div>
+
         <!-- Smart Boarding Card -->
         <div class="smart-boarding-card" *ngIf="showSmartBoarding" (click)="findRoute()">
             <div class="boarding-header">

@@ -10,8 +10,13 @@
             <i class="fas fa-search"></i>
             <input type="text" [(ngModel)]="searchQuery" (input)="onSearch()" placeholder="Search by name or category...">
         </div>
-        <div class="actions">
-            <button class="btn-harvest" (click)="triggerHarvest()" [disabled]="isLoading">
+        <div class="actions" style="display: flex; gap: 1rem;">
+            <button class="btn-ai-magic" (click)="triggerAiEnrichment()" [disabled]="isLoading || isEnriching || harvestedStops.length === 0">
+                <i class="fas fa-magic" [class.fa-spin]="isEnriching"></i>
+                <span *ngIf="!isEnriching">✨ AI MAGIC CLEANUP</span>
+                <span *ngIf="isEnriching">🧠 ENRICHING...</span>
+            </button>
+            <button class="btn-harvest" (click)="triggerHarvest()" [disabled]="isLoading || isEnriching">
                 <i class="fas fa-satellite" [class.fa-spin]="isLoading"></i>
                 TRIGGER GLOBAL HARVEST
             </button>

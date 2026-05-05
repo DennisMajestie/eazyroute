@@ -15,10 +15,12 @@ import { RefineLocationModalComponent, RefineLocationResult } from '../../../sha
 import { NamePlaceModalComponent } from '../../../shared/components/name-place-modal/name-place-modal.component';
 import { NIGERIAN_COPY } from '../../../shared/constants/nigerian-copy.constants';
 import { AlongService } from '../../../core/services/along.service';
+import { AiService } from '../../../core/services/ai.service';
 import { BoardingInference } from '../../../models/transport.types';
 import { Subscription, interval, Subject } from 'rxjs';
 import { switchMap, filter, firstValueFrom, debounceTime, distinctUntilChanged } from 'rxjs';
 import { GeolocationService } from '../../../core/services/geolocation.service';
+import { AiService } from '../../../core/services/ai.service';
 
 interface PopularRoute {
   from: string;
@@ -76,9 +78,21 @@ export class HomeAlongComponent implements OnInit {
   showSmartBoarding: boolean = false;
   isNightMode: boolean = false;
 
+  // AI Dispatch State
+  isAiDispatchOpen: boolean = false;
+  aiRequest: string = '';
+  isAiProcessing: boolean = false;
+  aiInterpretation: string = '';
+
   // Search debounce
   private searchSubject = new Subject<{ field: 'from' | 'to'; query: string }>();
   private searchSubscription: Subscription | null = null;
+
+  // AI Dispatch State
+  isAiDispatchOpen = false;
+  aiRequest = '';
+  isAiProcessing = false;
+  aiInterpretation = '';
 
   // Popular routes
   popularRoutes: PopularRoute[] = [
@@ -99,6 +113,7 @@ export class HomeAlongComponent implements OnInit {
     private localityService: LocalityService,
     public loadingState: LoadingStateService,
     private alongService: AlongService,
+    private aiService: AiService,
     private geolocationService: GeolocationService
   ) { }
 
@@ -143,6 +158,49 @@ export class HomeAlongComponent implements OnInit {
         this.activeField = null;
       }
     }
+  }
+
+  /**
+   * AI Intelligent Dispatch
+   */
+  toggleAiDispatch() {
+    this.isAiDispatchOpen = !this.isAiDispatchOpen;
+  }
+
+  submitAiDispatch() {
+    if (!this.aiRequest.trim() || this.isAiProcessing) return;
+
+    this.isAiProcessing = true;
+    this.aiInterpretation = '';
+
+    this.aiService.dispatch(this.aiRequest).subscribe({
+      next: (res) => {
+        this.isAiProcessing = false;
+        if (res.success && res.ai && res.ai.parsed) {
+          this.aiInterpretation = res.ai.interpretation;
+          
+          // Populate the fields
+          this.fromInput = res.ai.parsed.from;
+          this.toInput = res.ai.parsed.to;
+          
+          // Clear object locations so it falls back to text search
+          this.fromLocation = null;
+          this.toLocation = null;
+
+          // Trigger route finding
+          setTimeout(() => {
+            this.findRoute();
+          }, 1500); // Wait a bit so user can read interpretation
+        } else {
+          this.aiInterpretation = 'Could not understand the route. Try being more specific.';
+        }
+      },
+      error: (err) => {
+        console.error('AI Dispatch Error:', err);
+        this.isAiProcessing = false;
+        this.aiInterpretation = err.error?.explanation || 'Gemini encountered an error processing your request.';
+      }
+    });
   }
 
   /**
@@ -641,5 +699,41 @@ export class HomeAlongComponent implements OnInit {
         // Optimistically clear needsNaming if they successfully suggested a name
         this.fromLocation.needsNaming = false;
     }
+  }
+
+  // --- AI Dispatch Methods ---
+
+  toggleAiDispatch() {
+    this.isAiDispatchOpen = !this.isAiDispatchOpen;
+  }
+
+  submitAiDispatch() {
+    if (!this.aiRequest || !this.aiRequest.trim()) return;
+
+    this.isAiProcessing = true;
+    this.aiInterpretation = '';
+
+    this.aiService.dispatch(this.aiRequest).subscribe({
+      next: (res) => {
+        this.isAiProcessing = false;
+        if (res.success && res.ai?.parsed) {
+          this.aiInterpretation = res.ai.interpretation || `Parsed: From ${res.ai.parsed.from} to ${res.ai.parsed.to}`;
+          
+          this.fromInput = res.ai.parsed.from;
+          this.toInput = res.ai.parsed.to;
+          
+          // Trigger search logic
+          this.onSearchInput('from', this.fromInput);
+          setTimeout(() => this.onSearchInput('to', this.toInput), 300);
+        } else {
+          this.aiInterpretation = 'Could not understand the route. Please try being more specific.';
+        }
+      },
+      error: (err) => {
+        this.isAiProcessing = false;
+        this.aiInterpretation = 'Error contacting Gemini Intelligence. Please try again.';
+        console.error('AI Dispatch Error:', err);
+      }
+    });
   }
 }

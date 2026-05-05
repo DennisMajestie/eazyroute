@@ -9,6 +9,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 
 const API_URL = environment.apiUrl;
+const AI_URL = API_URL.replace('/v1', '/ai');
 
 @Injectable({
   providedIn: 'root'
@@ -156,6 +157,15 @@ export class AllUrlService {
       delete: API_URL + '/tag-along/', // append ID
       join: API_URL + '/tag-along/', // append ID + '/join'
       leave: API_URL + '/tag-along/', // append ID + '/leave'
+    },
+
+    // ==================== AI ENDPOINTS ====================
+    ai: {
+      dispatch: AI_URL + '/dispatch',
+      enrich: AI_URL + '/enrich',
+      chat: AI_URL + '/chat',
+      smartChat: AI_URL + '/smart',
+      routeAssist: AI_URL + '/route-assist',
     },
 
     // ==================== HEALTH CHECK ====================
