@@ -53,7 +53,8 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     { label: 'Active Routes', value: 0, icon: '🛣️', color: '#10B981', trend: 5 },
     { label: 'Avg Fare', value: 450, icon: '₦', color: '#F59E0B', trend: -2 },
     { label: 'Harvested Drafts', value: 0, icon: '📜', color: '#6366F1', trend: 0 },
-    { label: 'User Contributions', value: 0, icon: '🙌', color: '#8B5CF6', trend: 18 }
+    { label: 'Manual Seeds', value: 0, icon: '🌱', color: '#8B5CF6', trend: 0 },
+    { label: 'User Contributions', value: 0, icon: '🙌', color: '#F472B6', trend: 18 }
   ];
 
   // Quick Node Creation State
@@ -223,6 +224,9 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         
         const harvestCard = this.statCards.find(c => c.label === 'Harvested Drafts');
         if (harvestCard) harvestCard.value = data.pendingHarvestCount || 0;
+        
+        const manualCard = this.statCards.find(c => c.label === 'Manual Seeds');
+        if (manualCard) manualCard.value = (data.manualRouteSeedCount || 0) + (data.manualSegmentSeedCount || 0);
         
         this.isLoading = false;
       },
