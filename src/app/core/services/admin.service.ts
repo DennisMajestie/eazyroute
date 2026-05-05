@@ -138,6 +138,8 @@ export class AdminService {
                 semanticOrphanCount: 0,
                 semanticOrphans: [],
                 pendingHarvestCount: 0,
+                manualRouteSeedCount: 0,
+                manualSegmentSeedCount: 0,
                 health: 'moderate',
                 issues: [],
                 suggestions: []
