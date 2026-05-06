@@ -11,12 +11,13 @@ import { Subject, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
 import { AdminService } from '../../../core/services/admin.service';
 import { BusStopService } from '../../../core/services/bus-stop.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-admin-route-seeder',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './admin-route-seeder.component.html',
   styleUrls: ['./admin-route-seeder.component.scss']
 })
@@ -265,22 +266,28 @@ export class AdminRouteSeederComponent implements OnInit {
     
     // Segment 1 to N: From previous to current leg
     let currentFromId = val.fromStopId;
+    let currentFromName = this.selectedFromStopName;
     for (const leg of val.legs) {
       segments.push({
         fromStopId: currentFromId,
+        fromName: currentFromName,
         toStopId: leg.stopId,
+        toName: leg.stopName,
         transportMode: leg.transportMode,
         priceRange: { min: leg.minPrice, max: leg.maxPrice },
         isOneWay: leg.isOneWay ?? false,
         isAlternative: leg.isAlternative ?? false
       });
       currentFromId = leg.stopId;
+      currentFromName = leg.stopName;
     }
 
     // Final Segment: From last leg (or origin) to Destination
     segments.push({
       fromStopId: currentFromId,
+      fromName: currentFromName,
       toStopId: val.toStopId,
+      toName: this.selectedToStopName,
       transportMode: val.transportMode,
       priceRange: { min: val.minPrice, max: val.maxPrice },
       isOneWay: val.isOneWay ?? false,
@@ -310,7 +317,40 @@ export class AdminRouteSeederComponent implements OnInit {
         
         let message = 'Unknown error';
         if (err.status === 409) {
-          message = 'This segment already exists with the same mode.';
+          // 🛑 CONFLICT: Show SweetAlert2 Modal
+          Swal.fire({
+            title: 'Segment Already Exists',
+            text: `The segment ${current.fromName} -> ${current.toName} (${current.transportMode}) already exists. Would you like to replace it with this new data?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Replace it!',
+            cancelButtonText: 'No, Skip it',
+            confirmButtonColor: '#3b82f6',
+            background: '#ffffff',
+            customClass: {
+              popup: 'glass-modal'
+            }
+          }).then((result) => {
+            if (result.isConfirmed) {
+              // Retry with replace flag
+              const retrySegment = { ...current, replace: true };
+              this.adminService.seedRoute(retrySegment).subscribe({
+                next: () => {
+                  this.processedLegsCount++;
+                  this.seedSegmentsSequentially(segments);
+                },
+                error: (retryErr: any) => {
+                  this.isSubmitting = false;
+                  this.submitError = `Critical Error during replacement: ${retryErr.error?.message || retryErr.message}`;
+                }
+              });
+            } else {
+              // Skip and move to next leg
+              this.processedLegsCount++;
+              this.seedSegmentsSequentially(segments);
+            }
+          });
+          return; // Pause sequential execution until modal is answered
         } else if (err.status === 400) {
           message = err.error?.message || err.message || 'Validation failed. Check coordinates or prices.';
         } else if (err.status === 403) {
