@@ -358,10 +358,20 @@ export class AdminRouteSeederComponent implements OnInit {
         } else if (err.status === 0) {
           message = 'Cannot connect to server. Check your internet connection.';
         } else {
-          // If we have an error object with a message, use it
-          message = (err.error && typeof err.error === 'object' && err.error.message) 
-            ? err.error.message 
-            : (err.message || 'Seeding failed.');
+          // 🛡️ Deep Error Extraction: Handle strings, objects, and nested Mongoose errors
+          const errorBody = err.error;
+          if (typeof errorBody === 'string') {
+            message = errorBody;
+          } else if (errorBody && typeof errorBody === 'object') {
+            message = errorBody.message || errorBody.error || JSON.stringify(errorBody);
+            if (errorBody.errors && Array.isArray(errorBody.errors)) {
+              // Extract specific field errors if available
+              const details = errorBody.errors.map((e: any) => `${e.field}: ${e.message}`).join(', ');
+              message += ` (${details})`;
+            }
+          } else {
+            message = err.message || 'Seeding failed.';
+          }
         }
 
         this.submitError = `Failed at segment ${this.processedLegsCount + 1}: ${message}`;
