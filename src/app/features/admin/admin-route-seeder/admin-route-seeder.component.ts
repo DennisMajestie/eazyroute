@@ -312,13 +312,16 @@ export class AdminRouteSeederComponent implements OnInit {
         if (err.status === 409) {
           message = 'This segment already exists with the same mode.';
         } else if (err.status === 400) {
-          message = err.error?.message || 'Validation failed. Check coordinates or prices.';
+          message = err.error?.message || err.message || 'Validation failed. Check coordinates or prices.';
         } else if (err.status === 403) {
           message = 'Forbidden: Admin privileges required.';
         } else if (err.status === 0) {
           message = 'Cannot connect to server. Check your internet connection.';
         } else {
-          message = err.error?.message || err.message || 'Seeding failed.';
+          // If we have an error object with a message, use it
+          message = (err.error && typeof err.error === 'object' && err.error.message) 
+            ? err.error.message 
+            : (err.message || 'Seeding failed.');
         }
 
         this.submitError = `Failed at segment ${this.processedLegsCount + 1}: ${message}`;
