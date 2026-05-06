@@ -101,7 +101,12 @@
                             <label class="toggle-wrap">
                                 <input type="checkbox" formControlName="isOneWay">
                                 <span class="toggle-slider"></span>
-                                <span class="label-text">One-Way (this segment only)</span>
+                                <span class="label-text">One-Way</span>
+                            </label>
+                            <label class="toggle-wrap alt-toggle">
+                                <input type="checkbox" formControlName="isAlternative">
+                                <span class="toggle-slider"></span>
+                                <span class="label-text">Alternative Route</span>
                             </label>
                         </div>
                         <div class="error-msg" *ngIf="legs.at(i).errors?.['priceRangeInvalid'] && (legs.at(i).get('minPrice')?.touched || legs.at(i).get('maxPrice')?.touched)">
@@ -163,7 +168,12 @@
                         <label class="toggle-wrap">
                             <input type="checkbox" formControlName="isOneWay">
                             <span class="toggle-slider"></span>
-                            <span class="label-text">One-Way (this segment only)</span>
+                            <span class="label-text">One-Way</span>
+                        </label>
+                        <label class="toggle-wrap alt-toggle">
+                            <input type="checkbox" formControlName="isAlternative">
+                            <span class="toggle-slider"></span>
+                            <span class="label-text">Alternative Route</span>
                         </label>
                     </div>
                     <div class="error-msg" *ngIf="seederForm.errors?.['priceRangeInvalid'] && (seederForm.get('minPrice')?.touched || seederForm.get('maxPrice')?.touched)">

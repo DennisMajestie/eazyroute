@@ -73,7 +73,8 @@ export class AdminRouteSeederComponent implements OnInit {
       transportMode: ['keke', Validators.required],
       minPrice: [200, [Validators.required, Validators.min(0)]],
       maxPrice: [300, [Validators.required, Validators.min(0)]],
-      isOneWay: [false]
+      isOneWay: [false],
+      isAlternative: [false]
     }, { validators: this.rootPriceRangeValidator });
 
     this.setupAutocomplete();
@@ -106,7 +107,8 @@ export class AdminRouteSeederComponent implements OnInit {
       transportMode: ['keke', Validators.required],
       minPrice: [200, [Validators.required, Validators.min(0)]],
       maxPrice: [300, [Validators.required, Validators.min(0)]],
-      isOneWay: [false]
+      isOneWay: [false],
+      isAlternative: [false]
     }, { validators: this.legPriceRangeValidator });
     
     this.legs.push(legForm);
@@ -269,7 +271,8 @@ export class AdminRouteSeederComponent implements OnInit {
         toStopId: leg.stopId,
         transportMode: leg.transportMode,
         priceRange: { min: leg.minPrice, max: leg.maxPrice },
-        isOneWay: leg.isOneWay ?? false
+        isOneWay: leg.isOneWay ?? false,
+        isAlternative: leg.isAlternative ?? false
       });
       currentFromId = leg.stopId;
     }
@@ -280,7 +283,8 @@ export class AdminRouteSeederComponent implements OnInit {
       toStopId: val.toStopId,
       transportMode: val.transportMode,
       priceRange: { min: val.minPrice, max: val.maxPrice },
-      isOneWay: val.isOneWay ?? false
+      isOneWay: val.isOneWay ?? false,
+      isAlternative: val.isAlternative ?? false
     });
 
     this.totalSegmentsToSeed = segments.length;
@@ -344,7 +348,8 @@ export class AdminRouteSeederComponent implements OnInit {
       transportMode: 'keke',
       minPrice: 200,
       maxPrice: 300,
-      isOneWay: false
+      isOneWay: false,
+      isAlternative: false
     });
     this.legs.clear();
     this.legResults = [];
