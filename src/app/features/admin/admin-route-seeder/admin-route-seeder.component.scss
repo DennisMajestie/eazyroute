@@ -763,3 +763,72 @@
     from { opacity: 0; transform: scale(0.95); }
     to { opacity: 1; transform: scale(1); }
 }
+
+// 💎 Premium Glassmorphic Modal Styles
+::ng-deep .premium-glass-modal {
+    border-radius: 24px !important;
+    padding: 1.5rem !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+
+    .swal-title-refined {
+        font-family: 'Outfit', sans-serif !important;
+        font-weight: 800 !important;
+        color: #1e293b !important;
+        font-size: 1.5rem !important;
+        padding-top: 10px !important;
+    }
+
+    .swal-custom-content {
+        font-family: 'Inter', sans-serif;
+        color: #475569;
+        line-height: 1.6;
+        font-size: 1.05rem;
+
+        strong {
+            color: #4f46e5;
+            font-weight: 700;
+        }
+
+        .sub-text {
+            font-size: 0.9rem;
+            margin-top: 12px;
+            opacity: 0.8;
+            color: #64748b;
+        }
+    }
+
+    .swal-btn-main {
+        border-radius: 12px !important;
+        font-weight: 700 !important;
+        padding: 12px 24px !important;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2) !important;
+        transition: 0.3s !important;
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3) !important;
+        }
+    }
+
+    .swal-btn-alt {
+        border-radius: 12px !important;
+        font-weight: 600 !important;
+        padding: 12px 24px !important;
+        background: transparent !important;
+        color: #64748b !important;
+        border: 1px solid #e2e8f0 !important;
+        transition: 0.3s !important;
+
+        &:hover {
+            background: #f8fafc !important;
+            color: #1e293b !important;
+        }
+    }
+
+    .swal2-icon {
+        border-width: 3px !important;
+    }
+}

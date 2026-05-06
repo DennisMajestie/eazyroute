@@ -319,16 +319,34 @@ export class AdminRouteSeederComponent implements OnInit {
         if (err.status === 409) {
           // 🛑 CONFLICT: Show SweetAlert2 Modal
           Swal.fire({
-            title: 'Segment Already Exists',
-            text: `The segment ${current.fromName} -> ${current.toName} (${current.transportMode}) already exists. Would you like to replace it with this new data?`,
+            title: 'Conflict Detected',
+            html: `
+              <div class="swal-custom-content">
+                <p>The segment <strong>${current.fromName}</strong> ➔ <strong>${current.toName}</strong> (${current.transportMode}) is already in the registry.</p>
+                <p class="sub-text">Would you like to overwrite it with your new pricing and instructions?</p>
+              </div>
+            `,
             icon: 'warning',
+            iconColor: '#f59e0b',
             showCancelButton: true,
-            confirmButtonText: 'Yes, Replace it!',
-            cancelButtonText: 'No, Skip it',
-            confirmButtonColor: '#3b82f6',
-            background: '#ffffff',
+            confirmButtonText: 'Replace Segment',
+            cancelButtonText: 'Skip Leg',
+            reverseButtons: true,
+            confirmButtonColor: '#4f46e5',
+            cancelButtonColor: '#94a3b8',
+            background: 'rgba(255, 255, 255, 0.9)',
+            backdrop: `rgba(15, 23, 42, 0.4) blur(8px)`,
             customClass: {
-              popup: 'glass-modal'
+              popup: 'premium-glass-modal',
+              title: 'swal-title-refined',
+              confirmButton: 'swal-btn-main',
+              cancelButton: 'swal-btn-alt'
+            },
+            showClass: {
+              popup: 'animate__animated animate__fadeInUp animate__faster'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOutDown animate__faster'
             }
           }).then((result) => {
             if (result.isConfirmed) {
