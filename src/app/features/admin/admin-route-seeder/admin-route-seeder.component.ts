@@ -350,7 +350,6 @@ export class AdminRouteSeederComponent implements OnInit {
             }
           }).then((result) => {
             if (result.isConfirmed) {
-              // Retry with replace flag
               const retrySegment = { ...current, replace: true };
               this.adminService.seedRoute(retrySegment).subscribe({
                 next: () => {
@@ -359,37 +358,35 @@ export class AdminRouteSeederComponent implements OnInit {
                 },
                 error: (retryErr: any) => {
                   this.isSubmitting = false;
-                  this.submitError = `Critical Error during replacement: ${retryErr.error?.message || retryErr.message}`;
+                  this.submitError = `Critical Error: ${retryErr.error?.message || retryErr.message}`;
                 }
               });
             } else {
-              // Skip and move to next leg
               this.processedLegsCount++;
               this.seedSegmentsSequentially(segments);
             }
           });
-          return; // Pause sequential execution until modal is answered
-        } else if (err.status === 400) {
-          message = err.error?.message || err.message || 'Validation failed. Check coordinates or prices.';
-        } else if (err.status === 403) {
-          message = 'Forbidden: Admin privileges required.';
-        } else if (err.status === 0) {
-          message = 'Cannot connect to server. Check your internet connection.';
-        } else {
-          // 🛡️ Deep Error Extraction: Handle strings, objects, and nested Mongoose errors
-          const errorBody = err.error;
-          if (typeof errorBody === 'string') {
-            message = errorBody;
-          } else if (errorBody && typeof errorBody === 'object') {
-            message = errorBody.message || errorBody.error || JSON.stringify(errorBody);
-            if (errorBody.errors && Array.isArray(errorBody.errors)) {
-              // Extract specific field errors if available
-              const details = errorBody.errors.map((e: any) => `${e.field}: ${e.message}`).join(', ');
-              message += ` (${details})`;
-            }
-          } else {
-            message = err.message || 'Seeding failed.';
+          return; 
+        }
+
+        // 🛡️ Deep Error Extraction for all other status codes (400, 403, 500, etc.)
+        const errorBody = err.error;
+        if (typeof errorBody === 'string') {
+          message = errorBody;
+        } else if (errorBody && typeof errorBody === 'object') {
+          // Try to get message, then error, then stringify the whole thing as a last resort
+          message = errorBody.message || errorBody.error || errorBody.reason || JSON.stringify(errorBody);
+          
+          if (errorBody.errors && Array.isArray(errorBody.errors)) {
+            const details = errorBody.errors.map((e: any) => `${e.field}: ${e.message}`).join(', ');
+            message += ` (${details})`;
           }
+        } else if (err.status === 0) {
+          message = 'Cannot connect to server. Check your network.';
+        } else if (err.status === 403) {
+          message = 'Forbidden: Admin access required.';
+        } else {
+          message = err.message || 'Seeding failed.';
         }
 
         this.submitError = `Failed at segment ${this.processedLegsCount + 1}: ${message}`;
