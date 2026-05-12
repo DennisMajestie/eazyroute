@@ -603,12 +603,42 @@ export class RouteDisplayComponent implements OnInit {
     }
 
     /**
-     * Get descriptive bridge instruction
+     * Get descriptive bridge instruction (legacy portal type)
      */
     getBridgeInstruction(segment: AlongSegment): string {
         if (segment.portalType === 'PEDESTRIAN_BRIDGE') return 'Use Pedestrian Bridge to cross Expressway';
         if (segment.portalType === 'VEHICULAR_FLYOVER') return 'Flyover Section';
         return 'Bridge Crossing';
+    }
+
+    /**
+     * Extract the primary instruction text (before an absorbed bridge crossing note).
+     * The engine appends " — then <crossing note>" when a bridge connector is absorbed.
+     */
+    getPrimaryInstruction(segment: AlongSegment): string {
+        const raw = (segment as any).instructions || (segment as any).instruction || '';
+        const idx = raw.indexOf(' — then ');
+        return idx > -1 ? raw.substring(0, idx) : raw;
+    }
+
+    /**
+     * Extract the bridge crossing note from an absorbed bridge connector segment.
+     * Returns empty string when no crossing note is present.
+     */
+    getBridgeNote(segment: AlongSegment): string {
+        const raw = (segment as any).instructions || (segment as any).instruction || '';
+        const idx = raw.indexOf(' — then ');
+        return idx > -1 ? raw.substring(idx + 8) : '';
+    }
+
+    /**
+     * Detect if a segment's transfer stop is a mandatory hub (Lugbe Police Signboard).
+     * Used to show the hub-transfer badge in the timeline.
+     */
+    isMandatoryHub(segment: AlongSegment): boolean {
+        const toStop = (segment as any).toStop || (segment as any).to || '';
+        const name = this.getStopName(toStop).toLowerCase();
+        return name.includes('police signboard');
     }
 
     /**

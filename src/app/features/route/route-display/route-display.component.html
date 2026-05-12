@@ -313,7 +313,11 @@
                             <!-- Guidance Bubble -->
                             <div class="guidance-bubble">
                                 <span class="guidance-icon">📢</span>
-                                <p class="instruction">{{ segment.instructions || segment.instruction }}</p>
+                                <p class="instruction">{{ getPrimaryInstruction(segment) }}</p>
+                                <!-- Bridge crossing note (Dantata → Police Signboard absorbed connector) -->
+                                <div class="bridge-note" *ngIf="getBridgeNote(segment)">
+                                    🌉 {{ getBridgeNote(segment) }}
+                                </div>
                             </div>
 
                             <!-- Security Status -->
@@ -389,6 +393,10 @@
                         <div class="point-marker small"></div>
                         <div class="point-label" *ngIf="segment.toStop">
                             {{ getStopName(segment.toStop) }}
+                            <!-- Mandatory Hub Badge: Lugbe Police Signboard -->
+                            <span class="hub-transfer-badge" *ngIf="isMandatoryHub(segment)">
+                                🔑 Hub Transfer
+                            </span>
                             <div class="terminal-alert" *ngIf="isTerminalArrival(segment)">
                                 <span class="alert-icon">🏁</span>
                                 <span class="alert-text">Last Bus/Along Stop. Switch to Keke/Okada here.</span>
