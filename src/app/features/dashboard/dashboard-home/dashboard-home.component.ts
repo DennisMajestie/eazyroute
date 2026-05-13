@@ -31,6 +31,7 @@ import { BusStop } from '../../../models/bus-stop.model';
 import { NotificationCenterComponent } from '../../../shared/components/notification-center/notification-center.component';
 import { NotificationHttpService } from '../../../core/services/notification-http.service';
 import { AiService } from '../../../core/services/ai.service';
+import { DashboardService, DashboardHomeResponse } from '../../../core/services/dashboard.service';
 
 // Use shared BusStop model
 export interface DashboardBusStop {
@@ -236,7 +237,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
             return of(null);
           })
         )
-      );
+      ) as DashboardHomeResponse | null;
 
       if (response?.success && response.data) {
         const { userContext, activeTrip, nearbyStops, trendingRoutes } = response.data;
