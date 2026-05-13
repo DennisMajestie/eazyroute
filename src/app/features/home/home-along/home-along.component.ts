@@ -19,7 +19,7 @@ import { GeolocationService } from '../../../core/services/geolocation.service';
 import { Subscription, interval, Subject } from 'rxjs';
 import { switchMap, filter, firstValueFrom, debounceTime, distinctUntilChanged } from 'rxjs';
 import { BoardingInference } from '../../../models/transport.types';
-import { AiService } from '../../../core/services/ai.service';
+import { BoardingInference } from '../../../models/transport.types';
 
 interface PopularRoute {
   from: string;
@@ -77,12 +77,7 @@ export class HomeAlongComponent implements OnInit {
   showSmartBoarding: boolean = false;
   isNightMode: boolean = false;
 
-  // Quick Assistant State
-  isAiAssistantOpen: boolean = false;
-  aiRequest: string = '';
-  isAiProcessing: boolean = false;
-  aiInterpretation: string = '';
-  isListening: boolean = false;
+  isNightMode: boolean = false;
 
   // Search debounce
   private searchSubject = new Subject<{ field: 'from' | 'to'; query: string }>();
@@ -108,7 +103,6 @@ export class HomeAlongComponent implements OnInit {
     private localityService: LocalityService,
     public loadingState: LoadingStateService,
     private alongService: AlongService,
-    private aiService: AiService,
     private geolocationService: GeolocationService
   ) { }
 
@@ -153,106 +147,6 @@ export class HomeAlongComponent implements OnInit {
         this.activeField = null;
       }
     }
-  }
-
-  /**
-   * Quick Assistant (Voice/Text)
-   */
-  toggleAiAssistant() {
-    this.isAiAssistantOpen = !this.isAiAssistantOpen;
-  }
-
-  submitAiAssistant() {
-    if (!this.aiRequest.trim() || this.isAiProcessing) return;
-
-    this.isAiProcessing = true;
-    this.aiInterpretation = '';
-
-    this.aiService.dispatch(this.aiRequest).subscribe({
-      next: (res) => {
-        this.isAiProcessing = false;
-        if (res.success && res.ai && res.ai.parsed) {
-          this.aiInterpretation = res.ai.interpretation;
-          
-          // Populate the fields
-          this.fromInput = res.ai.parsed.from;
-          this.toInput = res.ai.parsed.to;
-          
-          // Clear object locations so it falls back to text search
-          this.fromLocation = null;
-          this.toLocation = null;
-
-          // Trigger route finding
-          setTimeout(() => {
-            this.findRoute();
-          }, 1500); // Wait a bit so user can read interpretation
-        } else {
-          this.aiInterpretation = 'Could not understand the route. Try being more specific.';
-        }
-      },
-      error: (err) => {
-        console.error('Quick Assistant Error:', err);
-        this.isAiProcessing = false;
-
-        // A 422 means the AI understood the request but couldn't build a route.
-        // Still show the backend's message rather than a generic one.
-        const backendMsg = err.error?.explanation || err.error?.message || err.error?.error;
-        
-        if (err.status === 422 && backendMsg) {
-          this.aiInterpretation = `⚠️ ${backendMsg}`;
-        } else if (err.status === 0) {
-          this.aiInterpretation = '🔌 Cannot reach the server. Please check your connection.';
-        } else {
-          this.aiInterpretation = backendMsg || 'Quick Assistant is currently unavailable. Please try again.';
-        }
-      }
-    });
-  }
-
-  /**
-   * Voice Assistant: Web Speech API implementation
-   */
-  startVoiceAssistant() {
-    if (this.isListening) return;
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    
-    if (!SpeechRecognition) {
-      this.aiInterpretation = "Voice search is not supported in this browser. Try Chrome or Safari.";
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'en-NG'; // Nigerian English context
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    this.isListening = true;
-    this.aiInterpretation = "🎤 Listening... Say where you are and where you're going.";
-
-    recognition.start();
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      this.aiRequest = transcript;
-      this.isListening = false;
-      this.aiInterpretation = `🎙️ I heard: "${transcript}"`;
-      
-      // Auto-submit after a brief pause
-      setTimeout(() => {
-        this.submitAiAssistant();
-      }, 1000);
-    };
-
-    recognition.onerror = (event: any) => {
-      this.isListening = false;
-      this.aiInterpretation = "❌ Sorry, I didn't catch that. Please try again.";
-      console.error('Speech recognition error', event.error);
-    };
-
-    recognition.onend = () => {
-      this.isListening = false;
-    };
   }
 
   /**

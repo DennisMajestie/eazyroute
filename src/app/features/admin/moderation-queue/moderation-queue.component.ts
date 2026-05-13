@@ -27,6 +27,7 @@ export class ModerationQueueComponent implements OnInit {
   queue: ModerationItem[] = [];
   filteredQueue: ModerationItem[] = [];
   activeTab: 'all' | 'bus_stop' | 'pricing' | 'safety' | 'route_segment' = 'all';
+  tabCounts: Record<string, number> = { all: 0, bus_stop: 0, pricing: 0, safety: 0 };
   isLoading = false;
   selectedItem: ModerationItem | null = null;
   selectedIds = new Set<string>();
@@ -59,7 +60,9 @@ export class ModerationQueueComponent implements OnInit {
           // Map backend format to frontend format
           const rawData: any = notif.data.data || notif.data; // Handle wrapper or direct object
           
-          // Heuristic for type if missing
+          // Normalize raw backend types → frontend tab names
+          // Backend can emit: 'bus_stop', 'pricing_feedback', 'pricing', 'community_fare',
+          //                   'route_segment', 'user_report', 'safety', 'intel'
           let type = (rawData.type || rawData.itemType);
           if (!type) {
             if (rawData.fromStopId && rawData.toStopId || rawData.fromStop) type = 'route_segment';
@@ -67,7 +70,10 @@ export class ModerationQueueComponent implements OnInit {
             else if (rawData.priceRange || rawData.pricePaid) type = 'pricing';
             else type = 'protocol';
           }
-          if (type === 'pricing_feedback') type = 'pricing';
+          // Canonicalize to frontend tab names
+          if (type === 'pricing_feedback' || type === 'community_fare') type = 'pricing';
+          if (type === 'user_report' || type === 'intel') type = 'safety';
+          if (type === 'route_segment') type = 'pricing';  // route segment corrections → pricing tab
 
           // Deep Unpacking Logic: Flatten payload and metadata into dataObject
           const rawPayload = rawData.payload || {};
@@ -171,7 +177,7 @@ export class ModerationQueueComponent implements OnInit {
       next: (items) => {
         // Map items to handle nested objects safely
         this.queue = items.map((rawData: any) => {
-          // Heuristic for type if missing
+          // Normalize raw backend types → frontend tab names
           let type = (rawData.type || rawData.itemType);
           if (!type) {
             if (rawData.fromStopId && rawData.toStopId || rawData.fromStop) type = 'route_segment';
@@ -179,7 +185,10 @@ export class ModerationQueueComponent implements OnInit {
             else if (rawData.priceRange || rawData.pricePaid) type = 'pricing';
             else type = 'protocol';
           }
-          if (type === 'pricing_feedback') type = 'pricing';
+          // Canonicalize to frontend tab names
+          if (type === 'pricing_feedback' || type === 'community_fare') type = 'pricing';
+          if (type === 'user_report' || type === 'intel') type = 'safety';
+          if (type === 'route_segment') type = 'pricing';  // corrections → pricing tab
 
           // Deep Unpacking Logic: Flatten payload and metadata into dataObject
           const rawPayload = rawData.payload || {};
@@ -295,6 +304,14 @@ export class ModerationQueueComponent implements OnInit {
     } else {
       this.filteredQueue = this.queue.filter(item => item.type === this.activeTab);
     }
+
+    // Recompute tab badge counts
+    this.tabCounts = {
+      all:      this.queue.length,
+      bus_stop: this.queue.filter(i => i.type === 'bus_stop').length,
+      pricing:  this.queue.filter(i => i.type === 'pricing').length,
+      safety:   this.queue.filter(i => i.type === 'safety').length
+    };
   }
 
   toggleSelection(id: string): void {

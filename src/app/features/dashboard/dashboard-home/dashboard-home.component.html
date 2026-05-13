@@ -47,47 +47,45 @@
 
         <app-notification-center [isOpen]="isNotificationCenterOpen" (close)="isNotificationCenterOpen = false" />
 
-        <!-- Search Bar -->
-        <div class="search-container">
-            <div class="search-box">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    class="search-icon">
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="m21 21-4.3-4.3" />
-                </svg>
-                <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput()" (keyup.enter)="onSearch()"
-                    placeholder="Search routes, bus stops, events..." class="search-input">
-                <button class="voice-btn" title="Voice search">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                        <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                        <line x1="12" x2="12" y1="19" y2="22" />
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Search Results Dropdown -->
-            @if (searchResults.length > 0) {
-            <div class="search-dropdown">
-                @for (result of searchResults; track result.id) {
-                <div class="search-result-item" (click)="selectResult(result)">
-                    <div class="result-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-                            <circle cx="12" cy="10" r="3" />
-                        </svg>
-                    </div>
-                    <div class="result-info">
-                        <div class="result-name">{{ result.name }}</div>
-                        <div class="result-location">{{ result.address || result.city }}</div>
+        <!-- 🔮 Quick Assistant (AI Route Finder) -->
+        <div class="ai-dispatch-card premium-glass mb-4" [class.expanded]="isAiAssistantOpen" [class.listening]="isListening">
+            <div class="ai-header" (click)="toggleAiAssistant()">
+                <div class="ai-title">
+                    <span class="ai-icon" *ngIf="!isListening">✨</span>
+                    <span class="ai-icon listening-icon" *ngIf="isListening">🎙️</span>
+                    <div class="ai-text">
+                        <span class="label">Quick Route Assistant</span>
+                        <span class="sub">Tell EazyRoute "Where you dey go?"</span>
                     </div>
                 </div>
-                }
+                <div class="ai-toggle">
+                    <i class="fas" [class.fa-chevron-down]="!isAiAssistantOpen" [class.fa-chevron-up]="isAiAssistantOpen"></i>
+                </div>
             </div>
-            }
+
+            <div class="ai-body" *ngIf="isAiAssistantOpen">
+                <div class="ai-input-container">
+                    <textarea 
+                        class="ai-input" 
+                        [(ngModel)]="aiRequest" 
+                        placeholder="e.g. 'I'm at Berger and I want to go to Lokogoma'"
+                        rows="2"
+                        [disabled]="isAiProcessing || isListening">
+                    </textarea>
+                    <button class="voice-btn" (click)="startVoiceAssistant()" [class.active]="isListening" title="Voice Search">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                </div>
+                <div class="ai-actions">
+                    <button class="btn-ai-submit" (click)="submitAiAssistant()" [disabled]="!aiRequest || isAiProcessing || isListening">
+                        <span *ngIf="!isAiProcessing">🚀 Send Request</span>
+                        <span *ngIf="isAiProcessing">🧠 Thinking...</span>
+                    </button>
+                </div>
+                <div class="ai-interpretation" *ngIf="aiInterpretation" [class.error]="aiInterpretation.includes('⚠️') || aiInterpretation.includes('❌')">
+                    <i class="fas fa-robot"></i> {{ aiInterpretation }}
+                </div>
+            </div>
         </div>
     </header>
 

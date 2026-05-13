@@ -4,12 +4,20 @@
     <div class="moderation-tabs">
         <button class="tab-btn" [class.active]="activeTab === 'all'" (click)="setTab('all')">
             All Submissions
-            <span class="count-badge">{{ queue.length }}</span>
+            <span class="count-badge">{{ tabCounts['all'] || queue.length }}</span>
         </button>
-        <button class="tab-btn" [class.active]="activeTab === 'bus_stop'" (click)="setTab('bus_stop')">Bus Stops</button>
-        <button class="tab-btn" [class.active]="activeTab === 'pricing'" (click)="setTab('pricing')">Pricing</button>
-        <button class="tab-btn" [class.active]="activeTab === 'safety'" (click)="setTab('safety')">Safety</button>
-        <button class="tab-btn" [class.active]="activeTab === 'route_segment'" (click)="setTab('route_segment')">Route Segments</button>
+        <button class="tab-btn" [class.active]="activeTab === 'bus_stop'" (click)="setTab('bus_stop')">
+            Bus Stops
+            <span class="count-badge" *ngIf="tabCounts['bus_stop'] > 0">{{ tabCounts['bus_stop'] }}</span>
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'pricing'" (click)="setTab('pricing')">
+            Pricing
+            <span class="count-badge" *ngIf="tabCounts['pricing'] > 0">{{ tabCounts['pricing'] }}</span>
+        </button>
+        <button class="tab-btn" [class.active]="activeTab === 'safety'" (click)="setTab('safety')">
+            Safety Intel
+            <span class="count-badge safety" *ngIf="tabCounts['safety'] > 0">{{ tabCounts['safety'] }}</span>
+        </button>
     </div>
 
     <!-- Bulk Actions Bar -->

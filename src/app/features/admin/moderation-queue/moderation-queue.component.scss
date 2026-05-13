@@ -54,6 +54,11 @@
             padding: 2px $space-sm;
             border-radius: $radius-full;
             font-size: 0.7rem;
+
+            &.safety {
+                background: rgba(239, 68, 68, 0.15);
+                color: #f87171;
+            }
         }
 
         &.active {

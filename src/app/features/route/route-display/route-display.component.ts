@@ -356,54 +356,54 @@ export class RouteDisplayComponent implements OnInit {
                     this.isLoading = false;
                 },
                 error: (err) => {
-                    console.error('[RouteDisplay] Subscription Failed:', err);
-                    
-                    const errMsg = err.error?.error || err.error?.message || err.message || '';
+                    this.isLoading = false;
+                    this.routes = [];
+                    this.recommendedRoute = null;
+
+                    const errMsg: string = err.error?.error || err.error?.message || err.message || '';
+
+                    // ── Category 1: Missing DB segment (data gap, not a network error) ──
                     if (errMsg.includes('MISSING_DB_SEGMENT')) {
-                        this.error = errMsg.replace('MISSING_DB_SEGMENT: ', '🚨 Database Error: ');
-                        this.isLoading = false;
+                        this.error = errMsg.replace('MISSING_DB_SEGMENT: ', '');
+                        this.toastService.error(
+                            'Route Data Gap',
+                            'A segment in this corridor is not yet in our database. Please report this route to help us improve.',
+                            8000
+                        );
                         return;
                     }
-                    
-                    // DEVELOER FALLBACK: If backend is down, provide a mock route for UI verification
-                    console.warn('[RouteDisplay] Backend unreachable. Injecting verification mock...');
-                    const mockRoute: AlongRoute = {
-                        from: this.fromLocation?.name || 'Sunnyvale',
-                        to: this.toLocation?.name || 'Berger',
-                        totalDistance: 14600,
-                        totalTime: 45,
-                        totalCost: 1950,
-                        instructions: ['Head north', 'Turn right at the junction', 'Arrive at Berger'],
-                        segments: [
+
+                    // ── Category 2: Network / CORS / server completely unreachable (status 0) ──
+                    if (err.status === 0) {
+                        this.error = 'NETWORK_ERROR';
+                        this.toastService.error(
+                            'Connection Problem',
+                            'Unable to reach the ALONG engine. Please check your internet connection and try again.',
+                            0, // persistent — won't auto-dismiss
                             {
-                                type: 'ride',
-                                instruction: 'Board a Bus to Berger',
-                                distance: 14000,
-                                estimatedTime: 35,
-                                cost: 1200,
-                                vehicleType: 'bus',
-                                fromStop: 'Sunnyvale Gate',
-                                toStop: 'Berger Roundabout',
-                                pricingMetadata: { isSurge: false, villageSurcharge: 300 }
+                                action: {
+                                    label: 'Retry',
+                                    callback: () => this.generateRoute()
+                                }
                             }
-                        ],
-                        pricingMetadata: {
-                            isSurge: true,
-                            surgeLabel: '🔥 Peak Hour Surge (Mock)',
-                            baseFare: 1200,
-                            surgeAmount: 450,
-                            fuelBaseLabel: 'April 2026 Fuel Hike'
-                        },
-                        isVerified: true,
-                        metadata: { strategy: 'RECOMENDED', alternativeRoutes: false, ribExitApplied: true, ribExitFee: 300 }
-                    };
-                    
-                    this.routes = [mockRoute];
-                    this.recommendedRoute = mockRoute;
-                    this.selectedRouteIndex = 0;
-                    this.updateMapData();
-                    this.isLoading = false;
-                    this.error = ''; // Clear error to show the mock
+                        );
+                        return;
+                    }
+
+                    // ── Category 3: Server-side error (4xx / 5xx with a message) ──
+                    const serverMsg = err.error?.message || err.error?.error || err.statusText || 'An unexpected error occurred.';
+                    this.error = serverMsg;
+                    this.toastService.error(
+                        `Server Error (${err.status || 'Unknown'})`,
+                        serverMsg,
+                        7000,
+                        {
+                            action: {
+                                label: 'Retry',
+                                callback: () => this.generateRoute()
+                            }
+                        }
+                    );
                 }
             });
 

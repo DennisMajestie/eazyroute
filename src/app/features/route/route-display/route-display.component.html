@@ -121,13 +121,37 @@
 
     <!-- Enhanced Route Not Found Experience -->
     <div class="error-container" *ngIf="error && !isLoading">
-        <div class="db-error-card" *ngIf="error.includes('Database Error')">
+
+        <!-- DB Segment Gap -->
+        <div class="db-error-card" *ngIf="error.includes('MISSING_DB_SEGMENT') || error.includes('Database Error')">
             <div class="error-icon">🛑</div>
             <h3>Missing Route Data</h3>
             <p>{{ error }}</p>
             <button class="btn btn-primary mt-3" (click)="goBack()">Go Back</button>
         </div>
-        <app-route-not-found-card *ngIf="!error.includes('Database Error')"
+
+        <!-- Network / Connectivity Error -->
+        <div class="network-error-card" *ngIf="error === 'NETWORK_ERROR'">
+            <div class="network-error-icon">
+                <i class="fas fa-wifi-slash"></i>
+            </div>
+            <h3 class="network-error-title">Unable to Connect</h3>
+            <p class="network-error-body">
+                The ALONG routing engine is unreachable right now. This could be a temporary network issue.
+            </p>
+            <div class="network-error-actions">
+                <button class="btn btn-primary" (click)="generateRoute()">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
+                <button class="btn btn-secondary" (click)="goBack()">
+                    <i class="fas fa-arrow-left"></i> Go Back
+                </button>
+            </div>
+        </div>
+
+        <!-- Route Not Found / Coverage -->
+        <app-route-not-found-card
+            *ngIf="error !== 'NETWORK_ERROR' && !error.includes('MISSING_DB_SEGMENT') && !error.includes('Database Error')"
             [errorHubs]="errorHubs"
             [stats]="coverageStats"
             [fromName]="fromLocation?.name || 'Current Point'"
@@ -135,6 +159,7 @@
             (addLocation)="handleAddLocation()"
             (selectHub)="handleSelectHub($event)">
         </app-route-not-found-card>
+
     </div>
 
     <!-- Route Content -->

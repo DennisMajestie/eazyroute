@@ -26,11 +26,11 @@ import { BusStopService } from '../../../core/services/bus-stop.service';
 import { RouteHttpService } from '../../../core/services/route-http.service';
 import { TagAlongService } from '../../../core/services/tag-along.service';
 import { EventService, EasyRouteEvent } from '../../../core/services/event.service';
-import { DashboardService } from '../../../core/services/dashboard.service';
 import { environment } from '../../../../environments/environment';
 import { BusStop } from '../../../models/bus-stop.model';
 import { NotificationCenterComponent } from '../../../shared/components/notification-center/notification-center.component';
 import { NotificationHttpService } from '../../../core/services/notification-http.service';
+import { AiService } from '../../../core/services/ai.service';
 
 // Use shared BusStop model
 export interface DashboardBusStop {
@@ -139,6 +139,13 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
   isNotificationCenterOpen: boolean = false;
   unreadCount$: Observable<number>;
 
+  // Quick Assistant State
+  isAiAssistantOpen: boolean = false;
+  aiRequest: string = '';
+  isAiProcessing: boolean = false;
+  aiInterpretation: string = '';
+  isListening: boolean = false;
+
   // Metadata for search
   isCityCenterFallback = false;
   searchSource: 'local_db' | 'external_map_cached' | 'major_hubs_fallback' | 'unknown' = 'unknown';
@@ -154,6 +161,7 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     private tagAlongService: TagAlongService,
     private eventService: EventService,
     private notificationService: NotificationHttpService,
+    private aiService: AiService,
     private dashboardService: DashboardService
   ) {
     this.orchestratorState$ = this.orchestrator.state$;
@@ -694,6 +702,102 @@ export class DashboardHomeComponent implements OnInit, OnDestroy {
     if (this.isNotificationCenterOpen) {
       this.notificationService.loadNotifications().subscribe();
     }
+  }
+
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * QUICK ASSISTANT (AI)
+   * ═══════════════════════════════════════════════════════════════
+   */
+
+  toggleAiAssistant() {
+    this.isAiAssistantOpen = !this.isAiAssistantOpen;
+  }
+
+  submitAiAssistant() {
+    if (!this.aiRequest.trim() || this.isAiProcessing) return;
+
+    this.isAiProcessing = true;
+    this.aiInterpretation = '';
+
+    this.aiService.dispatch(this.aiRequest).subscribe({
+      next: (res) => {
+        this.isAiProcessing = false;
+        if (res.success && res.ai && res.ai.parsed) {
+          this.aiInterpretation = res.ai.interpretation;
+          
+          // Trigger navigation with parsed data after a brief pause
+          setTimeout(() => {
+            const queryParams: any = {
+              fromName: res.ai.parsed.from,
+              toName: res.ai.parsed.to,
+              isHybridFrom: true,
+              isHybridTo: true
+            };
+            this.router.navigate(['/route-display'], { queryParams });
+          }, 1500);
+        } else {
+          this.aiInterpretation = 'Could not understand the route. Try being more specific.';
+        }
+      },
+      error: (err) => {
+        console.error('Quick Assistant Error:', err);
+        this.isAiProcessing = false;
+
+        const backendMsg = err.error?.explanation || err.error?.message || err.error?.error;
+        
+        if (err.status === 422 && backendMsg) {
+          this.aiInterpretation = `⚠️ ${backendMsg}`;
+        } else if (err.status === 0) {
+          this.aiInterpretation = '🔌 Cannot reach the server. Please check your connection.';
+        } else {
+          this.aiInterpretation = backendMsg || 'Quick Assistant is currently unavailable. Please try again.';
+        }
+      }
+    });
+  }
+
+  startVoiceAssistant() {
+    if (this.isListening) return;
+
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      this.aiInterpretation = "Voice search is not supported in this browser. Try Chrome or Safari.";
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-NG'; // Nigerian English context
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    this.isListening = true;
+    this.aiInterpretation = "🎤 Listening... Say where you are and where you're going.";
+
+    recognition.start();
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      this.aiRequest = transcript;
+      this.isListening = false;
+      this.aiInterpretation = `🎙️ I heard: "${transcript}"`;
+      
+      // Auto-submit after a brief pause
+      setTimeout(() => {
+        this.submitAiAssistant();
+      }, 1000);
+    };
+
+    recognition.onerror = (event: any) => {
+      this.isListening = false;
+      this.aiInterpretation = "❌ Sorry, I didn't catch that. Please try again.";
+      console.error('Speech recognition error', event.error);
+    };
+
+    recognition.onend = () => {
+      this.isListening = false;
+    };
   }
 
   onSearch(): void {
