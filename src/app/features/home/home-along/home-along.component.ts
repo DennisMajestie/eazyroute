@@ -19,7 +19,6 @@ import { GeolocationService } from '../../../core/services/geolocation.service';
 import { Subscription, interval, Subject } from 'rxjs';
 import { switchMap, filter, firstValueFrom, debounceTime, distinctUntilChanged } from 'rxjs';
 import { BoardingInference } from '../../../models/transport.types';
-import { BoardingInference } from '../../../models/transport.types';
 
 interface PopularRoute {
   from: string;
@@ -77,7 +76,6 @@ export class HomeAlongComponent implements OnInit {
   showSmartBoarding: boolean = false;
   isNightMode: boolean = false;
 
-  isNightMode: boolean = false;
 
   // Search debounce
   private searchSubject = new Subject<{ field: 'from' | 'to'; query: string }>();
