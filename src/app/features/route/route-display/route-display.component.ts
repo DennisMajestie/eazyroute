@@ -662,7 +662,16 @@ export class RouteDisplayComponent implements OnInit {
     getBridgeNote(segment: AlongSegment): string {
         const raw = (segment as any).instructions || (segment as any).instruction || '';
         const idx = raw.indexOf(' — then ');
-        return idx > -1 ? raw.substring(idx + 8) : '';
+        
+        // Priority 1: Explicit bridge note from absorbed connector
+        if (idx > -1) return raw.substring(idx + 8);
+        
+        // Priority 2: Segment-level bridge flag (used by ground truth links)
+        if ((segment as any).isBridge) {
+            return 'Crossing required. Check bridge top or pedestrian walkway.';
+        }
+        
+        return '';
     }
 
     /**
