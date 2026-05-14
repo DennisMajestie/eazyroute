@@ -436,12 +436,13 @@
                         <div class="point-label" *ngIf="segment.toStop">
                             {{ getStopName(segment.toStop) }}
                             <!-- Mandatory Hub Badge: Lugbe Police Signboard -->
-                            <span class="hub-transfer-badge" *ngIf="isMandatoryHub(segment)">
-                                🔑 Hub Transfer
-                            </span>
-                            <div class="terminal-alert" *ngIf="isTerminalArrival(segment)">
+                            <div class="verified-badge" *ngIf="segment.isVerified">
+                                <span class="badge-icon">💎</span>
+                                <span class="badge-text">Ground Truth</span>
+                            </div>
+                            <div class="terminal-alert" *ngIf="getTerminalAlert(segment) as alertMsg">
                                 <span class="alert-icon">🏁</span>
-                                <span class="alert-text">Last Bus/Along Stop. Switch to Keke/Okada here.</span>
+                                <span class="alert-text">{{ alertMsg }}</span>
                             </div>
                         </div>
                     </div>

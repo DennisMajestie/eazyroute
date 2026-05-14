@@ -625,8 +625,15 @@ export class RouteDisplayComponent implements OnInit {
     toggleBreakdown() {
         this.showBreakdown = !this.showBreakdown;
     }
-    isTerminalArrival(segment: AlongSegment): boolean {
-        return !!segment.isTerminalNode;
+    getTerminalAlert(segment: AlongSegment): string | null {
+        if (!segment.isTerminalNode) return null;
+        const mode = segment.mode?.toLowerCase() || '';
+        const isLastMile = mode === 'keke' || mode === 'okada' || mode === 'bike';
+        
+        if (isLastMile) {
+            return 'Terminal Hub. Switch to Bus/Along here for city/airport travel.';
+        }
+        return 'Last Bus/Along Stop. Switch to Keke/Okada here for village entry.';
     }
 
     /**
