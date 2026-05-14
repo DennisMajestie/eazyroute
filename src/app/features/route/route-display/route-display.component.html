@@ -183,79 +183,96 @@
             </div>
         </div>
 
-        <!-- 🌟 Hybrid Intelligence: Recommended Route Card -->
-        <div class="recommended-card" *ngIf="recommendedRoute" [class.selected]="selectedRouteIndex === 0"
+        <!-- 🌟 Dual Choice: Comparison Grid -->
+        <div class="comparison-container" *ngIf="choiceRoutes.length >= 2">
+            <h3 class="section-title">Pick Your Preferred Path</h3>
+            <div class="comparison-grid">
+                <div class="choice-card" *ngFor="let r of choiceRoutes; let i = index" 
+                    [class.selected]="selectedRouteIndex === i"
+                    [class.recommended]="i === 0"
+                    (click)="selectRoute(i)">
+                    
+                    <div class="card-header">
+                        <span class="badge-type" *ngIf="i === 0">🌟 RECOMMENDED</span>
+                        <span class="badge-type" *ngIf="i === 1">⚡ EXPRESS</span>
+                        
+                        <div class="dynamic-badge mini" *ngIf="getDynamicBadge(r) as badge" [class]="badge.type">
+                            {{ badge.label }}
+                        </div>
+                    </div>
+
+                    <div class="card-metrics">
+                        <div class="metric-time">
+                            <span class="value">{{ r.totalTime }}</span>
+                            <span class="unit">min</span>
+                        </div>
+                        <div class="metric-cost">
+                            <span class="currency">₦</span>
+                            <span class="value">{{ formatCost(r.totalCost) }}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-meta">
+                        <span>{{ (r.totalDistance / 1000).toFixed(1) }}km</span>
+                        <span class="dot">•</span>
+                        <span>{{ r.segments.length }} legs</span>
+                    </div>
+
+                    <div class="card-rationale" *ngIf="r.rationale">
+                        {{ r.rationale }}
+                    </div>
+
+                    <button class="btn-select-choice" [class.active]="selectedRouteIndex === i">
+                        {{ selectedRouteIndex === i ? 'Selected ✓' : 'Choose This' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 🌟 Single Recommended Card (Fallback) -->
+        <div class="recommended-card" *ngIf="choiceRoutes.length === 1" [class.selected]="selectedRouteIndex === 0"
             (click)="selectRoute(0)">
             <div class="card-header">
                 <span class="badge-recommended">🌟 Recommended</span>
-                <span class="badge-strategy" *ngIf="getStrategyBadge(recommendedRoute)">
-                    {{ getStrategyBadge(recommendedRoute) }}
+                <span class="badge-strategy" *ngIf="getStrategyBadge(choiceRoutes[0])">
+                    {{ getStrategyBadge(choiceRoutes[0]) }}
                 </span>
-
-                <!-- Dynamic Intelligence Badge -->
-                <div class="dynamic-badge" *ngIf="getDynamicBadge(recommendedRoute) as badge"
-                    [class]="badge.type">
-                    <span class="badge-icon">
-                        <i class="fas" [ngClass]="{
-                            'fa-bolt': badge.type === 'fare',
-                            'fa-clock': badge.type === 'wait',
-                            'fa-exclamation-triangle': badge.type === 'risk',
-                            'fa-traffic-light': badge.type === 'traffic',
-                            'fa-check-circle': badge.type === 'verified'
-                        }"></i>
-                    </span>
-                    {{ badge.label }}
-                </div>
             </div>
 
             <div class="card-body">
                 <div class="route-main-info">
                     <div class="info-time">
-                        <span class="value">{{ recommendedRoute.totalTime }}</span>
+                        <span class="value">{{ choiceRoutes[0].totalTime }}</span>
                         <span class="unit">min</span>
                     </div>
                     <div class="info-cost">
                         <span class="currency">₦</span>
-                        <span class="value">{{ formatCost(recommendedRoute.totalCost) }}</span>
+                        <span class="value">{{ formatCost(choiceRoutes[0].totalCost) }}</span>
                     </div>
                 </div>
-
                 <div class="route-meta-info">
-                    <span>{{ (route.totalDistance / 1000).toFixed(1) }}km</span>
+                    <span>{{ (choiceRoutes[0].totalDistance / 1000).toFixed(1) }}km</span>
                     <span class="separator">•</span>
-                    <span>{{ route.segments.length }} legs</span>
+                    <span>{{ choiceRoutes[0].segments.length }} legs</span>
                 </div>
             </div>
-
-            <div class="card-rationale" *ngIf="recommendedRoute.rationale">
-                💡 {{ recommendedRoute.rationale }}
+            <div class="card-rationale" *ngIf="choiceRoutes[0].rationale">
+                💡 {{ choiceRoutes[0].rationale }}
             </div>
         </div>
 
-        <!-- 🔄 Alternatives Toggle -->
-        <div class="alternatives-section" *ngIf="alternativeRoutes.length > 0">
-            <h3 class="section-title">Alternative Options</h3>
-
+        <!-- 🔄 Remaining Alternatives -->
+        <div class="alternatives-section" *ngIf="remainingAlternatives.length > 0">
+            <h3 class="section-title">Other Alternatives</h3>
             <div class="alternatives-list">
-                <div class="alternative-card" *ngFor="let r of alternativeRoutes; let i = index"
-                    [class.selected]="selectedRouteIndex === (i + 1)" (click)="selectRoute(i + 1)">
-
+                <div class="alternative-card" *ngFor="let r of remainingAlternatives; let i = index"
+                    [class.selected]="selectedRouteIndex === (i + 2)" (click)="selectRoute(i + 2)">
                     <div class="alt-header">
                         <span class="alt-strategy">{{ r.classification || 'Alternative' }}</span>
-                        <!-- Dynamic Badge for Alt -->
-                        <div class="dynamic-badge mini" *ngIf="getDynamicBadge(r) as badge"
-                            [class]="badge.type">
-                            {{ badge.label }}
-                        </div>
                     </div>
-
                     <div class="alt-body">
                         <div class="alt-time">{{ r.totalTime }} min</div>
                         <div class="alt-cost">₦{{ formatCost(r.totalCost) }}</div>
-                    </div>
-
-                    <div class="alt-diff" *ngIf="getRouteDiff(r)">
-                        {{ getRouteDiff(r) }}
                     </div>
                 </div>
             </div>

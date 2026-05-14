@@ -31,6 +31,8 @@ export class RouteDisplayComponent implements OnInit {
 
     selectedRouteIndex: number = 0;
     showAlternatives: boolean = false;
+    choiceRoutes: AlongRoute[] = []; // Top 2 candidates for comparison
+    remainingAlternatives: AlongRoute[] = []; // The rest
 
     // UI state
     isLoading = false;
@@ -146,37 +148,58 @@ export class RouteDisplayComponent implements OnInit {
         }
 
         // Polylines
-        if (!currentRoute) {
+        if (!this.routes || this.routes.length === 0) {
             this.mapPolylines = [];
         } else {
             const lines: Array<{ path: any[]; color?: string; weight?: number; isBackbone?: boolean; isWalking?: boolean; portalType?: string }> = [];
 
-            currentRoute.segments.forEach(seg => {
-                if (seg.path?.coordinates && seg.path.coordinates.length >= 2) {
-                    const leafletPath = seg.path.coordinates.map(coord => [coord[1], coord[0]]);
-                    lines.push({
-                        path: leafletPath,
-                        color: this.getSegmentColor(seg).replace(/var\(--[^)]+\)/, '#0ea5e9'),
-                        weight: seg.backbonePriority ? 6 : 4,
-                        isBackbone: seg.backbonePriority,
-                        isWalking: this.getSegmentMode(seg).toLowerCase() === 'walking' || this.getSegmentMode(seg).toLowerCase() === 'walk',
-                        portalType: seg.portalType
-                    });
-                } else {
-                    const from = seg.fromStop as any;
-                    const to = seg.toStop as any;
-                    if (from?.latitude && from?.longitude && to?.latitude && to?.longitude) {
+            // Draw Alternative Choice Routes first (in gray)
+            this.choiceRoutes.forEach((r, idx) => {
+                if (idx === this.selectedRouteIndex) return; // Skip active one for now
+
+                r.segments.forEach(seg => {
+                    if (seg.path?.coordinates && seg.path.coordinates.length >= 2) {
+                        const leafletPath = seg.path.coordinates.map(coord => [coord[1], coord[0]]);
                         lines.push({
-                            path: [[from.latitude, from.longitude], [to.latitude, to.longitude]],
-                            color: '#0ea5e9',
+                            path: leafletPath,
+                            color: '#94a3b8', // Grayed out
+                            weight: 3,
+                            isBackbone: false,
+                            isWalking: false
+                        });
+                    }
+                });
+            });
+
+            // Draw Selected Route (Active)
+            if (currentRoute) {
+                currentRoute.segments.forEach(seg => {
+                    if (seg.path?.coordinates && seg.path.coordinates.length >= 2) {
+                        const leafletPath = seg.path.coordinates.map(coord => [coord[1], coord[0]]);
+                        lines.push({
+                            path: leafletPath,
+                            color: this.getSegmentColor(seg).replace(/var\(--[^)]+\)/, '#0ea5e9'),
                             weight: seg.backbonePriority ? 6 : 4,
                             isBackbone: seg.backbonePriority,
                             isWalking: this.getSegmentMode(seg).toLowerCase() === 'walking' || this.getSegmentMode(seg).toLowerCase() === 'walk',
                             portalType: seg.portalType
                         });
+                    } else {
+                        const from = seg.fromStop as any;
+                        const to = seg.toStop as any;
+                        if (from?.latitude && from?.longitude && to?.latitude && to?.longitude) {
+                            lines.push({
+                                path: [[from.latitude, from.longitude], [to.latitude, to.longitude]],
+                                color: '#0ea5e9',
+                                weight: seg.backbonePriority ? 6 : 4,
+                                isBackbone: seg.backbonePriority,
+                                isWalking: this.getSegmentMode(seg).toLowerCase() === 'walking' || this.getSegmentMode(seg).toLowerCase() === 'walk',
+                                portalType: seg.portalType
+                            });
+                        }
                     }
-                }
-            });
+                });
+            }
 
             this.mapPolylines = lines;
         }
@@ -335,10 +358,14 @@ export class RouteDisplayComponent implements OnInit {
 
                         // Hybrid Intelligence Separation
                         if (this.routes.length > 0) {
-                            // Ensure all routes have correct metric sums (Fix for 0.0km/Price mismatch bugs)
+                            // Ensure all routes have correct metric sums
                             this.routes.forEach(r => this.recalculateRouteMetrics(r));
                             
                             this.recommendedRoute = this.routes[0];
+                            
+                            // Setup choice routes (Top 2)
+                            this.choiceRoutes = this.routes.slice(0, 2);
+                            this.remainingAlternatives = this.routes.slice(2);
                             this.alternativeRoutes = this.routes.slice(1);
                         }
 
