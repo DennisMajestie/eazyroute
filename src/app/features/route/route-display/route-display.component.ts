@@ -627,7 +627,7 @@ export class RouteDisplayComponent implements OnInit {
     }
     getTerminalAlert(segment: AlongSegment): string | null {
         if (!segment.isTerminalNode) return null;
-        const mode = segment.mode?.toLowerCase() || '';
+        const mode = this.getSegmentMode(segment).toLowerCase();
         const isLastMile = mode === 'keke' || mode === 'okada' || mode === 'bike';
         
         if (isLastMile) {

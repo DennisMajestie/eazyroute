@@ -57,7 +57,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let item of filteredQueue" [class.flagged]="(item.flags?.length || 0) > 0" [class.selected]="selectedIds.has(item._id)">
+                    <tr *ngFor="let item of filteredQueue" [class.flagged]="(item.flags.length || 0) > 0" [class.selected]="selectedIds.has(item._id)">
                         <td class="checkbox-col">
                             <input type="checkbox" [checked]="selectedIds.has(item._id)" (change)="toggleSelection(item._id)">
                         </td>
@@ -110,7 +110,7 @@
                                 <span class="auto-flag" *ngIf="item.autoFlags?.suspiciousActivity" title="Suspicious Activity">
                                     <i class="fas fa-robot text-warning"></i>
                                 </span>
-                                <span *ngIf="(item.flags?.length || 0) === 0 && !item.autoFlags?.suspiciousActivity" class="no-flags">
+                                <span *ngIf="(item.flags.length || 0) === 0 && !item.autoFlags?.suspiciousActivity" class="no-flags">
                                     <i class="fas fa-check-circle me-1"></i> Clean
                                 </span>
                             </div>
@@ -133,7 +133,7 @@
                         </td>
                     </tr>
 
-                    <tr *ngIf="(filteredQueue?.length || 0) === 0 && !isLoading">
+                    <tr *ngIf="(filteredQueue.length || 0) === 0 && !isLoading">
                         <td colspan="7" class="empty-row">
                             <div class="empty-state">
                                 <i class="fas fa-folder-open empty-icon"></i>
