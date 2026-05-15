@@ -883,9 +883,31 @@ export class RouteDisplayComponent implements OnInit {
         this.isStartingJourney = true;
 
         try {
+            // ─── Resolve real coordinates from route segments for hybrid (name-only) locations ───
+            const firstSeg = this.route.segments[0];
+            const lastSeg = this.route.segments[this.route.segments.length - 1];
+
+            const resolvedOriginLat = (this.fromLocation.lat !== 0)
+                ? this.fromLocation.lat
+                : (firstSeg?.fromStop as any)?.latitude || 9.0765;
+            const resolvedOriginLng = (this.fromLocation.lng !== 0)
+                ? this.fromLocation.lng
+                : (firstSeg?.fromStop as any)?.longitude || 7.3986;
+
+            const resolvedDestLat = (this.toLocation.lat !== 0)
+                ? this.toLocation.lat
+                : (lastSeg?.toStop as any)?.latitude || 9.0765;
+            const resolvedDestLng = (this.toLocation.lng !== 0)
+                ? this.toLocation.lng
+                : (lastSeg?.toStop as any)?.longitude || 7.3986;
+
+            // ─── Only pass routeId if it is a valid 24-char MongoDB ObjectId ───
+            const rawId = (this.route as any)._id || (this.route as any).id || '';
+            const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(rawId);
+
             // Convert AlongRoute to GeneratedRoute format for orchestrator
-            const generatedRoute = {
-                id: (this.route as any).id || `route-${Date.now()}`,
+            const generatedRoute: any = {
+                ...(isValidObjectId ? { id: rawId } : {}),
                 segments: this.route.segments.map((seg, i) => {
                     const modeStr = this.getSegmentMode(seg);
                     return {
@@ -901,13 +923,13 @@ export class RouteDisplayComponent implements OnInit {
                         instructions: seg.instruction || seg.instructions || '',
                         fromStop: {
                             name: (seg.fromStop as any)?.name || 'Start',
-                            latitude: (seg.fromStop as any)?.latitude || this.fromLocation!.lat,
-                            longitude: (seg.fromStop as any)?.longitude || this.fromLocation!.lng
+                            latitude: (seg.fromStop as any)?.latitude || resolvedOriginLat,
+                            longitude: (seg.fromStop as any)?.longitude || resolvedOriginLng
                         },
                         toStop: {
                             name: (seg.toStop as any)?.name || 'End',
-                            latitude: (seg.toStop as any)?.latitude || this.toLocation!.lat,
-                            longitude: (seg.toStop as any)?.longitude || this.toLocation!.lng
+                            latitude: (seg.toStop as any)?.latitude || resolvedDestLat,
+                            longitude: (seg.toStop as any)?.longitude || resolvedDestLng
                         }
                     };
                 }),
@@ -919,11 +941,15 @@ export class RouteDisplayComponent implements OnInit {
                 strategy: 'balanced' as const
             };
 
+            console.log('[RouteDisplay] Creating trip with origin:', { latitude: resolvedOriginLat, longitude: resolvedOriginLng });
+            console.log('[RouteDisplay] Creating trip with dest:', { latitude: resolvedDestLat, longitude: resolvedDestLng });
+            console.log('[RouteDisplay] Route ID valid?', isValidObjectId, '| rawId:', rawId);
+
             // Create trip in orchestrator
             const tripId = await this.orchestrator.createTrip(
-                { latitude: this.fromLocation.lat, longitude: this.fromLocation.lng },
-                { latitude: this.toLocation.lat, longitude: this.toLocation.lng },
-                generatedRoute as any
+                { latitude: resolvedOriginLat, longitude: resolvedOriginLng },
+                { latitude: resolvedDestLat, longitude: resolvedDestLng },
+                generatedRoute
             );
 
             // Start the trip
