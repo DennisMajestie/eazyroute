@@ -38,7 +38,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                 const criticalAuthPaths = [
                     '/api/v1/auth/verify',
                     '/api/v1/auth/refresh',
-                    '/api/v1/auth/login',
                     '/api/v1/user/profile',
                     '/api/v1/users/profile',
                     '/api/v1/trips',
@@ -52,7 +51,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                 if (isAuthCritical) {
                     console.warn('[AuthInterceptor] Critical auth failure - logging out', req.url);
                     localStorage.removeItem(environment.storageKeys.token);
-                    router.navigate(['/login']);
+                    router.navigate(['/auth/login']);
                 } else {
                     console.log('[AuthInterceptor] 401 on optional endpoint (OK):', req.url);
                 }

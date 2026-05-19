@@ -65,6 +65,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     area: 'Abuja Central'
   };
   isCreatingNode = false;
+  isDetectingLocation = false;
 
   ngOnInit(): void {
     // Start automated 120s polling
@@ -286,6 +287,29 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
         this.isCreatingNode = false;
       }
     });
+  }
+
+  detectLocation(): void {
+    if (!navigator.geolocation) {
+      this.toastService.error('Geolocation Error', 'Geolocation is not supported by your browser.');
+      return;
+    }
+
+    this.isDetectingLocation = true;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.quickNode.latitude = Number(position.coords.latitude.toFixed(6));
+        this.quickNode.longitude = Number(position.coords.longitude.toFixed(6));
+        this.isDetectingLocation = false;
+        this.toastService.success('Location Detected', 'Your current GPS coordinates have been loaded.');
+      },
+      (error) => {
+        console.error('Error detecting location:', error);
+        this.isDetectingLocation = false;
+        this.toastService.error('GPS Detection Failed', error.message || 'Unable to retrieve location.');
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
   }
 
   copyToken(): void {

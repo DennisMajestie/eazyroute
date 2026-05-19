@@ -73,26 +73,48 @@ export class RegisterComponent {
         this.isCreating = false;
 
         if (response.success) {
-          this.successMessage = 'Registration successful! Redirecting to OTP verification...';
-          console.log('Registration successful', response.data);
+          const hasToken = response.token || response.data?.token || response.data?.accessToken;
+          if (hasToken) {
+            this.successMessage = 'Registration successful! Logging you in...';
+            console.log('Registration successful (Bypassed OTP)', response.data);
 
-          // Store that this is a new registration for the onboarding flow
-          sessionStorage.setItem('isNewRegistration', 'true');
+            // Store that this is a new registration for the onboarding flow
+            sessionStorage.setItem('isNewRegistration', 'true');
 
-          // Redirect to OTP verification page after 2 seconds
-          setTimeout(() => {
-            console.log('Navigating to verify-otp...');
-            this.router.navigate(['/auth/verify-otp'], {
-              queryParams: {
-                email: this.email,
-                fromRegistration: 'true' // Add this flag
+            // Redirect directly to dashboard or onboarding after 2 seconds
+            setTimeout(() => {
+              const user = response.user || response.data?.user;
+              const hasCompletedOnboarding = user?.onboardingComplete === true;
+              if (hasCompletedOnboarding) {
+                console.log('Navigating directly to dashboard...');
+                this.router.navigate(['/dashboard']);
+              } else {
+                console.log('Navigating directly to onboarding...');
+                this.router.navigate(['/onboarding']);
               }
-            }).then(success => {
-              console.log('Navigation success:', success);
-            }).catch(err => {
-              console.error('Navigation error:', err);
-            });
-          }, 2000);
+            }, 2000);
+          } else {
+            this.successMessage = 'Registration successful! Redirecting to OTP verification...';
+            console.log('Registration successful', response.data);
+
+            // Store that this is a new registration for the onboarding flow
+            sessionStorage.setItem('isNewRegistration', 'true');
+
+            // Redirect to OTP verification page after 2 seconds
+            setTimeout(() => {
+              console.log('Navigating to verify-otp...');
+              this.router.navigate(['/auth/verify-otp'], {
+                queryParams: {
+                  email: this.email,
+                  fromRegistration: 'true' // Add this flag
+                }
+              }).then(success => {
+                console.log('Navigation success:', success);
+              }).catch(err => {
+                console.error('Navigation error:', err);
+              });
+            }, 2000);
+          }
         } else {
           this.isCreating = false;
           this.errorMessage = response.message || 'Registration failed';

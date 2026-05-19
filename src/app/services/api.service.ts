@@ -7,7 +7,22 @@ import { AllUrlService } from './allUrl.service';
 export interface AuthResponse {
     success: boolean;
     message: string;
-    data: {
+    token?: string;
+    user?: {
+        id: string;
+        email: string;
+        firstName: string;
+        lastName: string;
+        phoneNumber?: string;
+        role: string;
+        status: string;
+        profilePicture?: string;
+        onboardingComplete?: boolean;
+    };
+    data?: {
+        token?: string;
+        accessToken?: string;
+        refreshToken?: string;
         user?: {
             id: string;
             email: string;
@@ -19,8 +34,6 @@ export interface AuthResponse {
             profilePicture?: string;
             onboardingComplete?: boolean;
         };
-        accessToken?: string;
-        refreshToken?: string;
         userId?: string;
     };
 }
@@ -286,9 +299,10 @@ export class ApiService {
     refreshToken(refreshToken: string): Observable<AuthResponse> {
         return this.postData(this.urls.allUrl.auth.refreshToken, { refreshToken }).pipe(
             tap((response: AuthResponse) => {
-                if (response.data.accessToken) {
-                    localStorage.setItem('accessToken', response.data.accessToken);
-                    this.accessTokenSubject.next(response.data.accessToken);
+                const accessToken = response.data?.accessToken;
+                if (accessToken) {
+                    localStorage.setItem('accessToken', accessToken);
+                    this.accessTokenSubject.next(accessToken);
                 }
             })
         );

@@ -102,9 +102,17 @@ export class AuthService {
             .pipe(
                 tap(response => {
                     if (response.success) {
-                        this.router.navigate(['/auth/verify-otp'], {
-                            queryParams: { email: data.email, fromRegistration: 'true' }
-                        });
+                        const token = response.token || response.data?.token || (response.data as any)?.accessToken;
+                        const user = response.user || response.data?.user;
+                        
+                        if (token && user) {
+                            console.log('[AuthService] Bypass OTP: immediately logging in registered user');
+                            this.handleAuth(response);
+                        } else {
+                            this.router.navigate(['/auth/verify-otp'], {
+                                queryParams: { email: data.email, fromRegistration: 'true' }
+                            });
+                        }
                     }
                 })
             );
