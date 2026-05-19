@@ -126,9 +126,13 @@ export class RegisterComponent {
 
         // Handle different error scenarios
         if (error.status === 409) {
-          this.errorMessage = 'Email already registered';
+          this.errorMessage = 'Email or phone number already registered.';
         } else if (error.status === 400) {
-          this.errorMessage = error.error?.message || 'Invalid input. Please check your data.';
+          if (error.error?.errors && Array.isArray(error.error.errors)) {
+            this.errorMessage = error.error.errors.join('. ');
+          } else {
+            this.errorMessage = error.error?.message || 'Invalid input. Please check your data.';
+          }
         } else if (error.status === 0) {
           this.errorMessage = 'Cannot connect to server. Please check your connection.';
         } else {
@@ -140,6 +144,22 @@ export class RegisterComponent {
     });
   }
 
+  hasMinLength(): boolean {
+    return this.password ? this.password.length >= 8 : false;
+  }
+
+  hasLowercase(): boolean {
+    return this.password ? /(?=.*[a-z])/.test(this.password) : false;
+  }
+
+  hasUppercase(): boolean {
+    return this.password ? /(?=.*[A-Z])/.test(this.password) : false;
+  }
+
+  hasNumber(): boolean {
+    return this.password ? /(?=.*\d)/.test(this.password) : false;
+  }
+
   isFormValid(): boolean {
     // Email validation
     const isValidEmail = this.isValidEmail(this.email);
@@ -147,8 +167,12 @@ export class RegisterComponent {
     // Phone validation (at least 10 digits)
     const isValidPhone = this.phone && this.phone.length >= 10;
 
-    // Password validation (at least 6 characters)
-    const isValidPassword = this.password && this.password.length >= 6;
+    // Password validation (aligned with backend: >= 8 chars, lowercase, uppercase, number)
+    const isValidPassword = this.password &&
+                          this.password.length >= 8 &&
+                          /(?=.*[a-z])/.test(this.password) &&
+                          /(?=.*[A-Z])/.test(this.password) &&
+                          /(?=.*\d)/.test(this.password);
 
     // Passwords match
     const passwordsMatch = this.password === this.confirmPassword;

@@ -83,6 +83,24 @@
                 <p class="welcome-subtitle">Join thousands navigating Nigeria smarter</p>
             </div>
 
+            <!-- Alert Messages -->
+            <div class="error-message" *ngIf="errorMessage">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>{{ errorMessage }}</span>
+            </div>
+
+            <div class="success-message" *ngIf="successMessage">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <span>{{ successMessage }}</span>
+            </div>
+
             <!-- Signup Form -->
             <form class="auth-form" (ngSubmit)="onSubmit()">
                 <!-- Full Name -->
@@ -166,6 +184,34 @@
                                     <line x1="1" y1="1" x2="23" y2="23" />
                                 </svg>
                             </button>
+                        </div>
+                    </div>
+
+                    <!-- Password Requirements Help -->
+                    <div class="password-requirements" *ngIf="passwordFocused || password">
+                        <div class="requirement" [class.met]="hasMinLength()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>At least 8 characters long</span>
+                        </div>
+                        <div class="requirement" [class.met]="hasUppercase()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>At least one uppercase letter</span>
+                        </div>
+                        <div class="requirement" [class.met]="hasLowercase()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>At least one lowercase letter</span>
+                        </div>
+                        <div class="requirement" [class.met]="hasNumber()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            <span>At least one number</span>
                         </div>
                     </div>
                 </div>
