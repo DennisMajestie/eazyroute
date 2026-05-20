@@ -2,7 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { ApiService, RegisterRequest } from '../../../services/api.service';
+import { AuthService } from '../../../core/services/auth.service';
+import { RegisterRequest } from '../../../models/user.model';
 
 @Component({
   selector: 'app-register',
@@ -33,7 +34,7 @@ export class RegisterComponent {
 
   constructor(
     private router: Router,
-    private apiService: ApiService
+    private authService: AuthService
   ) { }
 
   togglePasswordVisibility(field: 'password' | 'confirm'): void {
@@ -67,53 +68,27 @@ export class RegisterComponent {
 
     console.log('Register request:', registerRequest);
 
-    this.apiService.register(registerRequest).subscribe({
+    this.authService.register(registerRequest).subscribe({
       next: (response) => {
         console.log('Registration response:', response);
         this.isCreating = false;
 
         if (response.success) {
-          const hasToken = response.token || response.data?.token || response.data?.accessToken;
+          const hasToken = response.token || response.data?.token || (response.data as any)?.accessToken;
+
           if (hasToken) {
+            // AuthService.register() already called handleAuth() via its tap operator:
+            // → token saved to localStorage
+            // → isAuthenticated signal set to true
+            // → navigation to /onboarding or /dashboard already triggered
             this.successMessage = 'Registration successful! Logging you in...';
-            console.log('Registration successful (Bypassed OTP)', response.data);
-
-            // Store that this is a new registration for the onboarding flow
             sessionStorage.setItem('isNewRegistration', 'true');
-
-            // Redirect directly to dashboard or onboarding after 2 seconds
-            setTimeout(() => {
-              const user = response.user || response.data?.user;
-              const hasCompletedOnboarding = user?.onboardingComplete === true;
-              if (hasCompletedOnboarding) {
-                console.log('Navigating directly to dashboard...');
-                this.router.navigate(['/dashboard']);
-              } else {
-                console.log('Navigating directly to onboarding...');
-                this.router.navigate(['/onboarding']);
-              }
-            }, 2000);
+            console.log('[Register] Token stored by AuthService, navigation in progress.');
           } else {
+            // OTP path — AuthService already navigated to verify-otp
             this.successMessage = 'Registration successful! Redirecting to OTP verification...';
-            console.log('Registration successful', response.data);
-
-            // Store that this is a new registration for the onboarding flow
             sessionStorage.setItem('isNewRegistration', 'true');
-
-            // Redirect to OTP verification page after 2 seconds
-            setTimeout(() => {
-              console.log('Navigating to verify-otp...');
-              this.router.navigate(['/auth/verify-otp'], {
-                queryParams: {
-                  email: this.email,
-                  fromRegistration: 'true' // Add this flag
-                }
-              }).then(success => {
-                console.log('Navigation success:', success);
-              }).catch(err => {
-                console.error('Navigation error:', err);
-              });
-            }, 2000);
+            console.log('[Register] No token — OTP verification required.');
           }
         } else {
           this.isCreating = false;

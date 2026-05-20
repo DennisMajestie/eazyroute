@@ -63,10 +63,10 @@ export interface LoginRequest {
 
 export interface RegisterRequest {
     email: string;
+    fullName: string;
+    phone: string;
     password: string;
-    firstName: string;
-    lastName: string;
-    phoneNumber?: string;
+    confirmPassword: string;
 }
 
 export interface OTPVerifyRequest {
