@@ -194,8 +194,7 @@ export class AllUrlService {
    * Log all available endpoints (for development/debugging)
    */
   logAllEndpoints(): void {
-    console.log('=== ALL API ENDPOINTS ===', this.allUrl);
-  }
+      }
 
   /**
    * 🆕 Helper: Build URL with ID

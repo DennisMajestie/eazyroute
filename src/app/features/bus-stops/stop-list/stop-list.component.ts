@@ -49,8 +49,7 @@ export class StopListComponent implements OnInit {
             this.totalPages = response.pagination.pages;
             this.loading = false;
 
-            console.log('[Bus Stops] Loaded stops:', this.allStops.length, 'of', this.totalStops);
-          }
+                      }
         },
         error: (err) => {
           console.error('[Bus Stops] Failed to load bus stops:', err);
@@ -73,8 +72,7 @@ export class StopListComponent implements OnInit {
       stop.address?.toLowerCase().includes(term)
     );
 
-    console.log('[Bus Stops] Search results:', this.filteredStops.length);
-  }
+      }
 
   onStopClick(stop: BusStopResponse): void {
     // Navigate to route generation with stop as destination

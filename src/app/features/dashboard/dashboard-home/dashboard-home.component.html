@@ -252,7 +252,7 @@
         <section class="popular-routes">
             <div class="section-header">
                 <h2 class="section-title">Popular Routes</h2>
-                <button class="see-all-btn">See all</button>
+                <button class="see-all-btn" (click)="showComingSoon('Route Explorer')">See all</button>
             </div>
 
             <div class="routes-grid">
@@ -298,7 +298,7 @@
         <section class="upcoming-events">
             <div class="section-header">
                 <h2 class="section-title">Happening in Abuja</h2>
-                <button class="see-all-btn">See all</button>
+                <button class="see-all-btn" (click)="showComingSoon('Event Explorer')">See all</button>
             </div>
 
             <div class="events-list">
@@ -332,7 +332,7 @@
                         </div>
                         <div class="event-footer">
                             <span class="attending-count">{{ event.attending }} attending</span>
-                            <button class="interested-btn">Interested</button>
+                             <button class="interested-btn" (click)="showComingSoon('Event RSVP', $event)">Interested</button>
                         </div>
                     </div>
                 </div>
@@ -346,7 +346,7 @@
         <section class="tagalong-rides">
             <div class="section-header">
                 <h2 class="section-title">Available Rides</h2>
-                <button class="see-all-btn">See all</button>
+                <button class="see-all-btn" routerLink="/tag-along">See all</button>
             </div>
 
             <div class="rides-list">

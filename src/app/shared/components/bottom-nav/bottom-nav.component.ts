@@ -4,12 +4,14 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { AuthService } from '../../../core/services/auth.service';
+import Swal from 'sweetalert2';
 
 interface NavItem {
   label: string;
   route: string;
   icon: SafeHtml;
   adminOnly?: boolean;
+  unimplemented?: boolean;
 }
 
 @Component({
@@ -39,7 +41,8 @@ export class BottomNavComponent {
     {
       label: 'Explore',
       route: '/routes',
-      icon: this.sanitizer.bypassSecurityTrustHtml(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>`)
+      icon: this.sanitizer.bypassSecurityTrustHtml(`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>`),
+      unimplemented: true
     },
     {
       label: 'Tag-Along',
@@ -69,4 +72,31 @@ export class BottomNavComponent {
       !item.adminOnly || this.isAdmin()
     );
   });
+
+  handleNavClick(item: NavItem, event: Event): void {
+    if (item.unimplemented) {
+      event.preventDefault();
+      event.stopPropagation();
+      Swal.fire({
+        title: 'Coming Soon! 🚀',
+        html: `
+          <div style="font-family: 'Inter', sans-serif; text-align: center; padding: 10px;">
+            <p style="font-size: 1.1rem; color: #374151; margin-bottom: 1.5rem; line-height: 1.6;">
+              We are working hard to build the <strong>Routes & Explore</strong> feature for you. 
+              Make we join hands build this platform together! 🇳🇬
+            </p>
+            <div style="font-size: 3rem; margin-bottom: 1.5rem;">🛠️</div>
+            <p style="font-size: 0.9rem; color: #6B7280; font-style: italic;">
+              Stay tuned - EazyRoute dey come active with more hubs soon!
+            </p>
+          </div>
+        `,
+        confirmButtonText: 'Correct! 👍',
+        confirmButtonColor: '#008751',
+        customClass: {
+          confirmButton: 'btn btn-primary px-4 py-2'
+        }
+      });
+    }
+  }
 }

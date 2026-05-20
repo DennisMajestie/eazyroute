@@ -49,8 +49,7 @@ export class SafetyService {
      */
     private initSafetyListeners() {
         this.webSocketService.on('sos:broadcast').subscribe((data: any) => {
-            console.log('[SafetyService] Received SOS Broadcast:', data);
-            this.sosAlert$.next(data);
+                        this.sosAlert$.next(data);
         });
     }
 
@@ -82,8 +81,7 @@ export class SafetyService {
         if (this.isLiveLocationActive) return;
 
         this.isLiveLocationActive = true;
-        console.log('[SafetyService] Live location sharing started');
-
+        
         // Send updates every 30 seconds
         this.locationInterval$ = interval(30000).pipe(
             switchMap(() => this.geolocationService.getCurrentPosition()),
@@ -110,8 +108,7 @@ export class SafetyService {
         if (this.locationInterval$) {
             this.locationInterval$.unsubscribe();
         }
-        console.log('[SafetyService] Live location sharing stopped');
-    }
+            }
 
     // --- Level 3: SOS Alert ---
     sendSOS(type: 'SOS_SILENT' | 'FAKE_CALL' | 'PANIC_BUTTON' | 'LIVE_SHARE', description?: string): Observable<any> {

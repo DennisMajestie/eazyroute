@@ -109,8 +109,7 @@ export class AlongService {
 
         return this.http.post<any>(url, payload).pipe(
             map(response => {
-                console.log('[AlongService] V4 API Response:', response);
-
+                
                 // Apply Robust Extraction
                 const routes = this.extractRoutes(response);
 

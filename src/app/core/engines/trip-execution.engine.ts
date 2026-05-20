@@ -49,16 +49,14 @@ export class TripExecutionEngine {
      * Initialize/Hydrate a trip (e.g., from Orchestrator)
      */
     async initializeTrip(tripState: TripState): Promise<void> {
-        console.log('[TripExecution] Initializing trip:', tripState.tripId);
-
+        
         // precise hydration of state
         this.activeTripSubject.next(tripState);
 
         // Start tracking
         this.startLocationTracking(tripState.tripId);
 
-        console.log('[TripExecution] Trip initialized and tracking started');
-    }
+            }
     // Configuration
     private config: EasyRouteConfig = DEFAULT_CONFIG;
 
@@ -91,8 +89,7 @@ export class TripExecutionEngine {
         selectedRoute: GeneratedRoute,
         currentLocation?: Location
     ): Promise<TripState> {
-        console.log('[TripExecution] Starting trip...', { userId, routeId: selectedRoute.id });
-
+        
         // Get current location if not provided
         if (!currentLocation) {
             currentLocation = await this.locationService.getCurrentLocation();
@@ -144,8 +141,7 @@ export class TripExecutionEngine {
             `Heading to ${selectedRoute.segments[selectedRoute.segments.length - 1].toStop.name}`
         );
 
-        console.log('[TripExecution] Trip started successfully', tripState);
-        return tripState;
+                return tripState;
     }
 
     /**
@@ -179,8 +175,7 @@ export class TripExecutionEngine {
         // Clear active trip
         this.activeTripSubject.next(null);
 
-        console.log('[TripExecution] Trip stopped', { tripId, reason });
-    }
+            }
 
     /**
      * ═══════════════════════════════════════════════════════════════
@@ -225,8 +220,7 @@ export class TripExecutionEngine {
      * ═══════════════════════════════════════════════════════════════
      */
     private startLocationTracking(tripId: string): void {
-        console.log('[TripExecution] Starting location tracking...');
-
+        
         // Subscribe to location updates
         this.locationSubscription = this.locationService.watchLocation().subscribe({
             next: async (location) => {
@@ -250,8 +244,7 @@ export class TripExecutionEngine {
     }
 
     private stopLocationTracking(): void {
-        console.log('[TripExecution] Stopping location tracking...');
-
+        
         if (this.locationSubscription) {
             this.locationSubscription.unsubscribe();
             this.locationSubscription = undefined;
@@ -339,8 +332,7 @@ export class TripExecutionEngine {
         milestone: TripMilestone,
         distance: number
     ): Promise<void> {
-        console.log('[TripExecution] Approaching milestone:', milestone.stopName);
-
+        
         milestone.notified = true;
 
         this.emitTripEvent({
@@ -363,8 +355,7 @@ export class TripExecutionEngine {
         tripState: TripState,
         milestone: TripMilestone
     ): Promise<void> {
-        console.log('[TripExecution] Milestone reached:', milestone.stopName);
-
+        
         milestone.reachedAt = new Date();
         milestone.actualArrivalTime = new Date();
 
@@ -421,8 +412,7 @@ export class TripExecutionEngine {
 
         // If within 100m of destination
         if (distanceToDestination <= 100) {
-            console.log('[TripExecution] Destination reached!');
-            await this.stopTrip(tripState.tripId, 'completed');
+                        await this.stopTrip(tripState.tripId, 'completed');
         }
     }
 
@@ -505,8 +495,7 @@ export class TripExecutionEngine {
      */
     private emitTripEvent(event: TripEvent): void {
         this.tripEventsSubject.next(event);
-        console.log('[TripExecution] Event emitted:', event.type, event.data);
-    }
+            }
 
     /**
      * ═══════════════════════════════════════════════════════════════

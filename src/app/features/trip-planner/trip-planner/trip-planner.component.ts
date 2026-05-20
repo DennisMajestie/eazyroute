@@ -122,11 +122,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             const fromPayload = this.fromLocation || this.fromQuery;
             const toPayload = this.toLocation || this.toQuery;
 
-            console.log('[TripPlanner] V4 Route Generation...', {
-                from: fromPayload,
-                to: toPayload
-            });
-
+            
             // Call Backend (V4 ALONG Algorithm Stack)
             const response = await firstValueFrom(
                 this.alongService.generateRoute(fromPayload, toPayload).pipe(
@@ -137,8 +133,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 )
             );
 
-            console.log('[TripPlanner] API Response received:', response);
-
+            
             // Handle Soft Failure (Location Not Covered)
             if (response.success === false && response.errorType === 'LOCATION_NOT_COVERED') {
                 console.warn('[TripPlanner] Soft failure - location not covered:', response.suggestion);
@@ -153,8 +148,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
                 // Map all routes in the array, ensuring we don't map null/undefined elements
                 const validRoutes = response.data.filter(r => !!r);
-                console.log('[TripPlanner] Valid routes found:', validRoutes.length);
-
+                
                 validRoutes.forEach(r => {
                     const mapped = this.mapAlongRouteToGeneratedRoute(r);
                     if (mapped) routes.push(mapped);
@@ -166,8 +160,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 const fastest = this.generatedRoutes.find(r => r?.classification === 'FASTEST');
                 this.selectedRoute = fastest || this.generatedRoutes[0] || null;
 
-                console.log('[TripPlanner] V3/V4 routes loaded:', this.generatedRoutes.length);
-            } else {
+                            } else {
                 console.warn('[TripPlanner] No valid route data in response:', response);
                 this.generatedRoutes = [];
                 this.alertMessage = response?.message || 'No routes found. Try another location.';
@@ -312,11 +305,9 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
 
             // Log optimization info
             if (alongRoute.metadata.optimizationApplied) {
-                console.log('✅ Route optimized by backend - merged consecutive hops');
-            }
+                            }
             if (alongRoute.metadata.corridorBonus && alongRoute.metadata.corridorBonus < 0) {
-                console.log('🛣️ Verified corridor route');
-            }
+                            }
         }
 
         return route;
@@ -512,16 +503,14 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     private destroy$ = new Subject<void>();
 
     ngOnInit() {
-        console.log('[TripPlanner] Initialization (Version 3.0 - Reactive Flow)');
-        this.checkNightMode();
+                this.checkNightMode();
 
         // Reactive redirect if trip becomes active
         this.orchestrator.state$
             .pipe(takeUntil(this.destroy$))
             .subscribe(state => {
                 if (state.hasActiveTrip) {
-                    console.log('[TripPlanner] Active trip detected via subscription, redirecting to tracking...');
-                    this.router.navigate(['/trip-tracking']);
+                                        this.router.navigate(['/trip-tracking']);
                 }
             });
         // ... (rest of ngOnInit)
@@ -580,11 +569,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                             }
                         }
 
-                        console.log('[TripPlanner] Auto-starting trip with coordinates:', {
-                            from: this.fromLocation,
-                            to: this.toLocation
-                        });
-
+                        
                         if (this.fromLocation && this.toLocation) {
                             // Small delay to ensure state and map are ready
                             setTimeout(() => this.startTripWithRoute(routeParsed), 300);
@@ -627,22 +612,19 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.tripService.onRerouteSuggestion().subscribe({
             next: (data: any) => {
                 this.alertMessage = `New Route Found! Reason: ${data.reason} `;
-                console.log('Reroute:', data.newRoute);
-            },
+                            },
             error: (err) => console.error('Socket Error:', err)
         });
 
         this.tripService.onMilestoneReached().subscribe({
             next: (data: any) => {
-                console.log('Milestone reached:', data);
-
+                
                 // Show boarding protocol if this is a transfer hub
                 if (data.milestone && data.milestone.stopName) {
                     // Try to find protocols for this stop
                     const hub = this.protocolService.findHub(data.milestone.stopName);
                     if (hub) {
-                        console.log('[TripPlanner] Transfer hub detected:', hub.name);
-                        // Get destination from next segment if available
+                                                // Get destination from next segment if available
                         const nextStopName = this.getNextDestinationName();
                         this.protocolService.setActiveProtocol(data.milestone.stopName, nextStopName);
                     }
@@ -653,8 +635,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         // Check for primary location on init
         const primary = this.geolocationService.getPrimaryLocation();
         if (primary && this.geolocationService.isValidCoordinates(primary.latitude, primary.longitude)) {
-            console.log('[TripPlanner] Found Primary Default Location');
-            this.isDefaultSelected = true;
+                        this.isDefaultSelected = true;
             this.fromLocation = { lat: primary.latitude, lng: primary.longitude };
             this.fromQuery = `📍 Saved Home Location`;
 
@@ -696,8 +677,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.isNightMode = hour >= 20 || hour < 5;
 
         if (this.isNightMode) {
-            console.log('[TripPlanner] Night mode active. Prioritizing primary hubs.');
-        }
+                    }
     }
 
     getNightHubIntelligence(hubName: string): string {
@@ -737,8 +717,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             // 0. Check for primary location first
             const primary = this.geolocationService.getPrimaryLocation();
             if (primary && this.geolocationService.isValidCoordinates(primary.latitude, primary.longitude)) {
-                console.log('[TripPlanner] Using Primary Default Location');
-                this.isDefaultSelected = true;
+                                this.isDefaultSelected = true;
                 const lat = primary.latitude;
                 const lng = primary.longitude;
                 this.fromLocation = { lat, lng };
@@ -809,12 +788,10 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                 },
                 error: () => {
                     // Keep the coordinates that are already showing
-                    console.log('[TripPlanner] Reverse geocoding failed, keeping coordinates');
-                }
+                                    }
             });
 
-            console.log('[TripPlanner] Location detected:', { lat, lng });
-
+            
             // Automatically start real-time tracking after initial detection
             if (!this.isTrackingLocation) {
                 // this.startLocationTracking(); // Opt-in
@@ -824,8 +801,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             this.fetchNearbyStops(lat, lng);
         } catch (error: any) {
             // Log as info instead of error since user denial is expected behavior
-            console.log('[TripPlanner] Location detection:', error.code === 1 ? 'User denied permission' : error.message || error);
-
+            
             if (error.code === 1) {
                 this.locationError = 'Location access denied. Click the 🔒 icon in your browser\'s address bar to enable location, then click the refresh button.';
             } else if (error.code === 2) {
@@ -873,8 +849,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.fromLocation = { lat, lng };
         this.center = { lat, lng };
         this.addMarker(lat, lng, 'My Location');
-        console.log('[TripPlanner] Tracking update:', { lat, lng });
-    }
+            }
 
     /**
      * Fetch nearby bus stops
@@ -885,8 +860,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             next: (response) => {
                 if (response.success && response.data) {
                     this.nearbyStops = response.data;
-                    console.log('[TripPlanner] Nearby stops fetched:', response.data.length);
-
+                    
                     if (response.data.length > 0 && response.data[0].distance && response.data[0].distance <= 1000) {
                         const nearest = response.data[0];
                         this.fromQuery = `📍 ${nearest.name}`;
@@ -911,8 +885,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             navigator.geolocation.clearWatch(this.locationWatchId);
             this.locationWatchId = null;
             this.isTrackingLocation = false;
-            console.log('[TripPlanner] Stopped real-time location tracking');
-        }
+                    }
     }
 
     // Toggle location tracking on/off
@@ -976,7 +949,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                     description: `User-refined name for OSM point: ${result.originalName}`,
                     localNames: [result.originalName]
                 }).subscribe({
-                    next: () => console.log('[TripPlanner] Name refinement submitted'),
+                    next: () => void 0,
                     error: (err: any) => console.error('[TripPlanner] Refinement failed:', err)
                 });
             }
@@ -1178,8 +1151,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
                     const side = nearest.backboneSide;
 
                     if (side && side !== 'C') {
-                        console.log(`🧭 Snapped to ${side === 'L' ? 'Left' : 'Right'} side landmark: ${nearest.name}`);
-                        if (field === 'from') {
+                                                if (field === 'from') {
                             this.alertMessage = `Pickup set at ${nearest.name} (${side === 'L' ? 'Left' : 'Right'} side). Use pedestrian bridge if you are on the other side!`;
                         }
                     }
@@ -1299,16 +1271,14 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         this.isStartingTrip = true;
 
         try {
-            console.log('[TripPlanner] Creating trip with route:', route);
-
+            
             const tripId = await this.orchestrator.createTrip(
                 { latitude: this.fromLocation.lat, longitude: this.fromLocation.lng },
                 { latitude: this.toLocation.lat, longitude: this.toLocation.lng },
                 route
             );
 
-            console.log('[TripPlanner] Trip created:', tripId);
-
+            
             // Start the trip
             await this.orchestrator.startTrip(tripId);
 
@@ -1316,8 +1286,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             this.generatedRoutes = [];
             this.selectedRoute = null;
 
-            console.log('[TripPlanner] Trip started successfully, navigating to tracking...');
-            this.router.navigate(['/trip-tracking']);
+                        this.router.navigate(['/trip-tracking']);
         } catch (error) {
             console.error('[TripPlanner] Failed to start trip:', error);
             this.toastService.error('Trip Start Failed', 'Please check your connection and try again.');
@@ -1331,8 +1300,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             try {
                 await this.orchestrator.cancelTrip('User terminated trip');
                 this.isNavigating = false;
-                console.log('[TripPlanner] Trip stopped by user');
-            } catch (error) {
+                            } catch (error) {
                 console.error('[TripPlanner] Failed to stop trip:', error);
                 this.toastService.error('Trip Stop Failed', 'We couldn\'t end your active trip. Please try again.');
             }
@@ -1427,8 +1395,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
         }
         this.busStopService.upvoteStop(stopId).subscribe({
             next: (res) => {
-                console.log('Upvoted successfully');
-            },
+                            },
             error: (err) => console.error('Failed to upvote', err)
         });
     }

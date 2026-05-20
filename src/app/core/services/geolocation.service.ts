@@ -50,8 +50,7 @@ export class GeolocationService {
         return from(
             new Promise<Coordinates>((resolve, reject) => {
                 const config = environment.geolocation;
-                console.log('[Geolocation] Requesting simple high-accuracy fix');
-
+                
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const coords = this.mapPositionToCoords(position);
@@ -88,16 +87,14 @@ export class GeolocationService {
     async getSmartLocation(): Promise<Coordinates | null> {
         // Attempt 1: High Accuracy (GPS) - Increased to 15s timeout
         try {
-            console.log('[Geolocation] Attempt 1: High Accuracy (GPS)');
-            return await this.getPositionWithTimeout(50, 15000, true);
+                        return await this.getPositionWithTimeout(50, 15000, true);
         } catch (e) {
             console.warn("[Geolocation] GPS failed, falling back to Tower/WiFi...");
         }
 
         // Attempt 2: Low Accuracy (Fast) - Increased to 10s timeout
         try {
-            console.log('[Geolocation] Attempt 2: Low Accuracy (Cell/WiFi)');
-            return await this.getPositionWithTimeout(100, 10000, false);
+                        return await this.getPositionWithTimeout(100, 10000, false);
         } catch (e) {
             console.warn('[Geolocation] Attempt 2 failed:', e);
         }
@@ -109,15 +106,13 @@ export class GeolocationService {
 
         const primary = this.getPrimaryLocation();
         if (primary && this.isValidCoordinates(primary.latitude, primary.longitude)) {
-            console.log('[Geolocation] Using User-Defined Primary Location.');
-            this.currentLocation.set(primary);
+                        this.currentLocation.set(primary);
             return primary;
         }
 
         const lastKnown = this.getLastKnownLocation();
         if (lastKnown && this.isValidCoordinates(lastKnown.latitude, lastKnown.longitude)) {
-            console.log('[Geolocation] Using Last Known Location.');
-            this.currentLocation.set(lastKnown);
+                        this.currentLocation.set(lastKnown);
             return lastKnown;
         }
 
@@ -155,8 +150,7 @@ export class GeolocationService {
             accuracy: coords.accuracy || 0,
             timestamp: Date.now()
         }));
-        console.log('[Geolocation] Primary location saved.');
-    }
+            }
 
     /**
      * Get the User's Primary Default location

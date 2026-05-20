@@ -79,13 +79,11 @@ export class RouteGenerationEngine {
         endLocation: Location,
         maxAlternatives: number = 5
     ): Promise<GeneratedRoute[]> {
-        console.log('[RouteGen] Starting route generation...', { startLocation, endLocation });
-
+        
         // Soul V2: Check for Village Context (Okada Restriction Enforcement)
         const villageContext = this.detectVillageContext(startLocation);
         if (villageContext) {
-            console.log(`[Soul V2] Village context detected: ${villageContext.name}. Synthesizing compliant route...`);
-            return this.synthesizeVillageRoute(startLocation, endLocation, villageContext);
+                        return this.synthesizeVillageRoute(startLocation, endLocation, villageContext);
         }
 
         // Node Snapping: improve origin/destination alignment to nearest known node
@@ -110,8 +108,7 @@ export class RouteGenerationEngine {
             this.config.nearbyStopRadiusMeters
         );
 
-        console.log(`[RouteGen] Found ${startStops.length} start stops, ${endStops.length} end stops`);
-
+        
         if (startStops.length === 0 || endStops.length === 0) {
             console.warn('[RouteGen] No stops found near start or end location');
             return await this.generateDirectRoute(startLocation, endLocation);
@@ -120,8 +117,7 @@ export class RouteGenerationEngine {
         // Mandatory Hub Check: Intercept specific corridors
         const mandatoryRoute = await this.checkMandatoryCorridors(startLocation, endLocation, startStops[0], endStops[0]);
         if (mandatoryRoute) {
-            console.log('[RouteGen] Mandatory corridor triggered, enforcing hubs...');
-            return [mandatoryRoute];
+                        return [mandatoryRoute];
         }
 
         // Step 2: Generate path combinations in PARALLEL
@@ -164,8 +160,7 @@ export class RouteGenerationEngine {
         const uniqueRoutes = this.deduplicateRoutes(routeCandidates);
         const rankedRoutes = this.rankRoutes(uniqueRoutes);
 
-        console.log(`[RouteGen] Generated ${rankedRoutes.length} unique routes`);
-
+        
         // Return top candidates (use maxAlternatives parameter)
         const top = rankedRoutes.slice(0, Math.min(maxAlternatives, this.config.maxRouteCandidates));
 
@@ -442,8 +437,7 @@ export class RouteGenerationEngine {
         startLocation: Location,
         endLocation: Location
     ): Promise<GeneratedRoute[]> {
-        console.log('[RouteGen] Generating direct route (no stops found)');
-
+        
         const walkSegment = await this.createWalkingSegment(
             startLocation,
             endLocation,

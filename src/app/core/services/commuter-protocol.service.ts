@@ -45,8 +45,7 @@ export class CommuterProtocolService {
                 tap(data => {
                     this.protocolsData = data;
                     this.dataLoaded$.next(true);
-                    console.log('[CommuterProtocolService] Protocols loaded:', Object.keys(data.hubs).length, 'hubs');
-                }),
+                                    }),
                 catchError(err => {
                     console.error('[CommuterProtocolService] Failed to load protocols:', err);
                     return of(null);
@@ -151,11 +150,9 @@ export class CommuterProtocolService {
 
             if (protocol) {
                 this.activeProtocol$.next({ hub, protocol });
-                console.log('[CommuterProtocolService] Active protocol set:', hub.name, '->', protocol.destination);
-            }
+                            }
         } else {
-            console.log('[CommuterProtocolService] No hub found for:', hubName);
-        }
+                    }
     }
 
     /**

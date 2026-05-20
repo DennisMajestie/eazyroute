@@ -56,8 +56,7 @@ export class SafetyAnalyticsComponent implements OnInit, AfterViewInit, OnDestro
       .pipe(takeUntil(this.destroy$))
       .subscribe(notif => {
         if (notif.severity === 'sos' && notif.data) {
-          console.log('[Safety] Real-time SOS received:', notif.data);
-          
+                    
           // Data format check - backend broadcast might be different from history schema
           const incident: SafetyIncident = {
             _id: notif.id,

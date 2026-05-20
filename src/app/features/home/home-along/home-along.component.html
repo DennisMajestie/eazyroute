@@ -23,156 +23,121 @@
 
     <!-- Main Content -->
     <div class="main-content">
-
-
-        <!-- Smart Boarding Card -->
-        <div class="smart-boarding-card" *ngIf="showSmartBoarding" (click)="findRoute()">
-            <div class="boarding-header">
-                <span class="boarding-icon">🧠</span>
-                <span class="boarding-title">Smart Boarding</span>
-            </div>
-            <p class="boarding-message">{{ smartBoardingMessage }}</p>
-            <div class="boarding-action">
-                <span>View Options</span>
-                <span class="arrow">→</span>
-            </div>
-        </div>
-
-        <!-- Night Mode Alert -->
-        <div class="alert alert-night mt-2 mb-3" *ngIf="isNightMode">
-            <i class="fas fa-moon me-2"></i>
-            <strong>Night Mode:</strong> Prioritizing well-lit arteries.
-        </div>
-
-        <!-- FROM Field -->
-        <div class="location-field">
-            <label class="field-label">📍 FROM <span class="default-badge" *ngIf="isDefaultSelected">🏠 Saved
-                    Default</span></label>
-            <div class="input-wrapper">
-                <input type="text" class="location-input" [(ngModel)]="fromInput"
-                    (input)="onSearchInput('from', fromInput)" placeholder="Your Location"
-                    [class.has-value]="fromInput" />
-                <button *ngIf="!fromInput && !isDetectingLocation" class="detect-btn" (click)="detectLocation()"
-                    type="button">
-                    🎯 Use My Location
-                </button>
-                <button *ngIf="fromInput" class="clear-btn" (click)="clearField('from')" type="button">
-                    ×
-                </button>
-                <button *ngIf="fromLocation && fromInput && !isDetectingLocation" class="refine-btn"
-                    (click)="refineLocation()" type="button" title="Refine Location Name">
-                    ✏️
-                </button>
-                <button *ngIf="fromLocation?.needsNaming && !isDetectingLocation" class="name-place-btn" (click)="openNamePlaceModal()" type="button" title="Name This Place">
-                    🏷️ Name Place
-                </button>
-                <div class="loading-spinner" *ngIf="isDetectingLocation">
-                    <div class="spinner"></div>
+        <!-- Left Column: Route Planner Form -->
+        <div class="planner-column">
+            <!-- Smart Boarding Card -->
+            <div class="smart-boarding-card" *ngIf="showSmartBoarding" (click)="findRoute()">
+                <div class="boarding-header">
+                    <span class="boarding-icon">🧠</span>
+                    <span class="boarding-title">Smart Boarding</span>
+                </div>
+                <p class="boarding-message">{{ smartBoardingMessage }}</p>
+                <div class="boarding-action">
+                    <span>View Options</span>
+                    <span class="arrow">→</span>
                 </div>
             </div>
-            <!-- Search Results (FROM) -->
-            <ng-container *ngIf="showSearchResults && activeField === 'from'">
-                <ng-container *ngTemplateOutlet="searchResultsTemplate"></ng-container>
-            </ng-container>
-            <p class="field-hint" *ngIf="!fromInput">e.g., "Efab Estate", "Lokogoma"</p>
-        </div>
 
-        <!-- TO Field -->
-        <div class="location-field">
-            <label class="field-label">📍 TO</label>
-            <div class="input-wrapper">
-                <input type="text" class="location-input" [(ngModel)]="toInput" (input)="onSearchInput('to', toInput)"
-                    placeholder="Search landmark" [class.has-value]="toInput" />
-                <button *ngIf="toInput" class="clear-btn" (click)="clearField('to')" type="button">
-                    ×
+            <!-- Night Mode Alert -->
+            <div class="alert alert-night mt-2 mb-3" *ngIf="isNightMode">
+                <i class="fas fa-moon me-2"></i>
+                <strong>Night Mode:</strong> Prioritizing well-lit arteries.
+            </div>
+
+            <!-- Form Container -->
+            <div class="form-container-box">
+                <!-- FROM Field -->
+                <div class="location-field">
+                    <label class="field-label">📍 FROM <span class="default-badge" *ngIf="isDefaultSelected">🏠 Saved Default</span></label>
+                    <div class="input-wrapper">
+                        <input type="text" class="location-input" [(ngModel)]="fromInput"
+                            (input)="onSearchInput('from', fromInput)" placeholder="Your Location"
+                            [class.has-value]="fromInput" />
+                        <button *ngIf="!fromInput && !isDetectingLocation" class="detect-btn" (click)="detectLocation()"
+                            type="button">
+                            🎯 Use My Location
+                        </button>
+                        <button *ngIf="fromInput" class="clear-btn" (click)="clearField('from')" type="button">
+                            ×
+                        </button>
+                        <button *ngIf="fromLocation && fromInput && !isDetectingLocation" class="refine-btn"
+                            (click)="refineLocation()" type="button" title="Refine Location Name">
+                            ✏️
+                        </button>
+                        <button *ngIf="fromLocation?.needsNaming && !isDetectingLocation" class="name-place-btn" (click)="openNamePlaceModal()" type="button" title="Name This Place">
+                            🏷️ Name Place
+                        </button>
+                        <div class="loading-spinner" *ngIf="isDetectingLocation">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+                    <!-- Search Results (FROM) -->
+                    <ng-container *ngIf="showSearchResults && activeField === 'from'">
+                        <ng-container *ngTemplateOutlet="searchResultsTemplate"></ng-container>
+                    </ng-container>
+                    <p class="field-hint" *ngIf="!fromInput">e.g., "Efab Estate", "Lokogoma"</p>
+                </div>
+
+                <!-- TO Field -->
+                <div class="location-field">
+                    <label class="field-label">📍 TO</label>
+                    <div class="input-wrapper">
+                        <input type="text" class="location-input" [(ngModel)]="toInput" (input)="onSearchInput('to', toInput)"
+                            placeholder="Search landmark" [class.has-value]="toInput" />
+                        <button *ngIf="toInput" class="clear-btn" (click)="clearField('to')" type="button">
+                            ×
+                        </button>
+                    </div>
+                    <!-- Search Results (TO) -->
+                    <ng-container *ngIf="showSearchResults && activeField === 'to'">
+                        <ng-container *ngTemplateOutlet="searchResultsTemplate"></ng-container>
+                    </ng-container>
+                    <p class="field-hint" *ngIf="!toInput">e.g., "Berger", "Wuse", "After Shoprite"</p>
+                </div>
+
+                <!-- Find Route Button -->
+                <button class="btn btn-primary btn-xl find-route-btn" (click)="findRoute()"
+                    [disabled]="!fromLocation || !toLocation">
+                    🚀 Find My Route
                 </button>
             </div>
-            <!-- Search Results (TO) -->
-            <ng-container *ngIf="showSearchResults && activeField === 'to'">
-                <ng-container *ngTemplateOutlet="searchResultsTemplate"></ng-container>
-            </ng-container>
-            <p class="field-hint" *ngIf="!toInput">e.g., "Berger", "Wuse", "After Shoprite"</p>
         </div>
 
-        <!-- Search Results Template -->
-        <ng-template #searchResultsTemplate>
-        <div class="search-results">
-
-            <!-- Loading State with Skeleton -->
-            <div *ngIf="loadingState.isLoading()">
-                <app-loading-progress [progress]="(loadingState.state$ | async)?.progress || 0"
-                    [message]="(loadingState.state$ | async)?.message || COPY.LOADING.SEARCHING">
-                </app-loading-progress>
-                <app-skeleton-landmark [count]="3" animation="wave"></app-skeleton-landmark>
-            </div>
-
-            <!-- Success State - Results -->
-            <div *ngIf="!loadingState.isLoading() && searchResults.length > 0" class="results-list">
-                <div *ngFor="let result of searchResults" class="search-result-item"
-                    (click)="selectLocation(activeField!, result)">
-                    <div class="result-icon">{{ getTypeIcon(result.type) }}</div>
-                    <div class="result-info">
-                        <div class="result-name">{{ result.name }}</div>
-                        <div class="result-meta" *ngIf="result.hierarchy">
-                            <span>{{ result.hierarchy }}</span>
+        <!-- Right Column: Suggestions & Actions -->
+        <div class="suggestions-column">
+            <!-- Popular Routes -->
+            <div class="popular-routes-section">
+                <h3 class="section-title">🔥 Popular Routes</h3>
+                <div class="popular-routes-list">
+                    <div class="popular-route-card" *ngFor="let route of popularRoutes" (click)="selectPopularRoute(route)">
+                        <div class="route-emoji">{{ route.emoji }}</div>
+                        <div class="route-details">
+                            <div class="route-path">
+                                <span class="route-from">{{ route.from }}</span>
+                                <span class="route-arrow">→</span>
+                                <span class="route-to">{{ route.to }}</span>
+                            </div>
                         </div>
-                        <div class="result-meta result-type-badge">{{ result.type }}</div>
+                        <div class="route-action">›</div>
                     </div>
                 </div>
             </div>
 
-            <!-- Hard Failure State - No Results -->
-            <div *ngIf="!loadingState.isLoading() && searchResults.length === 0" class="no-results">
-                <div class="no-results-icon">🔍</div>
-                <p>{{ COPY.HARD_FAILURE.NO_ROUTE_YET }}</p>
-                <p class="no-results-hint">{{ COPY.REASSURANCE.WORKING_ON_IT }}</p>
+            <!-- Quick Actions -->
+            <div class="quick-actions">
+                <button class="quick-action-btn" routerLink="/contribute">
+                    <span class="action-icon">📍</span>
+                    <span class="action-text">Add Landmark</span>
+                </button>
+                <button class="quick-action-btn" routerLink="/favorites">
+                    <span class="action-icon">⭐</span>
+                    <span class="action-text">Favorites</span>
+                </button>
+                <button class="quick-action-btn" routerLink="/history">
+                    <span class="action-icon">🕐</span>
+                    <span class="action-text">History</span>
+                </button>
             </div>
-        </div>
-        </ng-template>
-
-        <!-- Find Route Button -->
-        <button class="btn btn-primary btn-xl find-route-btn" (click)="findRoute()"
-            [disabled]="!fromLocation || !toLocation">
-            🚀 Find My Route
-        </button>
-
-        <!-- Divider -->
-        <div class="divider">
-            <span class="divider-text">OR</span>
-        </div>
-
-        <!-- Popular Routes -->
-        <div class="popular-routes-section">
-            <h3 class="section-title">🔥 Popular Routes</h3>
-            <div class="popular-routes-list">
-                <div class="popular-route-card" *ngFor="let route of popularRoutes" (click)="selectPopularRoute(route)">
-                    <div class="route-emoji">{{ route.emoji }}</div>
-                    <div class="route-details">
-                        <div class="route-path">
-                            <span class="route-from">{{ route.from }}</span>
-                            <span class="route-arrow">→</span>
-                            <span class="route-to">{{ route.to }}</span>
-                        </div>
-                    </div>
-                    <div class="route-action">›</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-            <button class="quick-action-btn" routerLink="/contribute">
-                <span class="action-icon">📍</span>
-                <span class="action-text">Add Landmark</span>
-            </button>
-            <button class="quick-action-btn" routerLink="/favorites">
-                <span class="action-icon">⭐</span>
-                <span class="action-text">Favorites</span>
-            </button>
-            <button class="quick-action-btn" routerLink="/history">
-                <span class="action-icon">🕐</span>
-                <span class="action-text">History</span>
-            </button>
         </div>
     </div>
 
@@ -183,6 +148,41 @@
         </p>
     </div>
 </div>
+
+<!-- Search Results Template -->
+<ng-template #searchResultsTemplate>
+    <div class="search-results">
+        <!-- Loading State with Skeleton -->
+        <div *ngIf="loadingState.isLoading()">
+            <app-loading-progress [progress]="(loadingState.state$ | async)?.progress || 0"
+                [message]="(loadingState.state$ | async)?.message || COPY.LOADING.SEARCHING">
+            </app-loading-progress>
+            <app-skeleton-landmark [count]="3" animation="wave"></app-skeleton-landmark>
+        </div>
+
+        <!-- Success State - Results -->
+        <div *ngIf="!loadingState.isLoading() && searchResults.length > 0" class="results-list">
+            <div *ngFor="let result of searchResults" class="search-result-item"
+                (click)="selectLocation(activeField!, result)">
+                <div class="result-icon">{{ getTypeIcon(result.type) }}</div>
+                <div class="result-info">
+                    <div class="result-name">{{ result.name }}</div>
+                    <div class="result-meta" *ngIf="result.hierarchy">
+                        <span>{{ result.hierarchy }}</span>
+                    </div>
+                    <div class="result-meta result-type-badge">{{ result.type }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hard Failure State - No Results -->
+        <div *ngIf="!loadingState.isLoading() && searchResults.length === 0" class="no-results">
+            <div class="no-results-icon">🔍</div>
+            <p>{{ COPY.HARD_FAILURE.NO_ROUTE_YET }}</p>
+            <p class="no-results-hint">{{ COPY.REASSURANCE.WORKING_ON_IT }}</p>
+        </div>
+    </div>
+</ng-template>
 
 <!-- Refine Location Modal -->
 <app-refine-location-modal [isOpen]="isRefineModalOpen" [currentName]="refineModalCurrentName"

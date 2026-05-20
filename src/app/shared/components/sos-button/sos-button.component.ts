@@ -74,8 +74,7 @@ export class SosButtonComponent {
             next: (coords) => {
                 this.sos.sendAlert('SOS_SILENT', coords.latitude, coords.longitude).subscribe({
                     next: () => {
-                        console.log('[SOS] Alert sent successfully');
-                        this.resetAfterDelay();
+                                                this.resetAfterDelay();
                     },
                     error: (err) => {
                         console.error('[SOS] Failed to send alert:', err);

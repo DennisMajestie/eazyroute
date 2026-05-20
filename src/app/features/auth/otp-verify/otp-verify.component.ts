@@ -35,12 +35,11 @@ export class OtpVerifyComponent implements OnInit {
       this.email = params['email'] || '';
       this.fromRegistration = params['fromRegistration'] === 'true';
 
-      console.log('Email for OTP verification:', this.email);
-      console.log('From registration:', this.fromRegistration);
+
 
       if (!this.email) {
         console.error('No email provided for OTP verification');
-        this.errorMessage = 'Email not found. Please register again.';
+        this.errorMessage = 'Email not found. Please register to get started.';
         setTimeout(() => {
           this.router.navigate(['/auth/register']);
         }, 3000);
@@ -99,22 +98,21 @@ export class OtpVerifyComponent implements OnInit {
   }
 
   verifyCode(): void {
-    console.log('🔴 verifyCode() called');
+
 
     const fullCode = this.code.join('');
 
     if (fullCode.length !== 6) {
-      this.errorMessage = 'Please enter all 6 digits';
+      this.errorMessage = 'Please enter all 6 digits of your verification code.';
       return;
     }
 
     if (!this.email) {
-      this.errorMessage = 'Email not found. Please register again.';
+      this.errorMessage = 'Email not found. Please register to get started.';
       return;
     }
 
     if (this.isVerifying || this.verificationComplete) {
-      console.log('Verification already in progress or completed');
       return;
     }
 
@@ -128,18 +126,16 @@ export class OtpVerifyComponent implements OnInit {
       otp: fullCode
     };
 
-    console.log('📤 Sending OTP verification request:', verifyRequest);
+
 
     // ⬅️ Use AuthService instead
     this.authService.verifyOTP(verifyRequest).subscribe({
       next: (response: any) => {
-        console.log('🎯 OTP Verification Response:', response);
-
         this.isVerifying = false;
 
         if (!response) {
           this.verificationError = true;
-          this.errorMessage = 'No response from server';
+          this.errorMessage = 'The verification server didn\'t respond. Please check your connection.';
           this.clearCode();
           return;
         }
@@ -152,7 +148,7 @@ export class OtpVerifyComponent implements OnInit {
           // based on onboarding status
         } else {
           this.verificationError = true;
-          this.errorMessage = response.message || 'Invalid verification code';
+          this.errorMessage = response.message || 'Invalid verification code. Please check the code and try again.';
           this.clearCode();
         }
       },
@@ -163,18 +159,18 @@ export class OtpVerifyComponent implements OnInit {
         this.verificationError = true;
 
         if (error.status === 400) {
-          this.errorMessage = error.error?.message || 'Invalid verification code';
+          this.errorMessage = error.error?.message || 'The verification code you entered is invalid. Please check the code and try again.';
         } else if (error.status === 404) {
-          this.errorMessage = 'User not found. Please register again.';
+          this.errorMessage = 'We couldn\'t find your account. Please sign up to register.';
         } else if (error.status === 410) {
-          this.errorMessage = 'Verification code expired. Please request a new one.';
+          this.errorMessage = 'Your verification code has expired. Please click resend to request a new code.';
         } else if (error.status === 429) {
           // ⬅️ Handle rate limiting
-          this.errorMessage = 'Too many attempts. Please wait a few minutes and try again.';
+          this.errorMessage = 'Too many incorrect attempts. Please wait a few minutes before trying again.';
         } else if (error.status === 0) {
-          this.errorMessage = 'Cannot connect to server';
+          this.errorMessage = 'Cannot connect to server. Please check your internet connection and try again.';
         } else {
-          this.errorMessage = error.error?.message || 'Verification failed';
+          this.errorMessage = error.error?.message || 'Verification failed. Please check the code and try again.';
         }
 
         this.clearCode();
@@ -200,7 +196,7 @@ export class OtpVerifyComponent implements OnInit {
           this.successMessage = 'Verification code sent successfully!';
           this.code = ['', '', '', '', '', '']; // Clear previous code
         } else {
-          this.errorMessage = response.message || 'Failed to resend code';
+          this.errorMessage = response.message || 'Failed to resend verification code. Please try again.';
         }
       },
       error: (error) => {
@@ -208,11 +204,11 @@ export class OtpVerifyComponent implements OnInit {
         console.error('❌ Resend OTP Error:', error);
 
         if (error.status === 429) {
-          this.errorMessage = 'Please wait before requesting another code';
+          this.errorMessage = 'Please wait a bit before requesting another verification code.';
         } else if (error.status === 0) {
-          this.errorMessage = 'Cannot connect to server';
+          this.errorMessage = 'We couldn\'t connect to our server. Please check your internet connection.';
         } else {
-          this.errorMessage = error.error?.message || 'Failed to resend code. Please try again.';
+          this.errorMessage = error.error?.message || 'We couldn\'t resend the verification code. Please check your connection and try again.';
         }
       }
     });

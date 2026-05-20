@@ -109,8 +109,7 @@ export class RouteGeneratorComponent implements OnInit {
                             }))
                             .filter((stop: any) => stop.lat !== 0 && stop.lng !== 0); // Remove invalid coordinates
 
-                        console.log('[RouteGenerator] Loaded nearby stops:', this.nearbyStops.length);
-                    },
+                                            },
                     error: (err: any) => {
                         console.error('[RouteGenerator] Failed to load nearby stops:', err);
                         this.nearbyStops = [];
@@ -147,8 +146,7 @@ export class RouteGeneratorComponent implements OnInit {
                     }))
                     .filter((stop: any) => stop.lat !== 0 && stop.lng !== 0);
 
-                console.log('[RouteGenerator] Search results:', this.searchResults.length);
-            },
+                            },
             error: (err: any) => {
                 console.error('[RouteGenerator] Search failed:', err);
                 this.searchResults = [];
@@ -180,8 +178,7 @@ export class RouteGeneratorComponent implements OnInit {
             lng: this.selectedTo.lng
         };
 
-        console.log('[RouteGenerator] Generating route from:', fromLocation, 'to:', toLocation);
-
+        
         this.alongService.generateRoute(fromLocation, toLocation).subscribe({
             next: (response: any) => {
                 this.loading = false;
@@ -201,11 +198,7 @@ export class RouteGeneratorComponent implements OnInit {
                     this.totalDuration = bestRoute.totalDuration || 0;
                 }
 
-                console.log('[RouteGenerator] Route summary:', {
-                    legs: this.routeLegs.length,
-                    dist: this.totalDistance
-                });
-
+                
                 if (this.routeLegs.length === 0) {
                     this.error = 'No valid routes found between these locations.';
                 }

@@ -89,22 +89,22 @@
 
   // Active state - Modern pill style
   &.active {
-    color: #3b82f6;
-    background: rgba(59, 130, 246, 0.08);
+    color: var(--primary);
+    background: rgba(var(--primary-rgb), 0.08);
 
     .nav-icon {
       transform: scale(1.05);
       
       ::ng-deep svg {
-        stroke: #3b82f6;
+        stroke: var(--primary);
         stroke-width: 2.5px;
-        fill: rgba(59, 130, 246, 0.1);
+        fill: rgba(var(--primary-rgb), 0.1);
       }
     }
 
     .nav-label {
       font-weight: 600;
-      color: #3b82f6;
+      color: var(--primary);
       opacity: 1;
     }
   }
@@ -136,16 +136,16 @@
     color: #9ca3af;
 
     &.active {
-      color: #60a5fa;
-      background: rgba(96, 165, 250, 0.12);
+      color: var(--primary-light);
+      background: rgba(var(--primary-rgb), 0.12);
 
       .nav-icon ::ng-deep svg {
-        stroke: #60a5fa;
-        fill: rgba(96, 165, 250, 0.15);
+        stroke: var(--primary-light);
+        fill: rgba(var(--primary-rgb), 0.15);
       }
 
       .nav-label {
-        color: #60a5fa;
+        color: var(--primary-light);
       }
     }
 
@@ -160,6 +160,6 @@
 
 // Accessibility - Focus visible
 .nav-item:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }

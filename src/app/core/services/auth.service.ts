@@ -85,8 +85,7 @@ export class AuthService {
                 const user = JSON.parse(userJson);
                 this.currentUser.set(user);
                 this.isAuthenticated.set(true);
-                console.log('[Auth] User loaded from storage:', user.firstName);
-            } catch (error) {
+                            } catch (error) {
                 console.error('[Auth] Error parsing stored user:', error);
                 this.clearAuth();
             }
@@ -106,8 +105,7 @@ export class AuthService {
                         const user = response.user || response.data?.user;
                         
                         if (token && user) {
-                            console.log('[AuthService] Bypass OTP: immediately logging in registered user');
-                            this.handleAuth(response);
+                                                        this.handleAuth(response);
                         } else {
                             this.router.navigate(['/auth/verify-otp'], {
                                 queryParams: { email: data.email, fromRegistration: 'true' }
@@ -151,7 +149,7 @@ export class AuthService {
             client_id: environment.googleClientId,
             callback: (response: any) => {
                 this.handleSocialAuth('google', response.credential).subscribe({
-                    next: (res) => console.log('[Auth] Google login success'),
+                    next: (res) => void 0,
                     error: (err) => console.error('[Auth] Google login failed', err)
                 });
             },

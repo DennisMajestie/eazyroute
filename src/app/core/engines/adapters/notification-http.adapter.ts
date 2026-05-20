@@ -33,8 +33,7 @@ export class NotificationHttpAdapter implements INotificationService {
    * Send milestone notification
    */
   async sendMilestoneNotification(userId: string, milestone: TripMilestone): Promise<void> {
-    console.log('[NotificationAdapter] Milestone reached:', milestone);
-
+    
     // Send to backend (for push notifications, logging, etc.)
     try {
       await firstValueFrom(
@@ -70,8 +69,7 @@ export class NotificationHttpAdapter implements INotificationService {
    * Send reroute notification
    */
   async sendRerouteNotification(userId: string, reason: string): Promise<void> {
-    console.log('[NotificationAdapter] Reroute detected:', reason);
-
+    
     // Send to backend
     try {
       await firstValueFrom(
@@ -104,8 +102,7 @@ export class NotificationHttpAdapter implements INotificationService {
    * Send trip completed notification
    */
   async sendTripCompletedNotification(userId: string, summary: TripSummary): Promise<void> {
-    console.log('[NotificationAdapter] Trip completed:', summary);
-
+    
     // Send to backend
     try {
       await firstValueFrom(
@@ -152,8 +149,7 @@ export class NotificationHttpAdapter implements INotificationService {
    * Show in-app alert
    */
   async showInAppAlert(title: string, message: string): Promise<void> {
-    console.log(`[Alert] ${title}: ${message}`);
-
+    
     // You can integrate with Angular Material Snackbar or custom toast service
     // For now, using native alert as fallback
 
@@ -201,8 +197,7 @@ export class NotificationHttpAdapter implements INotificationService {
           platform: this.getPlatform()
         })
       );
-      console.log('[NotificationAdapter] Device registered for push notifications');
-    } catch (error) {
+          } catch (error) {
       console.error('[NotificationAdapter] Error registering device:', error);
     }
   }
@@ -217,8 +212,7 @@ export class NotificationHttpAdapter implements INotificationService {
           deviceToken
         })
       );
-      console.log('[NotificationAdapter] Device unregistered from push notifications');
-    } catch (error) {
+          } catch (error) {
       console.error('[NotificationAdapter] Error unregistering device:', error);
     }
   }

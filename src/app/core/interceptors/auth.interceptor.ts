@@ -53,8 +53,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                     localStorage.removeItem(environment.storageKeys.token);
                     router.navigate(['/auth/login']);
                 } else {
-                    console.log('[AuthInterceptor] 401 on optional endpoint (OK):', req.url);
-                }
+                                    }
             }
             return throwError(() => error);
         })

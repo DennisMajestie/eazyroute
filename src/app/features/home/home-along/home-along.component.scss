@@ -548,17 +548,107 @@
 
 /* ==================== RESPONSIVE ==================== */
 
+.form-container-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ==================== AREA CONTEXT ==================== */
+.area-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: var(--space-3) var(--space-5);
+  border-radius: var(--radius-xl);
+  max-width: 540px;
+  margin: var(--space-4) auto 0;
+  gap: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+
+.area-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  text-align: left;
+}
+
+.area-icon {
+  font-size: var(--text-xl);
+}
+
+.area-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.area-name {
+  font-weight: var(--font-bold);
+  font-size: var(--text-base);
+  color: white;
+}
+
+.area-location {
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.change-location-btn {
+  background-color: var(--accent);
+  color: var(--text-primary);
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  white-space: nowrap;
+
+  &:hover {
+    background-color: white;
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+  }
+}
+
 @media (min-width: 1024px) {
   .main-content {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-8);
-    max-width: 1400px;
+    grid-template-columns: 1.25fr 1fr;
+    gap: var(--space-10);
+    max-width: 1200px;
+    margin: 0 auto;
     align-items: start;
+    padding: var(--space-8) var(--space-6);
+  }
+
+  .planner-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .suggestions-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+  }
+
+  .form-container-box {
+    background: white;
+    border-radius: var(--radius-2xl);
+    padding: var(--space-8);
+    box-shadow: 0 15px 35px rgba(26, 77, 46, 0.04);
+    border: 1px solid rgba(26, 77, 46, 0.05);
   }
 
   .find-route-btn {
-    grid-column: span 1;
+    margin-bottom: 0;
   }
 
   .divider {
@@ -570,8 +660,9 @@
   }
 
   .footer-info {
-    max-width: 1400px;
-    margin-top: var(--space-8);
+    max-width: 1200px;
+    margin: var(--space-8) auto 0;
+    padding: 0 var(--space-6);
   }
 }
 

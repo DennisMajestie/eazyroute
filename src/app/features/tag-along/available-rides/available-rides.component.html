@@ -1,7 +1,7 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold">Available Rides</h2>
-        <a routerLink="/tag-along/create" class="btn btn-primary">
+        <a (click)="showComingSoon('Ride Creation', $event)" class="btn btn-primary" style="cursor: pointer;">
             <i class="fas fa-plus me-2"></i>Create Ride
         </a>
     </div>
@@ -100,7 +100,7 @@
                         </div>
                         <div class="text-end">
                             <small class="d-block text-muted mb-1">{{ ride.availableSeats }} seats left</small>
-                            <button class="btn btn-sm btn-outline-primary" [routerLink]="['/tag-along', ride._id]">
+                             <button class="btn btn-sm btn-outline-primary" (click)="showComingSoon('Ride Booking Details', $event)">
                                 View Details
                             </button>
                         </div>

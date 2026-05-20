@@ -51,12 +51,11 @@ export class RegisterComponent {
     this.successMessage = '';
 
     if (!this.isFormValid()) {
-      this.errorMessage = 'Please fill all fields correctly';
+      this.errorMessage = 'Please fill in all details correctly to continue.';
       return;
     }
 
     this.isCreating = true;
-    console.log('Starting registration...');
 
     const registerRequest: RegisterRequest = {
       email: this.email,
@@ -66,11 +65,10 @@ export class RegisterComponent {
       confirmPassword: this.confirmPassword
     };
 
-    console.log('Register request:', registerRequest);
+
 
     this.authService.register(registerRequest).subscribe({
       next: (response) => {
-        console.log('Registration response:', response);
         this.isCreating = false;
 
         if (response.success) {
@@ -83,35 +81,34 @@ export class RegisterComponent {
             // → navigation to /onboarding or /dashboard already triggered
             this.successMessage = 'Registration successful! Logging you in...';
             sessionStorage.setItem('isNewRegistration', 'true');
-            console.log('[Register] Token stored by AuthService, navigation in progress.');
+
           } else {
             // OTP path — AuthService already navigated to verify-otp
             this.successMessage = 'Registration successful! Redirecting to OTP verification...';
             sessionStorage.setItem('isNewRegistration', 'true');
-            console.log('[Register] No token — OTP verification required.');
+
           }
         } else {
           this.isCreating = false;
-          this.errorMessage = response.message || 'Registration failed';
+          this.errorMessage = response.message || 'We couldn\'t complete your registration. Please try again.';
         }
       },
       error: (error) => {
-        console.log('Registration error:', error);
         this.isCreating = false;
 
         // Handle different error scenarios
         if (error.status === 409) {
-          this.errorMessage = 'Email or phone number already registered.';
+          this.errorMessage = 'This email or phone number is already registered. Try logging in instead!';
         } else if (error.status === 400) {
           if (error.error?.errors && Array.isArray(error.error.errors)) {
             this.errorMessage = error.error.errors.join('. ');
           } else {
-            this.errorMessage = error.error?.message || 'Invalid input. Please check your data.';
+            this.errorMessage = error.error?.message || 'Please check your input details. Some fields seem invalid.';
           }
         } else if (error.status === 0) {
-          this.errorMessage = 'Cannot connect to server. Please check your connection.';
+          this.errorMessage = 'We can\'t reach our servers right now. Please check your internet connection and try again.';
         } else {
-          this.errorMessage = error.error?.message || 'Registration failed. Please try again.';
+          this.errorMessage = error.error?.message || 'Registration did not complete. Please check your connection and try again.';
         }
 
         console.error('Registration error details:', error);
@@ -172,17 +169,14 @@ export class RegisterComponent {
   }
 
   loginWithGoogle(): void {
-    console.log('Google OAuth initiated');
     // Implement Google OAuth later
   }
 
   loginWithApple(): void {
-    console.log('Apple Sign-In initiated');
     // Implement Apple Sign-In later
   }
 
   goToLogin(): void {
-    console.log('Navigate to login');
     this.router.navigate(['/login']);
   }
 }

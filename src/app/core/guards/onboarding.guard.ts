@@ -10,17 +10,12 @@ export const onboardingGuard: CanActivateFn = (route, state) => {
     const user = authService.getUserValue();
     const hasCompletedOnboarding = user?.onboardingComplete === true;
 
-    console.log('Onboarding Guard - User:', user?.firstName);
-    console.log('Onboarding Guard - Completed:', hasCompletedOnboarding);
-
     // If user has already completed onboarding, redirect to dashboard
     if (hasCompletedOnboarding) {
-        console.log('Onboarding Guard - Already completed, redirecting to dashboard');
         router.navigate(['/dashboard']);
         return false;
     }
 
     // Allow access to onboarding
-    console.log('✅ Onboarding Guard - Access granted');
     return true;
 };

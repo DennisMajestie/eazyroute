@@ -3,7 +3,7 @@
 <nav class="bottom-nav">
     <div class="bottom-nav-container">
         @for (item of visibleNavItems(); track item.route) {
-        <a [routerLink]="item.route" routerLinkActive="active" class="nav-item" [attr.aria-label]="item.label">
+        <a [routerLink]="item.unimplemented ? null : item.route" routerLinkActive="active" class="nav-item" [attr.aria-label]="item.label" (click)="handleNavClick(item, $event)" [style.cursor]="item.unimplemented ? 'pointer' : null">
             <div class="nav-icon" [innerHTML]="item.icon"></div>
             <span class="nav-label">{{ item.label }}</span>
         </a>

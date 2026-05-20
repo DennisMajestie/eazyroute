@@ -157,8 +157,7 @@ export class ReroutingEngine {
     // Track deviation start time
     if (!this.deviationStartTime) {
       this.deviationStartTime = new Date();
-      console.log('[Rerouting] Deviation detected, starting timer');
-    }
+          }
 
     const deviationDuration = this.getDeviationDuration();
     this.consecutiveDeviations++;
@@ -211,8 +210,7 @@ export class ReroutingEngine {
     tripState: TripState,
     analysis: DeviationAnalysis
   ): Promise<void> {
-    console.log('[Rerouting] Initiating reroute process', analysis);
-
+    
     // Mark deviation detected
     tripState.deviationDetected = true;
 
@@ -243,8 +241,7 @@ export class ReroutingEngine {
     tripState: TripState,
     analysis: DeviationAnalysis
   ): Promise<void> {
-    console.log('[Rerouting] Executing automatic reroute');
-
+    
     // Show notification
     await this.notificationService.showInAppAlert(
       'Route Deviation Detected',
@@ -272,8 +269,7 @@ export class ReroutingEngine {
     tripState: TripState,
     analysis: DeviationAnalysis
   ): Promise<void> {
-    console.log('[Rerouting] Prompting user for reroute decision');
-
+    
     // Generate alternative route first
     const newRoute = await this.generateAlternativeRoute(tripState);
 
@@ -325,10 +321,7 @@ export class ReroutingEngine {
 
       const destination = tripState.destinationLocation;
 
-      console.log('[Rerouting] Generating alternative route from current location via AlongService');
-      console.log('[Rerouting] Current Location:', currentLocation);
-      console.log('[Rerouting] Destination:', destination);
-
+                  
       if (!this.isValidLocation(currentLocation) || !this.isValidLocation(destination)) {
         console.error('[Rerouting] Invalid location data for reroute');
         return null;
@@ -347,14 +340,12 @@ export class ReroutingEngine {
         name: 'Destination'
       };
 
-      console.log('[Rerouting] Payload:', { from: fromPayload, to: toPayload });
-
+      
       const response = await firstValueFrom(this.alongService.generateRoute(fromPayload, toPayload));
 
       if (response && response.success && response.data && response.data.length > 0) {
         const mappedRoute = this.mapAlongRouteToGeneratedRoute(response.data[0]);
-        console.log('[Rerouting] Alternative route generated:', mappedRoute);
-        return mappedRoute;
+                return mappedRoute;
       } else {
         console.warn('[Rerouting] AlongService returned no routes for reroute:', response);
       }
@@ -437,8 +428,7 @@ export class ReroutingEngine {
     newRoute: GeneratedRoute,
     trigger: 'auto' | 'manual'
   ): Promise<void> {
-    console.log('[Rerouting] Applying new route', { trigger });
-
+    
     if (!tripState.currentLocation) return;
 
     // Store old route in history
@@ -505,8 +495,7 @@ export class ReroutingEngine {
       return;
     }
 
-    console.log('[Rerouting] User declined reroute');
-
+    
     // Clear pending reroute
     this.pendingRerouteSubject.next(null);
 
@@ -582,8 +571,7 @@ export class ReroutingEngine {
     // Don't reroute too frequently
     const maxAttempts = this.config.maxRerouteAttempts || 3;
     if (tripState.rerouteCount >= maxAttempts) {
-      console.log('[Rerouting] Max reroute attempts reached');
-      return false;
+            return false;
     }
 
     // Severe deviations trigger after a small warm-up period (to avoid GPS glitch/init alerts)
@@ -650,8 +638,7 @@ export class ReroutingEngine {
    * Reset engine state
    */
   reset(): void {
-    console.log('[ReroutingEngine] Resetting engine state');
-    this.pendingRerouteSubject.next(null);
+        this.pendingRerouteSubject.next(null);
     this.resetDeviationTracking();
     this.rerouteHistory = [];
     this.rerouteEventsSubject.next(null);
@@ -700,8 +687,7 @@ export class ReroutingEngine {
 
   private emitDeviationEvent(event: DeviationEvent): void {
     this.rerouteEventsSubject.next(event);
-    console.log('[Rerouting] Event emitted:', event.type);
-  }
+      }
 
   private isValidLocation(location: any): boolean {
     return location &&

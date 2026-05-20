@@ -99,8 +99,7 @@ export class RerouteHandlerService {
             decision
         });
 
-        console.log('[RerouteHandler] Proposed reroute:', decision.reason);
-    }
+            }
 
     /**
      * User accepts the pending reroute
@@ -141,8 +140,7 @@ export class RerouteHandlerService {
         });
 
         this.pendingDecision.set(null);
-        console.log('[RerouteHandler] User declined reroute');
-    }
+            }
 
     /**
      * Record a successfully applied reroute
@@ -172,8 +170,7 @@ export class RerouteHandlerService {
             timestamp: new Date()
         });
 
-        console.log('[RerouteHandler] Reroute applied successfully');
-    }
+            }
 
     /**
      * Record a failed reroute attempt

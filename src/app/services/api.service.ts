@@ -245,18 +245,13 @@ export class ApiService {
     * Verify OTP
     */
     verifyOTP(request: any): Observable<AuthResponse> {
-        console.log('🔧 API Service: verifyOTP called with:', request);
-        console.log('🔧 API Service: URL:', this.urls.allUrl.auth.verifyOTP);
-
+                
         return this.postData(this.urls.allUrl.auth.verifyOTP, request).pipe(
             tap({
                 next: (response: AuthResponse) => {
-                    console.log('🔧 API Service: Response received in tap:', response);
-                    if (response && response.success) {
-                        console.log('🔧 API Service: Saving auth data...');
-                        this.saveAuthData(response);
-                        console.log('🔧 API Service: Auth data saved');
-                    } else {
+                                        if (response && response.success) {
+                                                this.saveAuthData(response);
+                                            } else {
                         console.warn('🔧 API Service: Response does not have success=true', response);
                     }
                 },

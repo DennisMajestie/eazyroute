@@ -55,8 +55,7 @@ export class ModerationQueueComponent implements OnInit {
       .subscribe(notif => {
         // Handle both moderation (mod-) and community (comm-) notifications
         if ((notif.id.startsWith('mod-') || notif.id.startsWith('comm-')) && notif.data) {
-          console.log('[Moderation] Real-time item received:', notif.data);
-
+          
           // Map backend format to frontend format
           const rawData: any = notif.data.data || notif.data; // Handle wrapper or direct object
           

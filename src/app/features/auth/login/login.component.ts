@@ -47,12 +47,12 @@ export class LoginComponent implements OnDestroy {
         this.isWakeUpWaiting = false;
 
         if (!this.email || !this.password) {
-            this.errorMessage = 'Please enter email and password';
+            this.errorMessage = 'Please enter your email and password to log in.';
             return;
         }
 
         if (!this.isValidEmail(this.email)) {
-            this.errorMessage = 'Please enter a valid email';
+            this.errorMessage = 'Please enter a valid email address.';
             return;
         }
 
@@ -77,8 +77,6 @@ export class LoginComponent implements OnDestroy {
                 if (this.wakeUpTimer) clearTimeout(this.wakeUpTimer);
 
                 if (response.success) {
-                    console.log('✅ Login successful');
-
                     // Store rememberMe preference
                     if (this.rememberMe) {
                         localStorage.setItem('rememberMe', 'true');
@@ -87,7 +85,7 @@ export class LoginComponent implements OnDestroy {
                     this.successMessage = 'Login successful! Redirecting...';
                     // AuthService handles navigation automatically
                 } else {
-                    this.errorMessage = response.message || 'Login failed';
+                    this.errorMessage = response.message || 'We couldn\'t log you in. Please check your credentials and try again.';
                 }
             },
             error: (error) => {
@@ -96,9 +94,9 @@ export class LoginComponent implements OnDestroy {
                 if (this.wakeUpTimer) clearTimeout(this.wakeUpTimer);
 
                 if (error.status === 401) {
-                    this.errorMessage = 'Invalid email or password';
+                    this.errorMessage = 'Incorrect email or password. Please try again.';
                 } else if (error.status === 403) {
-                    this.errorMessage = 'Please verify your email first';
+                    this.errorMessage = 'Please verify your email address before logging in.';
                     setTimeout(() => {
                         this.router.navigate(['/auth/verify-otp'], {
                             queryParams: {
@@ -108,7 +106,7 @@ export class LoginComponent implements OnDestroy {
                         });
                     }, 2000);
                 } else {
-                    this.errorMessage = error.error?.message || 'Login failed. Please try again.';
+                    this.errorMessage = error.error?.message || 'Login failed. Please check your connection and try again.';
                 }
 
                 console.error('❌ Login error:', error);

@@ -91,8 +91,7 @@ export class TripLifecycleService {
             startLocation: request.startLocation
         });
 
-        console.log('[TripLifecycle] Trip started:', tripId);
-        return tripState;
+                return tripState;
     }
 
     /**
@@ -114,8 +113,7 @@ export class TripLifecycleService {
         this.activeTrip.set(updatedTrip);
         this.emitEvent('paused', trip.tripId);
 
-        console.log('[TripLifecycle] Trip paused:', trip.tripId);
-        return true;
+                return true;
     }
 
     /**
@@ -137,8 +135,7 @@ export class TripLifecycleService {
         this.activeTrip.set(updatedTrip);
         this.emitEvent('resumed', trip.tripId);
 
-        console.log('[TripLifecycle] Trip resumed:', trip.tripId);
-        return true;
+                return true;
     }
 
     /**
@@ -164,8 +161,7 @@ export class TripLifecycleService {
             segmentsCompleted: trip.currentSegmentIndex + 1
         });
 
-        console.log('[TripLifecycle] Trip completed:', trip.tripId);
-        return completedTrip;
+                return completedTrip;
     }
 
     /**
@@ -188,8 +184,7 @@ export class TripLifecycleService {
         this.activeTrip.set(null);
         this.emitEvent('cancelled', trip.tripId, { reason });
 
-        console.log('[TripLifecycle] Trip cancelled:', trip.tripId, reason);
-        return cancelledTrip;
+                return cancelledTrip;
     }
 
     // ═══════════════════════════════════════════════════════════════

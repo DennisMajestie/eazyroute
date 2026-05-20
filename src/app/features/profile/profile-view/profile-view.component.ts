@@ -230,8 +230,7 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
 
     this.authService.updateProfile(this.editForm).subscribe({
       next: (response) => {
-        console.log('Profile updated successfully');
-        this.isSavingProfile = false;
+                this.isSavingProfile = false;
         this.isEditingProfile = false;
       },
       error: (error) => {
@@ -268,7 +267,7 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
       this.userAvatar = e.target.result;
       // Update in backend
       this.authService.updateProfile({ avatar: e.target.result } as any).subscribe({
-        next: () => console.log('Avatar updated'),
+        next: () => void 0,
         error: (err) => console.error('Avatar upload failed:', err)
       });
     };

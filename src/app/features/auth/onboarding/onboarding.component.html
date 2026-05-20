@@ -45,7 +45,7 @@
 
                     <div class="city-grid">
                         <button *ngFor="let city of cities" (click)="updateFormData('city', city.name)"
-                            [class.selected]="formData.city === city.name" class="city-card">
+                            [class.selected]="formData.city === city.name" [disabled]="city.name !== 'Abuja'" class="city-card">
                             <div class="city-icon">{{ city.icon }}</div>
                             <div class="city-name">{{ city.name }}</div>
                         </button>
@@ -140,6 +140,34 @@
                     </svg>
                 </button>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Disclaimer Modal Overlay -->
+<div *ngIf="showDisclaimer" class="modal-overlay animate-fade-in">
+    <div class="disclaimer-modal">
+        <div class="modal-header">
+            <div class="warning-icon">🇳🇬</div>
+            <h2>Let's Align! 🤝</h2>
+        </div>
+        <div class="modal-body">
+            <p class="formal-text">
+                Welcome to <strong>Along_9ja</strong>. We are committed to building a highly reliable navigation network for Abuja, but we want to be open: <strong>our system is not 100% perfect yet.</strong>
+            </p>
+            <div class="info-highlight">
+                <p>
+                    Along_9ja depends solely on real-time contributions from commuters like you to build, refine, and maintain the integrity of our route data.
+                </p>
+            </div>
+            <p class="friendly-text">
+                So if you see any route or bus stop information that is slightly off, <em>no vex</em>! With your quick feedback and updates, we can make routing smooth for everyone. Make we join hands build this platform together!
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button (click)="acceptDisclaimer()" class="btn btn-primary btn-large">
+                Make We Go! 🚀
+            </button>
         </div>
     </div>
 </div>

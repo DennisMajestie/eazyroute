@@ -57,8 +57,7 @@ export class CommunityIntelligenceComponent implements OnInit, AfterViewInit, On
       .pipe(takeUntil(this.destroy$))
       .subscribe(notif => {
         if (notif.data && (notif.id.startsWith('cong-') || notif.data.reportType)) {
-          console.log('[CIL] Real-time report received:', notif.data);
-          
+                    
           const report: CommunityReport = notif.data; // Assumption: data is the report object
           
           if (!this.reports.some(r => r.timestamp === report.timestamp && r.location.lat === report.location.lat)) {

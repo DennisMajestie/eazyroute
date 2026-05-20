@@ -22,7 +22,7 @@
                 Dashboard
             </a>
 
-            <a routerLink="/routes" routerLinkActive="active" class="nav-link">
+            <a (click)="showComingSoon('Routes & Explore', $event)" routerLinkActive="active" class="nav-link" style="cursor: pointer;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none">
                     <path d="M9 11L12 14L22 4" stroke="currentColor" stroke-width="2" />
                     <path
@@ -129,7 +129,7 @@
         <a routerLink="/dashboard" routerLinkActive="active" class="mobile-nav-link">
             Dashboard
         </a>
-        <a routerLink="/routes" routerLinkActive="active" class="mobile-nav-link">
+        <a (click)="showComingSoon('Routes & Explore', $event)" routerLinkActive="active" class="mobile-nav-link" style="cursor: pointer;">
             Routes
         </a>
         <a routerLink="/tag-along" routerLinkActive="active" class="mobile-nav-link">

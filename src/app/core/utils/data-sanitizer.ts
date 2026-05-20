@@ -130,12 +130,10 @@ export class DataSanitizer {
 
             if (schemaIdentifier === 'trip') {
                 // Robust ID extraction for trips
-                console.log('[DataSanitizer] Sanitizing trip data, raw data:', JSON.stringify(data));
-                let id = data._id || data.id || (typeof data === 'string' ? data : null);
+                                let id = data._id || data.id || (typeof data === 'string' ? data : null);
 
                 if (typeof id === 'object' && id !== null) {
-                    console.log('[DataSanitizer] id is an object, extracting...', id);
-                    id = id.$oid || id.id || id._id || (typeof id.toString === 'function' && id.toString() !== '[object Object]' ? id.toString() : null);
+                                        id = id.$oid || id.id || id._id || (typeof id.toString === 'function' && id.toString() !== '[object Object]' ? id.toString() : null);
 
                     if (!id) {
                         // Exhaustive search for something that looks like an ID string (24 hex chars)
@@ -158,8 +156,7 @@ export class DataSanitizer {
                     sanitized.endTime = null;
                 }
 
-                console.log('[DataSanitizer] Resulting sanitized.id:', sanitized.id);
-            }
+                            }
 
             return sanitized as T;
         }

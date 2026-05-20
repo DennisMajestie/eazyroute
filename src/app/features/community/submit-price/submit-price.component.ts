@@ -59,8 +59,7 @@ export class SubmitPriceComponent {
             distance: this.distance
         };
 
-        console.log('[SubmitPrice] Sending Community Submission:', payload);
-
+        
         if (payload.fromStopId === 'UNKNOWN_STOP' || payload.toStopId === 'UNKNOWN_STOP') {
             console.warn('[SubmitPrice] Warning: One or both stops have UNKNOWN_STOP IDs. Proceeding with name-based identification.', {
                 from: this.fromStopName,

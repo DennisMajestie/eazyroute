@@ -251,8 +251,7 @@ export class HomeAlongComponent implements OnInit {
       // 0. Prioritize User-Defined Primary Location
       const primary = this.geolocationService.getPrimaryLocation();
       if (primary && this.geolocationService.isValidCoordinates(primary.latitude, primary.longitude)) {
-        console.log('[HomeAlong] Loading Primary Default Location');
-        this.isDefaultSelected = true;
+                this.isDefaultSelected = true;
         const detectedLocation: SelectedLocation = {
           type: 'anchor',
           name: `Home Location`,
@@ -338,8 +337,7 @@ export class HomeAlongComponent implements OnInit {
       if (lastKnown) {
         try {
           const { lat, lng } = JSON.parse(lastKnown);
-          console.log('Using Last Known Location:', lat, lng);
-
+          
           const detectedLocation: SelectedLocation = {
             type: 'bus_stop',
             name: `Last Known Location`,
@@ -607,7 +605,7 @@ export class HomeAlongComponent implements OnInit {
           description: `User-refined name for OSM point: ${result.originalName}`,
           localNames: [result.originalName]
         }).subscribe({
-          next: () => console.log('[HomeAlong] Name refinement submitted'),
+          next: () => void 0,
           error: (err: any) => console.error('[HomeAlong] Refinement failed:', err)
         });
       }

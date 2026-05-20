@@ -121,8 +121,7 @@ export class MilestoneTrackerService {
         this.milestones.set(milestones);
         this.currentMilestoneIndex.set(0);
 
-        console.log('[MilestoneTracker] Initialized with', milestones.length, 'milestones');
-    }
+            }
 
     /**
      * Reset milestone tracking
@@ -187,8 +186,7 @@ export class MilestoneTrackerService {
             timestamp: new Date()
         });
 
-        console.log('[MilestoneTracker] Reached:', milestone.stopName);
-    }
+            }
 
     private emitApproaching(tripId: string, milestoneIndex: number): void {
         const milestone = this.milestones()[milestoneIndex];

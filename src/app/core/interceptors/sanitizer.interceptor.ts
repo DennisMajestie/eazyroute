@@ -34,10 +34,8 @@ export const sanitizerInterceptor: HttpInterceptorFn = (req, next) => {
                         if (req.url.includes('/trips')) schema = 'trip';
                         if (req.url.includes('/rerouting')) schema = 'reroute';
 
-                        console.log(`[SanitizerInterceptor] Identified schema: ${schema} for URL: ${req.url}`);
-                        const sanitizedData = DataSanitizer.sanitize(body.data, schema);
-                        console.log(`[SanitizerInterceptor] Sanitized data:`, sanitizedData);
-
+                                                const sanitizedData = DataSanitizer.sanitize(body.data, schema);
+                        
                         return event.clone({
                             body: {
                                 ...body,

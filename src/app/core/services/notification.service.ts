@@ -117,8 +117,7 @@ export class NotificationService {
         this.notificationSubject.next(notif);
         
         // Log to console for debugging
-        console.log(`[Admin Notification] ${notif.severity.toUpperCase()}: ${notif.title} - ${notif.message}`);
-    }
+            }
 
     /**
      * Special helper for Success alerts

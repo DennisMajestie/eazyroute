@@ -57,8 +57,7 @@ export class WebSocketService {
 
     private initSocket(): void {
         if (environment.useMockSockets) {
-            console.log('🔌 Using Mock WebSockets');
-            this.connectionStatus.set('connected');
+                        this.connectionStatus.set('connected');
             return;
         }
 
@@ -77,8 +76,7 @@ export class WebSocketService {
         const socketUrl = environment.socketUrl || environment.apiUrl.replace('/api/v1', '');
 
         this.connectionStatus.set('connecting');
-        console.log('[WebSocket] Connecting to:', socketUrl);
-
+        
         this.socket = io(socketUrl, {
             path: '/socket.io',
             autoConnect: true,
@@ -103,15 +101,13 @@ export class WebSocketService {
         if (!this.socket) return;
 
         this.socket.on('connect', () => {
-            console.log('✅ WebSocket connected');
-            this.reconnectAttempts = 0;
+                        this.reconnectAttempts = 0;
             this.connectionStatus.set('connected');
             this.connectionError.set(null);
         });
 
         this.socket.on('disconnect', (reason) => {
-            console.log('🔌 WebSocket disconnected:', reason);
-            this.connectionStatus.set('disconnected');
+                        this.connectionStatus.set('disconnected');
         });
 
         this.socket.on('connect_error', (error: any) => {
@@ -120,20 +116,17 @@ export class WebSocketService {
             this.connectionError.set(error.message);
 
             if (error.message === 'Token expired' || error.message === 'jwt expired') {
-                console.log('[WebSocket] Token expired, attempting refresh...');
-                this.handleTokenExpiry();
+                                this.handleTokenExpiry();
             }
         });
 
         this.socket.io.on('reconnect_attempt', (attempt) => {
-            console.log(`🔄 WebSocket reconnecting... attempt ${attempt}`);
-            this.reconnectAttempts = attempt;
+                        this.reconnectAttempts = attempt;
             this.connectionStatus.set('reconnecting');
         });
 
         this.socket.io.on('reconnect', () => {
-            console.log('✅ WebSocket reconnected');
-            this.reconnectAttempts = 0;
+                        this.reconnectAttempts = 0;
             this.connectionStatus.set('connected');
             this.connectionError.set(null);
         });
@@ -145,24 +138,20 @@ export class WebSocketService {
         });
 
         this.socket.on('trip_update', (update: any) => {
-            console.log('🚍 Trip Update:', update);
-        });
+                    });
 
         this.socket.on('deviation_update', (update: any) => {
-            console.log('⚠️ Deviation Update:', update);
-        });
+                    });
 
         // Catch-all for diagnostics
         this.socket.onAny((eventName, ...args) => {
-            console.log(`📡 [Socket Event] ${eventName}:`, args[0]);
-        });
+                    });
     }
 
     private async handleTokenExpiry(): Promise<void> {
         try {
             await this.authService.refreshUserData().toPromise();
-            console.log('[WebSocket] Token refreshed, reconnecting...');
-            this.reconnect();
+                        this.reconnect();
         } catch (error) {
             console.error('[WebSocket] Token refresh failed:', error);
             this.connectionError.set('Authentication failed - please login again');
@@ -186,8 +175,7 @@ export class WebSocketService {
 
     emit(eventName: string, data: any): void {
         if (environment.useMockSockets) {
-            console.log(`[Mock WS] Emitting: ${eventName}`, data);
-
+            
             if (!this.mockSubjects.has(eventName)) {
                 this.mockSubjects.set(eventName, new Subject<any>());
             }

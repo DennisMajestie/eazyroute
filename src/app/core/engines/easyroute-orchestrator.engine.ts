@@ -155,14 +155,12 @@ export class EasyRouteOrchestrator implements OnDestroy {
   // ═══════════════════════════════════════════════════════════════
 
   private async initialize(): Promise<void> {
-    console.log('[EasyRoute] Initializing orchestrator (refactored)...');
-
+    
     try {
       this.connectEngineEvents();
       await this.checkForActiveTrips();
       this.updateState({ isInitialized: true });
-      console.log('[EasyRoute] Orchestrator initialized successfully');
-    } catch (error) {
+          } catch (error) {
       console.error('[EasyRoute] Initialization failed:', error);
       this.updateState({
         isInitialized: false,
@@ -254,8 +252,7 @@ export class EasyRouteOrchestrator implements OnDestroy {
   private async checkForActiveTrips(): Promise<void> {
     const activeTrip = this.tripExecution.getActiveTrip();
     if (activeTrip && activeTrip.status === 'in_progress') {
-      console.log('[EasyRoute] Found active trip, resuming...', activeTrip.tripId);
-      this.updateState({
+            this.updateState({
         hasActiveTrip: true,
         currentTripId: activeTrip.tripId
       });
@@ -271,8 +268,7 @@ export class EasyRouteOrchestrator implements OnDestroy {
     destination: Location,
     maxAlternatives: number = 3
   ): Promise<RouteComparisonResult> {
-    console.log('[EasyRoute] Planning trip...');
-
+    
     try {
       const routes = await this.routeGeneration.generateRoutes(
         origin,
@@ -283,8 +279,7 @@ export class EasyRouteOrchestrator implements OnDestroy {
       // Use the extracted RouteComparator service
       const comparisonResult = this.routeComparator.compare(routes);
 
-      console.log('[EasyRoute] Generated', routes.length, 'route options');
-      return comparisonResult;
+            return comparisonResult;
     } catch (error) {
       console.error('[EasyRoute] Trip planning failed:', error);
       throw error;
@@ -300,8 +295,7 @@ export class EasyRouteOrchestrator implements OnDestroy {
     selectedRoute: GeneratedRoute,
     currentLocation?: Location
   ): Promise<TripState> {
-    console.log('[EasyRoute] Starting trip...');
-
+    
     const startLocation = currentLocation || selectedRoute.segments[0].fromStop;
     const destinationLocation = selectedRoute.segments[selectedRoute.segments.length - 1].toStop;
 
@@ -331,8 +325,7 @@ export class EasyRouteOrchestrator implements OnDestroy {
     // Also start on legacy engine for compatibility
     await this.tripExecution.startTrip(userId, selectedRoute, currentLocation);
 
-    console.log('[EasyRoute] Trip started:', tripState.tripId);
-    return tripState;
+        return tripState;
   }
 
   pauseTrip(): void {
@@ -355,8 +348,7 @@ export class EasyRouteOrchestrator implements OnDestroy {
     await this.tripExecution.stopTrip(completedTrip?.tripId || '', 'completed');
 
     if (completedTrip) {
-      console.log('[EasyRoute] Trip completed:', completedTrip.tripId);
-    }
+          }
   }
 
   async cancelTrip(): Promise<void> {
@@ -450,8 +442,7 @@ export class EasyRouteOrchestrator implements OnDestroy {
   // ═══════════════════════════════════════════════════════════════
 
   private startDeviationMonitoring(tripState: TripState): void {
-    console.log('[EasyRoute] Starting deviation monitoring...');
-
+    
     this.deviationChecker.startMonitoring(
       () => this.tripExecution.getActiveTrip(),
       async (trip) => {

@@ -3,14 +3,19 @@
 .auth-container {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 2rem 1rem;
+  box-sizing: border-box;
 }
 
 .auth-content {
   display: flex;
   width: 100%;
   max-width: 1400px;
+  margin: auto;
+  box-sizing: border-box;
 
   &.centered {
     justify-content: center;

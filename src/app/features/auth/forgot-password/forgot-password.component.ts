@@ -25,13 +25,13 @@
 //       setTimeout(() => {
 //         this.isSending = false;
 //         this.emailSent = true;
-//         console.log('Reset link sent to:', this.email);
+//         void 0
 //       }, 2000);
 //     }
 //   }
 
 //   goToLogin(): void {
-//     console.log('Navigate to login');
+//     void 0
 //     // this.router.navigate(['/login']);
 //   }
 
@@ -143,7 +143,6 @@ export class ForgotPasswordComponent implements OnInit {
       setTimeout(() => {
         this.isResetting = false;
         this.passwordReset = true;
-        console.log('Password reset successful');
 
         // Redirect to login after 3 seconds
         setTimeout(() => {
@@ -154,7 +153,6 @@ export class ForgotPasswordComponent implements OnInit {
   }
 
   goToLogin(): void {
-    console.log('Navigate to login');
     // this.router.navigate(['/login']);
   }
 }

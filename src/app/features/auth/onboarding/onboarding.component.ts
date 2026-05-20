@@ -42,6 +42,7 @@ export class OnboardingComponent {
   };
   errors: Errors = {};
   isSubmitting: boolean = false;
+  showDisclaimer: boolean = false;
 
   cities: City[] = [
     { name: 'Abuja', icon: '🏛️' },
@@ -126,8 +127,6 @@ export class OnboardingComponent {
 
   handleSubmit(): void {
     if (this.validateStep()) {
-      console.log('Form submitted:', this.formData);
-
       this.isSubmitting = true;
 
       const onboardingRequest = {
@@ -135,18 +134,17 @@ export class OnboardingComponent {
         userType: this.formData.userType
       };
 
-      console.log('Sending onboarding data:', onboardingRequest);
+
 
       this.authService.completeOnboarding(onboardingRequest).subscribe({
         next: (response) => {
-          console.log('Onboarding response:', response);
           this.isSubmitting = false;
 
           if (response.success) {
             // Move to success step
             this.currentStep = 2;
           } else {
-            this.errors['submit'] = response.message || 'Failed to save onboarding data';
+            this.errors['submit'] = response.message || 'We couldn\'t save your profile details. Please try again.';
           }
         },
         error: (error) => {
@@ -154,9 +152,9 @@ export class OnboardingComponent {
           this.isSubmitting = false;
 
           if (error.status === 0) {
-            this.errors['submit'] = 'Cannot connect to server. Please check your connection.';
+            this.errors['submit'] = 'We\'re having trouble connecting to our servers. Please check your internet connection and try again.';
           } else {
-            this.errors['submit'] = error.error?.message || 'Failed to save onboarding data. Please try again.';
+            this.errors['submit'] = error.error?.message || 'We couldn\'t save your profile details. Please check your connection and try again.';
           }
         }
       });
@@ -178,7 +176,11 @@ export class OnboardingComponent {
   }
 
   finish(): void {
-    console.log('Onboarding complete! Redirecting to dashboard...');
+    this.showDisclaimer = true;
+  }
+
+  acceptDisclaimer(): void {
+    this.showDisclaimer = false;
     this.router.navigate(['/dashboard']);
   }
 }

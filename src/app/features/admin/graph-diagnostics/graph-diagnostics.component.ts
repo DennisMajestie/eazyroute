@@ -126,8 +126,7 @@ export class GraphDiagnosticsComponent implements OnInit {
   }
 
   manualRepair(node: IsolatedNode): void {
-    console.log('Initiating manual repair for:', node);
-    // Future: Open manual connection wizard
+        // Future: Open manual connection wizard
   }
 
   applySuggestion(suggestion: ConnectionSuggestion): void {

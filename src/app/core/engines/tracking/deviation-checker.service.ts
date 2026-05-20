@@ -83,8 +83,7 @@ export class DeviationCheckerService implements OnDestroy {
             return;
         }
 
-        console.log('[DeviationChecker] Starting deviation monitoring...');
-
+        
         this.activeTripGetter = getTripFn;
         this.deviationChecker = checkDeviationFn;
         this.isMonitoring.set(true);
@@ -108,8 +107,7 @@ export class DeviationCheckerService implements OnDestroy {
         this.activeTripGetter = null;
         this.deviationChecker = null;
 
-        console.log('[DeviationChecker] Stopped deviation monitoring');
-    }
+            }
 
     // ═══════════════════════════════════════════════════════════════
     // DEVIATION CHECKING
@@ -135,8 +133,7 @@ export class DeviationCheckerService implements OnDestroy {
             this.currentDeviation.set(analysis);
 
             if (analysis.isDeviated) {
-                console.log('[DeviationChecker] Deviation detected:', analysis);
-
+                
                 this.deviationSubject.next({
                     tripId: currentTrip.tripId,
                     analysis,

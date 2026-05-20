@@ -110,6 +110,5 @@ export class GamificationService {
     }
 
     showPointsEarned(points: number): void {
-        console.log(`+${points} points earned!`);
-    }
+            }
 }

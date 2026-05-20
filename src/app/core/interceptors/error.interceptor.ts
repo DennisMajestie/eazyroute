@@ -8,35 +8,42 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
-            let errorMessage = 'An unexpected error occurred';
+            let errorMessage = 'Something went wrong. Please try again.';
             let errorTitle = 'System Error';
+            let shouldShowToast = false;
 
             if (error.error instanceof ErrorEvent) {
                 // Client-side error
                 errorMessage = error.error.message;
+                shouldShowToast = true;
             } else {
                 // Server-side error
-                // Extract message from backend response if available
-                errorMessage = error.error?.message || error.message || errorMessage;
+                // Extract message from backend response if available, guarding against technical Http failure messages
+                const rawMessage = error.error?.message || error.message;
+                errorMessage = (rawMessage && !rawMessage.includes('Http failure')) ? rawMessage : 'Something went wrong. Please try again.';
                 
-                // Specific Handling for Conflict/Validation
-                if (error.status === 400 || error.status === 409 || error.status === 412) {
-                    errorTitle = 'Action Required';
-                    if (errorMessage.toLowerCase().includes('already exists')) {
-                        errorTitle = 'Already Exists';
-                    }
-                } else if (error.status === 500) {
-                    errorTitle = 'Server Engine Failure';
+                // Specific Handling for global connection and server issues
+                if (error.status === 500) {
+                    errorTitle = 'Temporary Server Issue';
+                    errorMessage = 'Our servers are experiencing a temporary issue. Please try again in a moment.';
+                    shouldShowToast = true;
                 } else if (error.status === 0) {
                     errorTitle = 'Connection Error';
-                    errorMessage = 'We cannot connect to the EazyRoute servers. Please check your internet.';
+                    errorMessage = 'We couldn\'t connect to our servers. Please check your internet connection.';
+                    shouldShowToast = true;
+                } else if (error.status >= 500) {
+                    errorTitle = 'Server Error';
+                    shouldShowToast = true;
                 }
             }
 
-            // Show Premium Toast
-            toastService.error(errorTitle, errorMessage, 8000, {
-                vibrate: true
-            });
+            // Show Premium Toast only for global system/connection failures. 
+            // Local client errors (e.g. 400, 401, 403, 409) are handled inline by components.
+            if (shouldShowToast) {
+                toastService.error(errorTitle, errorMessage, 8000, {
+                    vibrate: true
+                });
+            }
 
             return throwError(() => error);
         })

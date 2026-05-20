@@ -331,8 +331,7 @@ export class RouteDisplayComponent implements OnInit {
         this.alongService.generateRoute(fromInput, toInput)
             .subscribe({
                 next: (response: any) => {
-                    console.log('[RouteDisplay] API Response:', response);
-
+                    
                     if (response && response.success && Array.isArray(response.data) && response.data.length > 0) {
                         // Defensive Filtering
                         this.routes = response.data.filter((r: any) => !!r);
@@ -457,8 +456,7 @@ export class RouteDisplayComponent implements OnInit {
         // If segments sum to a small number (e.g. < 100) but it's a multi-leg journey,
         // it's almost certainly in Kilometers. Convert to Meters for internal consistency.
         if (totalSegDist < 100 && route.segments.length > 0 && totalSegDist > 0) {
-            console.log('[RouteDisplay] Small segment distance detected. Converting KM to Meters:', totalSegDist);
-            totalSegDist = totalSegDist * 1000;
+                        totalSegDist = totalSegDist * 1000;
         }
 
         // Apply updated total distance if it's currently 0 or different from the sum
@@ -941,10 +939,7 @@ export class RouteDisplayComponent implements OnInit {
                 strategy: 'balanced' as const
             };
 
-            console.log('[RouteDisplay] Creating trip with origin:', { latitude: resolvedOriginLat, longitude: resolvedOriginLng });
-            console.log('[RouteDisplay] Creating trip with dest:', { latitude: resolvedDestLat, longitude: resolvedDestLng });
-            console.log('[RouteDisplay] Route ID valid?', isValidObjectId, '| rawId:', rawId);
-
+                                    
             // Create trip in orchestrator
             const tripId = await this.orchestrator.createTrip(
                 { latitude: resolvedOriginLat, longitude: resolvedOriginLng },
@@ -992,8 +987,7 @@ export class RouteDisplayComponent implements OnInit {
      * Open Price Submission Modal for a specific segment
      */
     openSubmitPrice(segment: AlongSegment) {
-        console.log('[RouteDisplay] Opening Submit Price for segment:', segment);
-        this.submitData = {
+                this.submitData = {
             from: this.getStopName(segment.fromStop),
             to: this.getStopName(segment.toStop),
             mode: this.getSegmentMode(segment).toLowerCase() || 'keke',
@@ -1002,8 +996,7 @@ export class RouteDisplayComponent implements OnInit {
             distance: segment.distance || 0,
             estimatedTime: segment.estimatedTime || 0
         };
-        console.log('[RouteDisplay] Prepared submitData:', this.submitData);
-        this.showSubmitPriceModal = true;
+                this.showSubmitPriceModal = true;
     }
 
     onPriceSubmitted() {

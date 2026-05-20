@@ -93,8 +93,7 @@ export class AddTransportPointDialogComponent implements OnInit {
   onMapClick(event: any) {
     // This would be triggered by map click event
     // For now, we'll add a button to set location
-    console.log('Map clicked', event);
-  }
+      }
 
   useCurrentLocation() {
     this.getCurrentLocation();
