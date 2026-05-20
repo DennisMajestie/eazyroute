@@ -32,7 +32,7 @@
                 Routes
             </a>
 
-            <a routerLink="/tag-along" routerLinkActive="active" class="nav-link">
+            <a (click)="showComingSoon('Tag-Along', $event)" class="nav-link" style="cursor: pointer;">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none">
                     <path
                         d="M17 8H19C19.5304 8 20.0391 8.21071 20.4142 8.58579C20.7893 8.96086 21 9.46957 21 10V19H3V10C3 9.46957 3.21071 8.96086 3.58579 8.58579C3.96086 8.21071 4.46957 8 5 8H7"
@@ -132,7 +132,7 @@
         <a (click)="showComingSoon('Routes & Explore', $event)" routerLinkActive="active" class="mobile-nav-link" style="cursor: pointer;">
             Routes
         </a>
-        <a routerLink="/tag-along" routerLinkActive="active" class="mobile-nav-link">
+        <a (click)="showComingSoon('Tag-Along', $event)" class="mobile-nav-link" style="cursor: pointer;">
             Tag-Along
         </a>
         <a routerLink="/bus-stops" routerLinkActive="active" class="mobile-nav-link">
