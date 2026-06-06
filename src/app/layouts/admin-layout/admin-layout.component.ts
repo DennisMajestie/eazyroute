@@ -20,6 +20,7 @@ export class AdminLayoutComponent {
   public wsService = inject(WebSocketService);
 
   isSidebarCollapsed = false;
+  isSidebarOpen = false;
   currentUrl = '';
 
   constructor() {
@@ -32,6 +33,23 @@ export class AdminLayoutComponent {
 
   toggleSidebar(): void {
     this.isSidebarCollapsed = !this.isSidebarCollapsed;
+  }
+
+  openSidebar(): void {
+    this.isSidebarOpen = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeSidebar(): void {
+    this.isSidebarOpen = false;
+    document.body.style.overflow = '';
+  }
+
+  closeSidebarOnMobile(): void {
+    // Close sidebar when a nav item is clicked on mobile
+    if (window.innerWidth <= 768) {
+      this.closeSidebar();
+    }
   }
 
   getUserInitials(): string {

@@ -9,13 +9,25 @@
     overflow: hidden;
 }
 
+// Overlay for mobile sidebar
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+    animation: fadeIn 0.3s ease;
+}
+
 .admin-sidebar {
     width: 260px;
     background-color: $night-bg;
     color: white;
     display: flex;
     flex-direction: column;
-    transition: width $transition-base;
+    transition: width $transition-base, transform $transition-base;
     position: relative;
     box-shadow: $shadow-lg;
     z-index: $z-sticky;
@@ -59,7 +71,7 @@
         }
     }
 
-    .collapse-btn {
+    .close-btn, .collapse-btn {
         background: rgba(255, 255, 255, 0.1);
         border: none;
         color: white;
@@ -188,6 +200,34 @@
     box-shadow: $shadow-sm;
     z-index: $z-sticky;
 
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: $space-md;
+    }
+
+    .hamburger-btn {
+        background: transparent;
+        border: none;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: $radius-md;
+        color: $night-bg;
+
+        &:hover {
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        svg {
+            width: 24px;
+            height: 24px;
+        }
+    }
+
     .page-title {
         font-family: $font-display;
         font-weight: 700;
@@ -261,24 +301,56 @@
     background-color: #f9fafb;
 }
 
+// Utility classes for responsive visibility
+.mobile-only {
+    display: none;
+}
+
+.desktop-only {
+    display: flex;
+}
+
 // Responsive Adjustments
 @media (max-width: 768px) {
+    .mobile-only {
+        display: flex;
+    }
+    
+    .desktop-only {
+        display: none;
+    }
+
     .admin-sidebar {
         position: fixed;
         left: 0;
         top: 0;
         bottom: 0;
+        width: 260px !important;
         transform: translateX(-100%);
-        box-shadow: none;
+        z-index: 999;
+        box-shadow: $shadow-lg;
 
-        &.collapsed {
+        &.open {
             transform: translateX(0);
-            width: 260px; // Open on mobile even if "collapsed"
+        }
+
+        .nav-item {
+            padding: $space-md $space-xl !important;
+            justify-content: flex-start !important;
+        }
+
+        .sidebar-header {
+            padding: $space-xl !important;
+            justify-content: space-between !important;
         }
     }
 
-    .admin-main {
-        width: 100vw;
+    .admin-header {
+        padding: 0 $space-lg;
+    }
+
+    .admin-content {
+        padding: $space-lg;
     }
 }
 
@@ -286,4 +358,9 @@
     0% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.4; transform: scale(1.2); }
     100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
