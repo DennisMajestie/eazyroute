@@ -331,10 +331,10 @@ export class AdminService {
      * Get all harvested (inactive and pending) bus stops
      */
     getHarvestedBusStops(page: number = 1, limit: number = 50, search?: string): Observable<{ data: any[]; total: number }> {
-        let params = `?page=${page}&limit=${limit}&isActive=false&verificationStatus=pending`;
+        let params = `?page=${page}&limit=${limit}`;
         if (search) params += `&search=${search}`;
         return this.http.get<{ success: boolean; data: any[]; pagination: any }>(
-            `${this.apiUrl}/bus-stops${params}`
+            `${this.apiUrl}/bus-stops/pending${params}`
         ).pipe(
             map(response => ({
                 data: response.data || [],
@@ -362,5 +362,19 @@ export class AdminService {
         ).pipe(
             map(response => response.data)
         );
+    }
+
+    /**
+     * Reject a pending bus stop
+     */
+    rejectBusStop(id: string, reason: string): Observable<any> {
+        return this.http.post(`${this.apiUrl}/bus-stops/${id}/reject`, { reason });
+    }
+
+    /**
+     * Verify a pending bus stop
+     */
+    verifyBusStop(id: string): Observable<any> {
+        return this.http.post(`${this.apiUrl}/bus-stops/${id}/verify`, {});
     }
 }

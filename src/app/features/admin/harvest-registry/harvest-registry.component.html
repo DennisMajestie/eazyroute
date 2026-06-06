@@ -51,6 +51,12 @@
                         <td>{{ stop.area || stop.city || 'Abuja' }}</td>
                         <td class="mono">{{ getCoords(stop) }}</td>
                         <td>
+                            <button (click)="verifyStop(stop)" [disabled]="isVerifying" class="btn-action verify" title="Verify and add to graph">
+                                <i class="fas fa-check"></i> Verify
+                            </button>
+                            <button (click)="openRejectModal(stop)" class="btn-action reject" title="Reject this stop">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
                             <a [routerLink]="['/admin/seeder']" [queryParams]="{from: stop._id}" class="btn-action weave" title="Start weaving from here">
                                 <i class="fas fa-project-diagram"></i> Weave
                             </a>
@@ -76,5 +82,38 @@
                 </button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" *ngIf="showRejectModal" (click)="cancelReject()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <header class="modal-header">
+            <div class="title-with-icon">
+                <i class="fas fa-exclamation-circle text-danger"></i>
+                <h3 class="text-danger">Reject Landmark</h3>
+            </div>
+            <button class="close-btn" (click)="cancelReject()">&times;</button>
+        </header>
+
+        <div class="modal-body">
+            <p class="modal-intro">Rejecting <strong>{{ currentRejectStop?.name }}</strong>. This action is permanent.</p>
+            
+            <div class="form-group">
+                <label class="text-danger">Rejection Reason (Required)</label>
+                <textarea 
+                    [(ngModel)]="rejectReason" 
+                    placeholder="Explain why this landmark is being rejected..."
+                    rows="3">
+                </textarea>
+            </div>
+        </div>
+
+        <footer class="modal-footer">
+            <button class="secondary-btn" (click)="cancelReject()">Cancel</button>
+            <button class="primary-btn reject" (click)="confirmReject()" [disabled]="!rejectReason.trim() || isRejecting">
+                <i class="fas fa-times"></i> {{ isRejecting ? 'Rejecting...' : 'Confirm Reject' }}
+            </button>
+        </footer>
     </div>
 </div>

@@ -22,6 +22,11 @@ export class HarvestRegistryComponent implements OnInit {
   searchQuery: string = '';
   isLoading: boolean = false;
   isEnriching: boolean = false;
+  showRejectModal: boolean = false;
+  currentRejectStop: any = null;
+  rejectReason: string = '';
+  isVerifying: boolean = false;
+  isRejecting: boolean = false;
   
   // Expose Math to the template to fix TS2339
   protected readonly Math = Math;
@@ -103,6 +108,7 @@ export class HarvestRegistryComponent implements OnInit {
         this.toastService.success('Success', `Harvest complete! Found ${res.totalNew} new potential landmarks.`);
         this.page = 1;
         this.loadHarvestedStops();
+        this.loadHarvestStats();
       },
       error: (err: any) => {
         console.error('Harvest error:', err);
@@ -134,6 +140,57 @@ export class HarvestRegistryComponent implements OnInit {
         console.error('AI Enrichment Error:', err);
         const errorMsg = err.error?.message || err.error?.error || 'Failed to enrich landmarks.';
         this.toastService.error('Error', errorMsg);
+      }
+    });
+  }
+
+  verifyStop(stop: any): void {
+    if (this.isVerifying) return;
+    this.isVerifying = true;
+    
+    this.adminService.verifyBusStop(stop._id).subscribe({
+      next: () => {
+        this.isVerifying = false;
+        this.toastService.success('Verified', `${stop.name} has been verified and added to the graph!`);
+        this.loadHarvestedStops();
+        this.loadHarvestStats();
+      },
+      error: (err: any) => {
+        this.isVerifying = false;
+        console.error('Verification error:', err);
+        this.toastService.error('Error', 'Failed to verify the stop.');
+      }
+    });
+  }
+
+  openRejectModal(stop: any): void {
+    this.currentRejectStop = stop;
+    this.rejectReason = '';
+    this.showRejectModal = true;
+  }
+
+  cancelReject(): void {
+    this.showRejectModal = false;
+    this.currentRejectStop = null;
+    this.rejectReason = '';
+  }
+
+  confirmReject(): void {
+    if (!this.rejectReason.trim() || this.isRejecting) return;
+    this.isRejecting = true;
+    
+    this.adminService.rejectBusStop(this.currentRejectStop._id, this.rejectReason).subscribe({
+      next: () => {
+        this.isRejecting = false;
+        this.toastService.success('Rejected', `${this.currentRejectStop.name} has been rejected.`);
+        this.cancelReject();
+        this.loadHarvestedStops();
+        this.loadHarvestStats();
+      },
+      error: (err: any) => {
+        this.isRejecting = false;
+        console.error('Rejection error:', err);
+        this.toastService.error('Error', 'Failed to reject the stop.');
       }
     });
   }
