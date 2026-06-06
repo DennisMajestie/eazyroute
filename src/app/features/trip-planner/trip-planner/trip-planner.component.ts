@@ -24,6 +24,7 @@ import { RouteCardComponent } from '../components/route-card/route-card.componen
 import { RouteNotFoundCardComponent } from '../../../shared/components/route-not-found-card/route-not-found-card.component';
 import { NamePlaceModalComponent } from '../../../shared/components/name-place-modal/name-place-modal.component';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
+import { RoutePreferenceSelectorComponent, RoutePreference } from '../components/route-preference-selector/route-preference-selector.component';
 
 interface SearchResult {
     name: string;
@@ -54,7 +55,7 @@ interface SearchResult {
 @Component({
     selector: 'app-trip-planner',
     standalone: true,
-    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent, RefineLocationModalComponent, RouteCardComponent, RouteNotFoundCardComponent, NamePlaceModalComponent],
+    imports: [CommonModule, FormsModule, MapComponent, SmartInstructionComponent, RefineLocationModalComponent, RouteCardComponent, RouteNotFoundCardComponent, NamePlaceModalComponent, RoutePreferenceSelectorComponent],
     templateUrl: './trip-planner.component.html',
     styleUrl: './trip-planner.component.scss'
 })
@@ -75,6 +76,20 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
     // Map Settings (Abuja)
     center = { lat: 9.0765, lng: 7.3986 };
     zoom = 12;
+
+    // --- Route Preference ---
+    selectedPreference: RoutePreference = 'balance';
+
+    /**
+     * Called when user changes route preference (Speed / Budget / Comfort / Balanced).
+     * Automatically re-fetches routes if both origin and destination are already selected.
+     */
+    onPreferenceChange(preference: RoutePreference): void {
+        this.selectedPreference = preference;
+        if (this.fromLocation && this.toLocation) {
+            this.findRoutes();
+        }
+    }
 
     // --- Route Finding ---
     async findRoutes() {
@@ -125,7 +140,7 @@ export class TripPlannerComponent implements OnInit, OnDestroy {
             
             // Call Backend (V4 ALONG Algorithm Stack)
             const response = await firstValueFrom(
-                this.alongService.generateRoute(fromPayload, toPayload).pipe(
+                this.alongService.generateRoute(fromPayload, toPayload, { optimizeFor: this.selectedPreference }).pipe(
                     catchError(err => {
                         console.error('[TripPlanner] API Error:', err);
                         throw err;

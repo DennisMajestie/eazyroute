@@ -138,7 +138,16 @@ export class WebSocketService {
         });
 
         this.socket.on('trip_update', (update: any) => {
-                    });
+        });
+        
+        this.socket.on('milestone_reached', (data: any) => {
+        });
+
+        this.socket.on('route_deviation', (data: any) => {
+        });
+
+        this.socket.on('deviation_cleared', (data: any) => {
+        });
 
         this.socket.on('deviation_update', (update: any) => {
                     });

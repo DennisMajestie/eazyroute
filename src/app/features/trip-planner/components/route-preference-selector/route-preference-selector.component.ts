@@ -52,4 +52,12 @@ export class RoutePreferenceSelectorComponent {
         this.selected = preference;
         this.selectionChange.emit(preference);
     }
+
+    /**
+     * Returns the description for the currently selected preference.
+     * Avoids using .find() with arrow functions inside Angular templates.
+     */
+    getPreferenceDescription(type: RoutePreference): string {
+        return this.preferences.find(p => p.type === type)?.description ?? '';
+    }
 }

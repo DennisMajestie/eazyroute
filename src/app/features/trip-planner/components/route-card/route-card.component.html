@@ -24,7 +24,7 @@
         <div class="metric">
             <span class="currency">₦</span>
             <span class="value">{{ formatCost(route.totalCost) }}</span>
-            <span class="label" *ngIf="route.totalCost && typeof route.totalCost === 'object'">range</span>
+            <span class="label" *ngIf="isRangeCost()">range</span>
         </div>
 
         <!-- Transfers -->

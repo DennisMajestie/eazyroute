@@ -85,41 +85,55 @@ export class GeolocationService {
      * 3. Retry 2: Accept Coarse (IP-based)
      */
     async getSmartLocation(): Promise<Coordinates | null> {
+        let lastError: any = null;
+
         // Attempt 1: High Accuracy (GPS) - Increased to 15s timeout
         try {
-                        return await this.getPositionWithTimeout(50, 15000, true);
-        } catch (e) {
+            return await this.getPositionWithTimeout(50, 15000, true);
+        } catch (e: any) {
             console.warn("[Geolocation] GPS failed, falling back to Tower/WiFi...");
+            lastError = e;
+            // Throw immediately if user denied permission (code 1)
+            if (e && e.code === 1) {
+                throw e;
+            }
         }
 
         // Attempt 2: Low Accuracy (Fast) - Increased to 10s timeout
         try {
-                        return await this.getPositionWithTimeout(100, 10000, false);
-        } catch (e) {
+            return await this.getPositionWithTimeout(100, 10000, false);
+        } catch (e: any) {
             console.warn('[Geolocation] Attempt 2 failed:', e);
+            lastError = e;
+            // Throw immediately if user denied permission (code 1)
+            if (e && e.code === 1) {
+                throw e;
+            }
         }
 
-        // REMOVED Attempt 3: Coarse Location (IP-based) - Never guess "random" locations in Abuja.
-        // Instead, fallback to user's specified Primary Location or Last Known Location.
-
+        // Fallback to user's specified Primary Location or Last Known Location.
         console.warn('[Geolocation] GPS/Network failed. Checking for persistent fallbacks...');
 
         const primary = this.getPrimaryLocation();
         if (primary && this.isValidCoordinates(primary.latitude, primary.longitude)) {
-                        this.currentLocation.set(primary);
+            this.currentLocation.set(primary);
             return primary;
         }
 
         const lastKnown = this.getLastKnownLocation();
         if (lastKnown && this.isValidCoordinates(lastKnown.latitude, lastKnown.longitude)) {
-                        this.currentLocation.set(lastKnown);
+            this.currentLocation.set(lastKnown);
             return lastKnown;
         }
 
         console.error('[Geolocation] All detection attempts failed.');
-        const fallback = this.getDefaultLocation();
-        this.currentLocation.set(fallback);
-        return fallback;
+        
+        // If we have an actual error, throw it so components can handle it (denial, timeout, etc.)
+        if (lastError) {
+            throw lastError;
+        }
+        
+        throw new Error('All geolocation detection attempts failed.');
     }
 
     /**

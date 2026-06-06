@@ -14,6 +14,7 @@ import { ReroutingHttpService } from './rerouting-http.service';
 
 // Import Types
 import { TripState, Location, GeneratedRoute } from '../engines/types/easyroute.types';
+import { WebSocketService } from './websocket.service';
 
 export interface OrchestratorState {
   isInitialized: boolean;
@@ -24,6 +25,7 @@ export interface OrchestratorState {
   currentSegmentIndex?: number;
   tripStartTime?: Date | null;
   currentLocation?: Location | null;
+  deviationDetected?: boolean;
 }
 
 @Injectable({
@@ -61,9 +63,11 @@ export class EasyrouteOrchestratorService {
     private tripExecutionEngine: TripExecutionEngine,
     private reroutingEngine: ReroutingEngine,
     private tripHttpService: TripHttpService,
-    private reroutingHttpService: ReroutingHttpService
+    private reroutingHttpService: ReroutingHttpService,
+    private webSocketService: WebSocketService
   ) {
     this.initialize();
+    this.setupSocketListeners();
   }
 
   /**
@@ -108,7 +112,62 @@ export class EasyrouteOrchestratorService {
     }
 
     this.updateState({ isInitialized: true });
+  }
+
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * SOCKET LISTENERS
+   * ═══════════════════════════════════════════════════════════════
+   */
+  private setupSocketListeners(): void {
+    // 🎯 Milestone Reached - Authoritative update from backend
+    this.webSocketService.on('milestone_reached').subscribe((data) => {
+      
+      const state = this.currentTripState;
+      if (!state || state.tripId !== data.tripId) return;
+
+      // Advance segment index
+      state.currentSegmentIndex = data.nextSegmentIndex;
+      
+      this.updateState({
+        currentSegmentIndex: data.nextSegmentIndex
+      });
+
+      // Synchronize Engine
+      this.tripExecutionEngine.initializeTrip(state);
+
+      if (data.isCompleted) {
+        state.status = 'completed';
+        this.updateState({ tripStatus: 'completed', hasActiveTrip: false });
       }
+    });
+
+    // ⚠️ Route Deviation - Authoritative signal from backend
+    this.webSocketService.on('route_deviation').subscribe((data) => {
+      
+      const state = this.currentTripState;
+      if (!state || state.tripId !== data.tripId) return;
+
+      state.deviationDetected = true;
+      this.updateState({ deviationDetected: true });
+      
+      // Synchronize Engine
+      this.tripExecutionEngine.initializeTrip(state);
+    });
+
+    // ✅ Deviation Cleared - User is back on track
+    this.webSocketService.on('deviation_cleared').subscribe((data) => {
+      
+      const state = this.currentTripState;
+      if (!state || state.tripId !== data.tripId) return;
+
+      state.deviationDetected = false;
+      this.updateState({ deviationDetected: false });
+
+      // Synchronize Engine
+      this.tripExecutionEngine.initializeTrip(state);
+    });
+  }
 
   /**
    * ═══════════════════════════════════════════════════════════════

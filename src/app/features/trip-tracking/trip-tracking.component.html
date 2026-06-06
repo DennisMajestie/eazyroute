@@ -28,6 +28,12 @@
                 <span>{{ getFormattedETA() }}</span>
             </div>
         </header>
+        
+        <!-- Rerouting Alert -->
+        <div *ngIf="state.deviationDetected" class="rerouting-alert animate-shake">
+            <i class="fas fa-random me-2"></i>
+            <span>Rerouting... You've deviated from the planned path.</span>
+        </div>
 
         <!-- Current Step Card -->
         <section class="current-step-card animate-slideUp" *ngIf="currentStep">

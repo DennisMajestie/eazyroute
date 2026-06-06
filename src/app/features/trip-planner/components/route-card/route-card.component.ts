@@ -79,6 +79,17 @@ export class RouteCardComponent {
     }
 
     /**
+     * Returns true if totalCost is a range object { min, max }
+     */
+    isRangeCost(): boolean {
+        return (
+            !!this.route.totalCost &&
+            typeof this.route.totalCost === 'object' &&
+            'min' in (this.route.totalCost as object)
+        );
+    }
+
+    /**
      * Emit selection event
      */
     selectRoute(): void {

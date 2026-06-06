@@ -223,7 +223,15 @@
       </div>
     </section>
 
-    <!-- Results Section (Visible when no trip active) -->
+    <!-- Route Results (Visible when no trip active) -->
+
+    <!-- Route Preference Selector (shown after routes are found) -->
+    <section *ngIf="!isLoadingRoutes" class="preference-section mb-3">
+      <app-route-preference-selector
+        [selected]="selectedPreference"
+        (selectionChange)="onPreferenceChange($event)">
+      </app-route-preference-selector>
+    </section>
 
     <!-- Night Mode Guardrail -->
     <div *ngIf="isNightMode" class="night-mode-alert mb-3">

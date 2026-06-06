@@ -12,6 +12,6 @@
     </div>
 
     <div class="preference-description" *ngIf="selected">
-        {{ (preferences.find(p => p.type === selected))?.description }}
+        {{ getPreferenceDescription(selected) }}
     </div>
 </div>
