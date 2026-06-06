@@ -368,16 +368,16 @@
   font-size: 1.25rem;
   font-weight: 800;
   border-radius: 1.25rem;
-  background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
-  color: #1a4d2e;
+  background: linear-gradient(135deg, #1a4d2e 0%, #2f855a 100%);
+  color: white;
   border: none;
-  box-shadow: 0 10px 25px -5px rgba(217, 119, 6, 0.4);
+  box-shadow: 0 10px 25px -5px rgba(26, 77, 46, 0.4);
   cursor: pointer;
   transition: all 0.3s ease;
 
   &:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 15px 30px -5px rgba(217, 119, 6, 0.5);
+    box-shadow: 0 15px 30px -5px rgba(26, 77, 46, 0.5);
     filter: brightness(1.05);
   }
 
