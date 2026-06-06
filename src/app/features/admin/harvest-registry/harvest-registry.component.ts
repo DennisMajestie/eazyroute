@@ -16,6 +16,7 @@ import { AiService } from '../../../core/services/ai.service';
 export class HarvestRegistryComponent implements OnInit {
   harvestedStops: any[] = [];
   totalCount: number = 0;
+  harvestStats: any = null;
   page: number = 1;
   limit: number = 20;
   searchQuery: string = '';
@@ -33,6 +34,19 @@ export class HarvestRegistryComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadHarvestedStops();
+    this.loadHarvestStats();
+  }
+
+  loadHarvestStats(): void {
+    this.adminService.getHarvestStats().subscribe({
+      next: (data: any) => {
+        this.harvestStats = data;
+        this.totalCount = data.pendingPoints || 0;
+      },
+      error: (err: any) => {
+        console.error('Error loading harvest stats:', err);
+      }
+    });
   }
 
   loadHarvestedStops(): void {
@@ -40,7 +54,12 @@ export class HarvestRegistryComponent implements OnInit {
     this.adminService.getHarvestedBusStops(this.page, this.limit, this.searchQuery).subscribe({
       next: (res: { data: any[]; total: number }) => {
         this.harvestedStops = res.data || [];
-        this.totalCount = res.total;
+        // Keep the total from the API response but prioritize harvest stats if available
+        if (this.harvestStats?.pendingPoints !== undefined) {
+          this.totalCount = this.harvestStats.pendingPoints;
+        } else {
+          this.totalCount = res.total;
+        }
         this.isLoading = false;
       },
       error: (err: any) => {

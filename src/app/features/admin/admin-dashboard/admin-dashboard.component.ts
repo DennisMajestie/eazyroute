@@ -37,6 +37,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
   health: EngineHealth | null = null;
   pricing: PricingAnalytics | null = null;
   userStats: UserStats | null = null;
+  harvestStats: any = null;
   suggestions: ConnectionSuggestion[] = [];
   liveFeed: AdminNotification[] = [];
   yesterday = new Date(Date.now() - 86400000);
@@ -131,6 +132,24 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
     this.loadSuggestions();
     this.loadDiagnostics();
     this.loadPricing();
+    this.loadHarvestStats();
+  }
+
+  loadHarvestStats(): void {
+    this.adminService.getHarvestStats().subscribe({
+      next: (data: any) => {
+        this.harvestStats = data;
+        const harvestCard = this.statCards.find(c => c.label === 'Harvested Drafts');
+        if (harvestCard) harvestCard.value = data.pendingPoints || 0;
+        // Also update report.pendingHarvestCount for the alert
+        if (this.report) {
+          (this.report as any).pendingHarvestCount = data.pendingPoints || 0;
+        }
+      },
+      error: (err: any) => {
+        console.error('[Admin] Could not load harvest stats:', err);
+      }
+    });
   }
 
   loadUserStats(): void {

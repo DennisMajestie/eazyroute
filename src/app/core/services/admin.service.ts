@@ -352,4 +352,15 @@ export class AdminService {
             {}
         );
     }
+
+    /**
+     * Get harvest statistics (pending points, verified points, etc.)
+     */
+    getHarvestStats(): Observable<any> {
+        return this.http.get<{ success: boolean; data: any }>(
+            `${this.apiUrl}/bus-stops/harvest-stats`
+        ).pipe(
+            map(response => response.data)
+        );
+    }
 }
