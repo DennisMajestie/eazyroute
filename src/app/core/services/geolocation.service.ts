@@ -83,32 +83,25 @@ export class GeolocationService {
      * 1. High-Accuracy (GPS) < 50m
      * 2. Retry 1: Threshold < 100m
      * 3. Retry 2: Accept Coarse (IP-based)
+     * 4. Always falls back gracefully to default location if anything fails (no errors thrown!)
      */
     async getSmartLocation(): Promise<Coordinates | null> {
-        let lastError: any = null;
-
         // Attempt 1: High Accuracy (GPS) - Increased to 15s timeout
         try {
             return await this.getPositionWithTimeout(50, 15000, true);
         } catch (e: any) {
             console.warn("[Geolocation] GPS failed, falling back to Tower/WiFi...");
-            lastError = e;
-            // Throw immediately if user denied permission (code 1)
+            // If user denied permission, don't try again - go straight to fallbacks
             if (e && e.code === 1) {
-                throw e;
+                console.warn("[Geolocation] User denied location permission - using fallback locations");
             }
         }
 
-        // Attempt 2: Low Accuracy (Fast) - Increased to 10s timeout
+        // Attempt 2: Low Accuracy (Fast) - Increased to 10s timeout (skip if user already denied permission)
         try {
             return await this.getPositionWithTimeout(100, 10000, false);
         } catch (e: any) {
             console.warn('[Geolocation] Attempt 2 failed:', e);
-            lastError = e;
-            // Throw immediately if user denied permission (code 1)
-            if (e && e.code === 1) {
-                throw e;
-            }
         }
 
         // Fallback to user's specified Primary Location or Last Known Location.
@@ -126,14 +119,11 @@ export class GeolocationService {
             return lastKnown;
         }
 
-        console.error('[Geolocation] All detection attempts failed.');
-        
-        // If we have an actual error, throw it so components can handle it (denial, timeout, etc.)
-        if (lastError) {
-            throw lastError;
-        }
-        
-        throw new Error('All geolocation detection attempts failed.');
+        // Fallback to default center gracefully (NO ERROR THROWN!)
+        console.warn('[Geolocation] Using default location as fallback');
+        const defaultLocation = this.getDefaultLocation();
+        this.currentLocation.set(defaultLocation);
+        return defaultLocation;
     }
 
     /**

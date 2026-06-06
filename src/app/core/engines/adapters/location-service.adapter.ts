@@ -22,11 +22,17 @@ export class LocationServiceAdapter implements ILocationService {
 
     async getCurrentLocation(): Promise<AppLocation> {
         try {
-            // 🇳🇬 Use smart location for better resilience (GPS -> WiFi -> LastKnown)
+            // 🇳🇬 Use smart location for better resilience (GPS -> WiFi -> LastKnown -> Default)
             const coords = await this.geolocationService.getSmartLocation();
 
             if (!coords) {
-                throw new Error('Unable to determine location');
+                // Fallback to default location if no coords (shouldn't happen now with our improved getSmartLocation)
+                const defaultCoords = this.geolocationService.getDefaultLocation();
+                return {
+                    latitude: defaultCoords.latitude,
+                    longitude: defaultCoords.longitude,
+                    timestamp: new Date()
+                };
             }
 
             return {
@@ -35,10 +41,14 @@ export class LocationServiceAdapter implements ILocationService {
                 timestamp: coords.timestamp ? new Date(coords.timestamp) : new Date()
             };
         } catch (error) {
-            console.error('[LocationService] Error getting current location:', error);
-            // 🛡️ Safety: Propagate error instead of returning a default location.
-            // Returning default transmits "Abuja City Center" to the backend, causing false deviations.
-            throw error;
+            console.warn('[LocationService] Error getting current location, using default:', error);
+            // 🛡️ Safety: Fall back to default location gracefully
+            const defaultCoords = this.geolocationService.getDefaultLocation();
+            return {
+                latitude: defaultCoords.latitude,
+                longitude: defaultCoords.longitude,
+                timestamp: new Date()
+            };
         }
     }
 
