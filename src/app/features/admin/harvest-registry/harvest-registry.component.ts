@@ -27,6 +27,7 @@ export class HarvestRegistryComponent implements OnInit {
   rejectReason: string = '';
   isVerifying: boolean = false;
   isRejecting: boolean = false;
+  processingStops: Set<string> = new Set();
   
   // Expose Math to the template to fix TS2339
   protected readonly Math = Math;
@@ -145,18 +146,18 @@ export class HarvestRegistryComponent implements OnInit {
   }
 
   verifyStop(stop: any): void {
-    if (this.isVerifying) return;
-    this.isVerifying = true;
+    if (this.processingStops.has(stop._id)) return;
+    this.processingStops.add(stop._id);
     
     this.adminService.verifyBusStop(stop._id).subscribe({
       next: () => {
-        this.isVerifying = false;
+        this.processingStops.delete(stop._id);
         this.toastService.success('Verified', `${stop.name} has been verified and added to the graph!`);
         this.loadHarvestedStops();
         this.loadHarvestStats();
       },
       error: (err: any) => {
-        this.isVerifying = false;
+        this.processingStops.delete(stop._id);
         console.error('Verification error:', err);
         this.toastService.error('Error', 'Failed to verify the stop.');
       }
@@ -176,19 +177,19 @@ export class HarvestRegistryComponent implements OnInit {
   }
 
   confirmReject(): void {
-    if (!this.rejectReason.trim() || this.isRejecting) return;
-    this.isRejecting = true;
+    if (!this.rejectReason.trim() || this.processingStops.has(this.currentRejectStop._id)) return;
+    this.processingStops.add(this.currentRejectStop._id);
     
     this.adminService.rejectBusStop(this.currentRejectStop._id, this.rejectReason).subscribe({
       next: () => {
-        this.isRejecting = false;
+        this.processingStops.delete(this.currentRejectStop._id);
         this.toastService.success('Rejected', `${this.currentRejectStop.name} has been rejected.`);
         this.cancelReject();
         this.loadHarvestedStops();
         this.loadHarvestStats();
       },
       error: (err: any) => {
-        this.isRejecting = false;
+        this.processingStops.delete(this.currentRejectStop._id);
         console.error('Rejection error:', err);
         this.toastService.error('Error', 'Failed to reject the stop.');
       }

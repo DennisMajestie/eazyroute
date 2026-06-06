@@ -51,10 +51,12 @@
                         <td>{{ stop.area || stop.city || 'Abuja' }}</td>
                         <td class="mono">{{ getCoords(stop) }}</td>
                         <td>
-                            <button (click)="verifyStop(stop)" [disabled]="isVerifying" class="btn-action verify" title="Verify and add to graph">
-                                <i class="fas fa-check"></i> Verify
+                            <button (click)="verifyStop(stop)" [disabled]="processingStops.has(stop._id)" class="btn-action verify" title="Verify and add to graph">
+                                <i class="fas fa-check" [class.fa-spin]="processingStops.has(stop._id)"></i> 
+                                <span *ngIf="!processingStops.has(stop._id)">Verify</span>
+                                <span *ngIf="processingStops.has(stop._id)">Verifying...</span>
                             </button>
-                            <button (click)="openRejectModal(stop)" class="btn-action reject" title="Reject this stop">
+                            <button (click)="openRejectModal(stop)" [disabled]="processingStops.has(stop._id)" class="btn-action reject" title="Reject this stop">
                                 <i class="fas fa-times"></i> Reject
                             </button>
                             <a [routerLink]="['/admin/seeder']" [queryParams]="{from: stop._id}" class="btn-action weave" title="Start weaving from here">
@@ -111,8 +113,10 @@
 
         <footer class="modal-footer">
             <button class="secondary-btn" (click)="cancelReject()">Cancel</button>
-            <button class="primary-btn reject" (click)="confirmReject()" [disabled]="!rejectReason.trim() || isRejecting">
-                <i class="fas fa-times"></i> {{ isRejecting ? 'Rejecting...' : 'Confirm Reject' }}
+            <button class="primary-btn reject" (click)="confirmReject()" [disabled]="!rejectReason.trim() || processingStops.has(currentRejectStop?._id)">
+                <i class="fas fa-times" [class.fa-spin]="processingStops.has(currentRejectStop?._id)"></i> 
+                <span *ngIf="!processingStops.has(currentRejectStop?._id)">Confirm Reject</span>
+                <span *ngIf="processingStops.has(currentRejectStop?._id)">Rejecting...</span>
             </button>
         </footer>
     </div>
