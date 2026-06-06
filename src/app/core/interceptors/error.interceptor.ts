@@ -2,9 +2,13 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { ToastNotificationService } from '../services/toast-notification.service';
+import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     const toastService = inject(ToastNotificationService);
+    const authService = inject(AuthService);
+    const router = inject(Router);
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
@@ -23,7 +27,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 errorMessage = (rawMessage && !rawMessage.includes('Http failure')) ? rawMessage : 'Something went wrong. Please try again.';
                 
                 // Specific Handling for global connection and server issues
-                if (error.status === 500) {
+                if (error.status === 401 || error.status === 403) {
+                    // Session expired or unauthorized
+                    errorTitle = 'Session Expired';
+                    errorMessage = 'Your session has expired. Please log in again to continue.';
+                    shouldShowToast = true;
+                    
+                    // Clear auth data and navigate to login
+                    authService.logout().subscribe();
+                } else if (error.status === 500) {
                     errorTitle = 'Temporary Server Issue';
                     errorMessage = 'Our servers are experiencing a temporary issue. Please try again in a moment.';
                     shouldShowToast = true;
@@ -38,11 +50,24 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             }
 
             // Show Premium Toast only for global system/connection failures. 
-            // Local client errors (e.g. 400, 401, 403, 409) are handled inline by components.
+            // Local client errors (e.g. 400, 409) are handled inline by components.
             if (shouldShowToast) {
-                toastService.error(errorTitle, errorMessage, 8000, {
-                    vibrate: true
-                });
+                if (error.status === 401 || error.status === 403) {
+                    // Show special session expired toast with login action
+                    toastService.error(errorTitle, errorMessage, 0, { // 0 duration, stays until user acts
+                        vibrate: true,
+                        action: {
+                            label: 'Log In',
+                            callback: () => {
+                                router.navigate(['/auth/login']);
+                            }
+                        }
+                    });
+                } else {
+                    toastService.error(errorTitle, errorMessage, 8000, {
+                        vibrate: true
+                    });
+                }
             }
 
             return throwError(() => error);
