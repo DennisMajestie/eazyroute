@@ -8,6 +8,7 @@ export interface ToastNotificationAction {
 
 export interface ToastNotification {
     id: string;
+    key?: string;
     type: 'info' | 'success' | 'warning' | 'error';
     title: string;
     message: string;
@@ -26,27 +27,43 @@ export class ToastNotificationService {
     constructor() { }
 
     /**
-     * Show a new toast notification
+     * Show a new toast notification.
+     * If a toast with the same key already exists, do not duplicate it.
      */
     show(
-        title: string, 
-        message: string, 
-        type: 'info' | 'success' | 'warning' | 'error' = 'info', 
+        title: string,
+        message: string,
+        type: 'info' | 'success' | 'warning' | 'error' = 'info',
         duration: number = 5000,
-        options?: { action?: ToastNotificationAction, vibrate?: boolean }
+        options?: { action?: ToastNotificationAction, vibrate?: boolean, key?: string }
     ): void {
-        const id = Math.random().toString(36).substring(2, 9);
-        const newNotification: ToastNotification = { 
-            id, 
-            title, 
-            message, 
-            type, 
+        const current = this.notificationsSubject.value;
+        const key = options?.key;
+
+        if (key && current.some(n => n.key === key)) {
+            return;
+        }
+
+        const duplicate = current.find(n =>
+            !key && n.title === title && n.message === message && n.type === type
+        );
+
+        if (duplicate) {
+            return;
+        }
+
+        const id = key ?? Math.random().toString(36).substring(2, 9);
+        const newNotification: ToastNotification = {
+            id,
+            key,
+            title,
+            message,
+            type,
             duration,
             action: options?.action,
             vibrate: options?.vibrate
         };
 
-        const current = this.notificationsSubject.value;
         this.notificationsSubject.next([...current, newNotification]);
 
         if (duration > 0) {

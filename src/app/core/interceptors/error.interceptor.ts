@@ -33,7 +33,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                     errorMessage = 'Your session has expired. Please log in again to continue.';
                     shouldShowToast = true;
                     
-                    // Clear auth data and navigate to login
+                    // Clear auth data, but let the user explicitly navigate back to login.
                     authService.logout().subscribe();
                 } else if (error.status === 500) {
                     errorTitle = 'Temporary Server Issue';
@@ -53,8 +53,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             // Local client errors (e.g. 400, 409) are handled inline by components.
             if (shouldShowToast) {
                 if (error.status === 401 || error.status === 403) {
-                    // Show special session expired toast with login action
+                    // Show a single persistent session expired toast. Do not duplicate repeated 401 responses.
                     toastService.error(errorTitle, errorMessage, 0, { // 0 duration, stays until user acts
+                        key: 'session-expired',
                         vibrate: true,
                         action: {
                             label: 'Log In',
