@@ -725,3 +725,380 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-10px); }
 }
+
+// ===== MOBILE RESPONSIVENESS =====
+@media (max-width: 480px) {
+  .trip-tracking-container {
+    padding-bottom: 140px;
+  }
+
+  // Status header on mobile
+  .status-header {
+    flex-wrap: wrap;
+    padding: 0.75rem;
+    gap: 0.5rem;
+
+    .live-badge {
+      padding: 0.2rem 0.5rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.5px;
+
+      .pulse-dot {
+        width: 6px;
+        height: 6px;
+      }
+    }
+
+    .status-info {
+      flex: 1;
+      min-width: 100%;
+      order: 2;
+
+      .status-text {
+        font-size: 1.25rem;
+        margin: 0;
+      }
+
+      .trip-id {
+        font-size: 0.7rem;
+      }
+    }
+
+    .eta-badge {
+      padding: 0.2rem 0.5rem;
+      font-size: 0.75rem;
+      gap: 0.25rem;
+
+      i {
+        font-size: 0.9rem;
+      }
+    }
+  }
+
+  // Alert on mobile
+  .rerouting-alert {
+    margin: 0.75rem 0.75rem 0;
+    padding: 0.625rem;
+    font-size: 0.8rem;
+    border-radius: 0.5rem;
+
+    i {
+      font-size: 1rem;
+      margin-right: 0.35rem;
+    }
+  }
+
+  // Current step card on mobile
+  .current-step-card {
+    margin: 0.75rem;
+    padding: 0.875rem;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+
+    .step-icon {
+      width: 40px;
+      height: 40px;
+
+      i {
+        font-size: 1.25rem;
+      }
+    }
+
+    .step-content {
+      flex: 1;
+      min-width: 0;
+
+      .step-instruction {
+        font-size: 1rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .step-details {
+        .from-to {
+          font-size: 0.8rem;
+          gap: 0.2rem;
+          flex-wrap: wrap;
+          word-break: break-word;
+        }
+      }
+
+      .step-meta {
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+
+        .cost-badge,
+        .time-badge {
+          padding: 0.2rem 0.4rem;
+          font-size: 0.7rem;
+
+          i {
+            margin-right: 0.15rem;
+          }
+        }
+      }
+    }
+
+    .done-btn {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      gap: 0.35rem;
+      width: 100%;
+      justify-content: center;
+      min-height: 36px;
+
+      i {
+        font-size: 1rem;
+      }
+    }
+  }
+
+  // Progress bar on mobile
+  .progress-container {
+    padding: 0 0.75rem;
+    margin-bottom: 0.75rem;
+
+    .progress-bar-wrapper {
+      height: 6px;
+    }
+
+    .progress-labels {
+      gap: 0.5rem;
+      font-size: 0.7rem;
+      margin-top: 0.35rem;
+    }
+  }
+
+  // Timeline on mobile
+  .timeline-section {
+    padding: 0 0.75rem;
+    margin-bottom: 0.75rem;
+
+    .section-title {
+      font-size: 0.7rem;
+      margin-bottom: 0.5rem;
+
+      i {
+        margin-right: 0.4rem;
+      }
+    }
+
+    .timeline-compact {
+      padding: 0.35rem;
+
+      .timeline-item {
+        padding: 0.5rem;
+        border-radius: 0.35rem;
+
+        .timeline-marker {
+          width: 24px;
+          height: 24px;
+          font-size: 0.65rem;
+          margin-right: 0.5rem;
+        }
+
+        .timeline-content {
+          font-size: 0.8rem;
+          gap: 0.35rem;
+
+          i {
+            font-size: 0.9rem;
+          }
+
+          .segment-label {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .segment-cost {
+            font-size: 0.7rem;
+            flex-shrink: 0;
+          }
+        }
+      }
+    }
+  }
+
+  // Map on mobile
+  .map-section {
+    margin: 0.75rem;
+    height: 180px;
+    border-radius: 0.75rem;
+  }
+
+  // Summary footer on mobile
+  .trip-summary-footer {
+    margin: 0.75rem;
+    padding: 0.75rem;
+
+    .summary-stats {
+      gap: 0.5rem;
+      justify-content: space-between;
+
+      .stat {
+        flex: 1;
+
+        i {
+          font-size: 1rem;
+          margin-bottom: 0.15rem;
+        }
+
+        .value {
+          font-size: 1rem;
+        }
+
+        .label {
+          font-size: 0.65rem;
+        }
+      }
+    }
+  }
+
+  // Control buttons on mobile
+  .control-buttons {
+    padding: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0));
+    gap: 0.5rem;
+
+    .btn {
+      padding: 0.625rem;
+      font-size: 0.8rem;
+      border-radius: 0.5rem;
+      gap: 0.35rem;
+      min-height: 38px;
+    }
+  }
+
+  // Modal on mobile
+  .modal-overlay {
+    padding: 1rem;
+
+    .trip-confirm-modal,
+    .celebration-modal {
+      padding: 1.25rem;
+      max-width: 100%;
+
+      .modal-icon {
+        width: 60px;
+        height: 60px;
+        font-size: 1.75rem;
+        margin-bottom: 1rem;
+      }
+
+      .modal-icon.gold-glow {
+        width: 75px;
+        height: 75px;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+      }
+
+      h3,
+      h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        font-size: 0.85rem;
+        margin-bottom: 1.25rem;
+      }
+
+      .modal-actions {
+        gap: 0.5rem;
+
+        .btn {
+          padding: 0.75rem;
+          font-size: 0.9rem;
+          min-height: 40px;
+        }
+      }
+
+      .trip-stats-final {
+        padding: 1rem;
+        margin-bottom: 1.25rem;
+
+        .stat-item {
+          .label {
+            font-size: 0.65rem;
+            margin-bottom: 0.2rem;
+          }
+
+          .value {
+            font-size: 1rem;
+          }
+        }
+      }
+
+      .confetti-container {
+        height: 70px;
+
+        i {
+          font-size: 1rem;
+        }
+      }
+    }
+  }
+}
+
+// ===== TABLET RESPONSIVENESS (481px - 768px) =====
+@media (max-width: 768px) and (min-width: 481px) {
+  .trip-tracking-container {
+    padding-bottom: 140px;
+  }
+
+  .status-header {
+    padding: 1rem;
+
+    .status-info {
+      .status-text {
+        font-size: 1.4rem;
+      }
+    }
+  }
+
+  .current-step-card {
+    margin: 1rem;
+    padding: 1.25rem;
+
+    .step-icon {
+      width: 45px;
+      height: 45px;
+    }
+
+    .done-btn {
+      padding: 0.625rem 1rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  .progress-container {
+    padding: 0 1rem;
+  }
+
+  .timeline-section {
+    padding: 0 1rem;
+  }
+
+  .map-section {
+    margin: 1rem;
+    height: 200px;
+  }
+
+  .trip-summary-footer {
+    margin: 1rem;
+  }
+
+  .control-buttons {
+    padding: 1rem;
+  }
+
+  .modal-overlay {
+    padding: 1.5rem;
+
+    .trip-confirm-modal,
+    .celebration-modal {
+      max-width: 90%;
+    }
+  }
+}

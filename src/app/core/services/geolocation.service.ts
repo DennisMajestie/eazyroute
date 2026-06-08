@@ -86,9 +86,9 @@ export class GeolocationService {
      * 4. Always falls back gracefully to default location if anything fails (no errors thrown!)
      */
     async getSmartLocation(): Promise<Coordinates | null> {
-        // Attempt 1: High Accuracy (GPS) - Increased to 15s timeout
+        // Attempt 1: High Accuracy (GPS) - Reduced to 5s timeout for faster response
         try {
-            return await this.getPositionWithTimeout(50, 15000, true);
+            return await this.getPositionWithTimeout(50, 5000, true);
         } catch (e: any) {
             console.warn("[Geolocation] GPS failed, falling back to Tower/WiFi...");
             // If user denied permission, don't try again - go straight to fallbacks
@@ -97,9 +97,9 @@ export class GeolocationService {
             }
         }
 
-        // Attempt 2: Low Accuracy (Fast) - Increased to 10s timeout (skip if user already denied permission)
+        // Attempt 2: Low Accuracy (Fast) - Reduced to 3s timeout (skip if user already denied permission)
         try {
-            return await this.getPositionWithTimeout(100, 10000, false);
+            return await this.getPositionWithTimeout(100, 3000, false);
         } catch (e: any) {
             console.warn('[Geolocation] Attempt 2 failed:', e);
         }
@@ -200,7 +200,7 @@ export class GeolocationService {
                 {
                     enableHighAccuracy: highAccuracy,
                     timeout: timeoutMs,
-                    maximumAge: 60000 // 🇳🇬 Optimized: Use cached position if < 1 min old
+                    maximumAge: 300000 // 🇳🇬 Optimized: Use cached position if < 5 min old
                 }
             );
         });
