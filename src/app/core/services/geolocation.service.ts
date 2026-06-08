@@ -86,15 +86,37 @@ export class GeolocationService {
      * 4. Always falls back gracefully to default location if anything fails (no errors thrown!)
      */
     async getSmartLocation(): Promise<Coordinates | null> {
-        // Attempt 1: High Accuracy (GPS) - Reduced to 5s timeout for faster response
+        // If the browser supports the Permissions API, query the geolocation permission
+        // so we can avoid silently falling back when the user has explicitly denied access.
+        let skipGpsAttempts = false;
         try {
-            return await this.getPositionWithTimeout(50, 5000, true);
-        } catch (e: any) {
-            console.warn("[Geolocation] GPS failed, falling back to Tower/WiFi...");
-            // If user denied permission, don't try again - go straight to fallbacks
-            if (e && e.code === 1) {
-                console.warn("[Geolocation] User denied location permission - using fallback locations");
+            if (navigator.permissions && typeof (navigator.permissions as any).query === 'function') {
+                const perm = await (navigator.permissions as any).query({ name: 'geolocation' });
+                if (perm && perm.state === 'denied') {
+                    console.warn('[Geolocation] Permission status: denied. Skipping GPS prompt and using fallbacks.');
+                    skipGpsAttempts = true;
+                } else {
+                    console.info(`[Geolocation] Permission status: ${perm.state}`);
+                }
             }
+        } catch (err) {
+            // Permissions API may not be available or may throw on some browsers - ignore and proceed
+            console.debug('[Geolocation] Permissions API unavailable or threw error, proceeding with GPS attempts.');
+        }
+
+        // Attempt 1: High Accuracy (GPS) - Reduced to 5s timeout for faster response
+        if (!skipGpsAttempts) {
+            try {
+                return await this.getPositionWithTimeout(50, 5000, true);
+            } catch (e: any) {
+                console.warn("[Geolocation] GPS failed, falling back to Tower/WiFi...");
+                // If user denied permission, note it and allow fallbacks
+                if (e && (e.code === 1 || e.message === 'Permission denied')) {
+                    console.warn("[Geolocation] User denied location permission - using fallback locations");
+                }
+            }
+        } else {
+            console.warn('[Geolocation] Skipped GPS attempts due to permission=denied');
         }
 
         // Attempt 2: Low Accuracy (Fast) - Reduced to 3s timeout (skip if user already denied permission)
