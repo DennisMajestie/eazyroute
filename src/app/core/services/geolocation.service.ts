@@ -86,22 +86,44 @@ export class GeolocationService {
      * 4. Always falls back gracefully to default location if anything fails (no errors thrown!)
      */
     async getSmartLocation(): Promise<Coordinates | null> {
-        // Attempt 1: High Accuracy (GPS) - Increased to 8s to allow browser prompt + user response
+        // If the browser supports the Permissions API, query the geolocation permission
+        // so we can avoid silently falling back when the user has explicitly denied access.
+        let skipGpsAttempts = false;
         try {
-            return await this.getPositionWithTimeout(50, 8000, true);
-        } catch (e: any) {
-            console.warn("[Geolocation] GPS Attempt 1 failed:", e?.message || e);
-            // If user denied permission or accuracy rejected, note it
-            if (e && (e.code === 1 || e.code === 5)) {
-                console.warn("[Geolocation] GPS/accuracy failed - using fallback locations");
+            if (navigator.permissions && typeof (navigator.permissions as any).query === 'function') {
+                const perm = await (navigator.permissions as any).query({ name: 'geolocation' });
+                if (perm && perm.state === 'denied') {
+                    console.warn('[Geolocation] Permission status: denied. Skipping GPS prompt and using fallbacks.');
+                    skipGpsAttempts = true;
+                } else {
+                    console.info(`[Geolocation] Permission status: ${perm.state}`);
+                }
             }
+        } catch (err) {
+            // Permissions API may not be available or may throw on some browsers - ignore and proceed
+            console.debug('[Geolocation] Permissions API unavailable or threw error, proceeding with GPS attempts.');
+        }
+
+        // Attempt 1: High Accuracy (GPS) - Reduced to 5s timeout for faster response
+        if (!skipGpsAttempts) {
+            try {
+                return await this.getPositionWithTimeout(50, 5000, true);
+            } catch (e: any) {
+                console.warn("[Geolocation] GPS failed, falling back to Tower/WiFi...");
+                // If user denied permission, note it and allow fallbacks
+                if (e && (e.code === 1 || e.message === 'Permission denied')) {
+                    console.warn("[Geolocation] User denied location permission - using fallback locations");
+                }
+            }
+        } else {
+            console.warn('[Geolocation] Skipped GPS attempts due to permission=denied');
         }
 
         // Attempt 2: Low Accuracy (Fast) - Reduced to 3s timeout (skip if user already denied permission)
         try {
             return await this.getPositionWithTimeout(100, 3000, false);
         } catch (e: any) {
-            console.warn('[Geolocation] Attempt 2 failed:', e?.message || e);
+            console.warn('[Geolocation] Attempt 2 failed:', e);
         }
 
         // Fallback to user's specified Primary Location or Last Known Location.
@@ -190,19 +212,17 @@ export class GeolocationService {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     clearTimeout(tid);
-                    console.debug(`[Geolocation] Position received: lat=${position.coords.latitude}, lon=${position.coords.longitude}, accuracy=${position.coords.accuracy}m`);
-                    const coords = this.mapPositionToCoords(position, targetAccuracy);
+                    const coords = this.mapPositionToCoords(position);
                     resolve(coords);
                 },
                 (error) => {
                     clearTimeout(tid);
-                    console.warn(`[Geolocation] Position error (code ${error.code}): ${error.message}`);
                     reject(error);
                 },
                 {
                     enableHighAccuracy: highAccuracy,
                     timeout: timeoutMs,
-                    maximumAge: 0 // Fresh location only (no cache) for critical trip planning
+                    maximumAge: 300000 // 🇳🇬 Optimized: Use cached position if < 5 min old
                 }
             );
         });
@@ -211,7 +231,7 @@ export class GeolocationService {
     /**
      * Helper to map GeolocationPosition to Coordinates
      */
-    private mapPositionToCoords(position: GeolocationPosition, targetAccuracy?: number): Coordinates {
+    private mapPositionToCoords(position: GeolocationPosition): Coordinates {
         const coords: Coordinates = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,
@@ -219,13 +239,10 @@ export class GeolocationService {
             timestamp: position.timestamp
         };
 
-        // 1. Accuracy Filter: Reject if accuracy is significantly worse than target
-        const MAX_ACCURACY_M = targetAccuracy ? targetAccuracy * 10 : 1000; // e.g., targeting 50m allows up to 500m
-        if (coords.accuracy && coords.accuracy > MAX_ACCURACY_M) {
-            const error = new Error(`Location accuracy too poor: ${Math.round(coords.accuracy)}m (target: <${MAX_ACCURACY_M}m)`);
-            (error as any).code = 5; // Custom code for accuracy rejection
-            console.warn(`[Geolocation] ${error.message}`);
-            throw error; // Reject this fix so retry logic kicks in
+        // 1. Accuracy Filter: Reject if accuracy > 1000m
+        if (coords.accuracy && coords.accuracy > 1000) {
+            console.warn(`[Geolocation] Rejected inaccurate fix: ${coords.accuracy}m`);
+            return coords; // Return anyway, but components should check accuracy
         }
 
         // 2. Detect "Lagos Ghost": 6.4474, 3.3903
