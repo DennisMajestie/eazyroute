@@ -1,0 +1,33 @@
+<div class="active-trip-backdrop" *ngIf="activeTrip">
+    <div class="active-trip-card">
+        <header>
+            <h2>You have an unfinished trip</h2>
+            <p>Resume the trip you left open or cancel it and continue to the app.</p>
+        </header>
+
+        <section class="trip-summary">
+            <div>
+                <strong>Trip ID</strong>
+                <span>{{ activeTrip?.tripId || 'Unknown' }}</span>
+            </div>
+            <div>
+                <strong>Destination</strong>
+                <span>{{ activeTrip?.destination || 'Unknown destination' }}</span>
+            </div>
+            <div>
+                <strong>Started</strong>
+                <span>{{ startedAtLabel }}</span>
+            </div>
+            <div *ngIf="activeTrip?.status">
+                <strong>Status</strong>
+                <span>{{ activeTrip.status }}</span>
+            </div>
+        </section>
+
+        <section class="actions">
+            <button type="button" class="button primary" (click)="resume()">Resume trip</button>
+            <button type="button" class="button secondary" (click)="cancel()">Cancel trip</button>
+            <button type="button" class="button text" (click)="continue()">Continue later</button>
+        </section>
+    </div>
+</div>

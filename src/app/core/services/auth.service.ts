@@ -5,7 +5,7 @@
 
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, of, throwError, timer } from 'rxjs';
+import { BehaviorSubject, Observable, firstValueFrom, of, throwError, timer } from 'rxjs';
 import { catchError, map, tap, finalize, retryWhen, mergeMap, take } from 'rxjs/operators';
 
 import { Router } from '@angular/router';
@@ -20,6 +20,8 @@ import {
     PasswordResetConfirm,
     SocialAuthRequest
 } from '../../models/user.model';
+import { TripHttpService } from './trip-http.service';
+import { ActiveTripPromptService, ActiveTripPromptData, ActiveTripPromptChoice } from './active-trip-prompt.service';
 
 declare var google: any;
 
@@ -67,7 +69,9 @@ export class AuthService {
 
     constructor(
         private http: HttpClient,
-        private router: Router
+        private router: Router,
+        private tripHttpService: TripHttpService,
+        private activeTripPromptService: ActiveTripPromptService
     ) {
         this.loadUserFromStorage();
     }
@@ -334,11 +338,91 @@ export class AuthService {
 
             const isAdmin = user.role === 'admin' || user.userType === 'admin' || (user as any).isAdmin === true;
 
-            if (hasCompletedOnboarding || isAdmin) {
-                this.router.navigate(['/dashboard']);
-            } else {
-                this.router.navigate(['/onboarding']);
+            void this.handlePostLogin(hasCompletedOnboarding, isAdmin);
+        }
+    }
+
+    private async handlePostLogin(hasCompletedOnboarding: boolean, isAdmin: boolean): Promise<void> {
+        const activeTrip = await this.fetchActiveTrip();
+
+        if (activeTrip) {
+            const tripId = activeTrip._id || activeTrip.id || activeTrip.tripId || activeTrip.trip_id || '';
+            const choice = await this.activeTripPromptService.prompt({
+                tripId,
+                destination: this.getActiveTripDestination(activeTrip),
+                startedAt: this.getActiveTripStartTime(activeTrip),
+                status: activeTrip.status || activeTrip.tripStatus || 'active',
+                raw: activeTrip
+            });
+
+            if (choice === 'resume') {
+                this.router.navigate(['/trip-tracking']);
+                return;
             }
+
+            if (choice === 'cancel') {
+                await this.cancelActiveTrip(activeTrip);
+            }
+        }
+
+        const nextRoute = hasCompletedOnboarding || isAdmin ? '/dashboard' : '/onboarding';
+        this.router.navigate([nextRoute]);
+    }
+
+    private async fetchActiveTrip(): Promise<any | null> {
+        try {
+            const response = await firstValueFrom(
+                this.tripHttpService.getActiveTrip().pipe(
+                    catchError(() => of({ success: false, data: null }))
+                )
+            );
+
+            if (!response?.success || !response.data) {
+                return null;
+            }
+
+            const trip = Array.isArray(response.data) ? response.data[0] : response.data;
+            return trip || null;
+        } catch {
+            return null;
+        }
+    }
+
+    private getActiveTripDestination(trip: any): string {
+        if (!trip) {
+            return 'Unknown destination';
+        }
+
+        if (trip.selectedRoute?.segments?.length) {
+            const lastSegment = trip.selectedRoute.segments[trip.selectedRoute.segments.length - 1];
+            return lastSegment?.toStop?.name || lastSegment?.to || 'Unknown destination';
+        }
+
+        if (trip.destination?.name) {
+            return trip.destination.name;
+        }
+
+        if (trip.destinationLocation?.latitude && trip.destinationLocation?.longitude) {
+            return `Lat ${trip.destinationLocation.latitude}, Lng ${trip.destinationLocation.longitude}`;
+        }
+
+        return 'Unknown destination';
+    }
+
+    private getActiveTripStartTime(trip: any): string | undefined {
+        return trip.createdAt || trip.updatedAt || trip.startedAt || undefined;
+    }
+
+    private async cancelActiveTrip(trip: any): Promise<void> {
+        const tripId = trip._id || trip.id || trip.tripId || trip.trip_id;
+        if (!tripId) {
+            return;
+        }
+
+        try {
+            await firstValueFrom(this.tripHttpService.cancelTrip(tripId, 'Cancelled by user after login due to unfinished trip'));
+        } catch (error) {
+            console.warn('[AuthService] Failed to cancel active trip after login:', error);
         }
     }
 
