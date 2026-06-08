@@ -86,7 +86,7 @@ export class ToastNotificationService {
         this.show(title, message, 'warning', duration);
     }
 
-    error(title: string, message: string, duration?: number, options?: { action?: ToastNotificationAction, vibrate?: boolean }): void {
+    error(title: string, message: string, duration?: number, options?: { action?: ToastNotificationAction, vibrate?: boolean, key?: string }): void {
         this.show(title, message, 'error', duration, options);
     }
 
