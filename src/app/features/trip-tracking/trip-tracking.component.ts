@@ -110,14 +110,16 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
         }
 
         const segment = segments[this.currentSegmentIndex];
+        const modeKey = this.getSegmentModeIdentifier(segment);
+
         this.currentStep = {
             segmentIndex: this.currentSegmentIndex,
             segment,
             instruction: segment.instructions || this.generateInstruction(segment),
             fromStop: segment.fromStop?.name || 'Unknown',
             toStop: segment.toStop?.name || 'Unknown',
-            transportMode: segment.mode?.name || 'Unknown',
-            transportIcon: this.getTransportIcon(segment.mode?.type),
+            transportMode: this.getSegmentModeName(segment),
+            transportIcon: this.getTransportIcon(modeKey),
             cost: segment.cost || 0,
             estimatedTime: segment.estimatedTime || 0,
             isLastSegment: this.currentSegmentIndex === segments.length - 1
@@ -125,13 +127,70 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
     }
 
     private generateInstruction(segment: RouteSegment): string {
-        const mode = segment.mode?.type || 'walk';
+        const modeName = this.getSegmentModeName(segment);
         const to = segment.toStop?.name || 'your destination';
 
-        if (mode === 'walk') {
+        if (modeName.toLowerCase() === 'walk' || modeName.toLowerCase() === 'walking') {
             return `Walk to ${to}`;
         }
-        return `Take ${segment.mode?.name || mode} to ${to}`;
+        return `Take ${modeName} to ${to}`;
+    }
+
+    public getSegmentModeIdentifier(segment: RouteSegment): string {
+        const extract = (value: any): string => {
+            if (value == null) return '';
+            if (typeof value === 'string') return value;
+            if (typeof value === 'object') {
+                return String(value.type || value.name || value.vehicleType || '');
+            }
+            return String(value);
+        };
+
+        const rawMode = extract(
+            (segment as any).vehicleType ||
+            (segment as any).type ||
+            segment.mode?.type ||
+            segment.mode?.name ||
+            'walk'
+        );
+        const mode = rawMode.toLowerCase();
+
+        if (mode === 'bike' || mode === 'bicycle' || mode === 'motorcycle') {
+            return 'okada';
+        }
+        if (mode.includes('okada')) {
+            return 'okada';
+        }
+        if (mode.includes('keke')) {
+            return 'keke';
+        }
+        if (mode.includes('bus')) {
+            return 'bus';
+        }
+        if (mode.includes('taxi') || mode.includes('cab') || mode.includes('car')) {
+            return 'taxi';
+        }
+        if (mode.includes('walk')) {
+            return 'walk';
+        }
+        return mode || 'walk';
+    }
+
+    private getSegmentModeName(segment: RouteSegment): string {
+        const identifier = this.getSegmentModeIdentifier(segment);
+        const labelMap: Record<string, string> = {
+            walk: 'Walking',
+            bus: 'Bus',
+            keke: 'Keke',
+            okada: 'Okada',
+            taxi: 'Taxi'
+        };
+
+        if (segment.mode?.name && typeof segment.mode.name === 'string' && !['bike', 'bicycle', 'motorcycle'].includes(segment.mode.name.toLowerCase())) {
+            return segment.mode.name;
+        }
+
+        return labelMap[identifier] || 'Transit';
     }
 
     getTransportIcon(type: string | undefined): string {

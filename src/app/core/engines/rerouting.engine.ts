@@ -401,7 +401,7 @@ export class ReroutingEngine {
           availabilityFactor: 1,
           avgSpeedKmh: 0
         } as any,
-        cost: Number(seg.cost ?? 0) || 0,
+        cost: seg.cost || 0,
         instructions: seg.instruction
       };
     });
@@ -411,7 +411,7 @@ export class ReroutingEngine {
       segments: segments,
       totalDistance: alongRoute.totalDistance,
       totalTime: alongRoute.totalTime,
-      totalCost: Number(alongRoute.totalCost ?? alongRoute.cost ?? 0) || 0,
+      totalCost: alongRoute.totalCost,
       rankingScore: { shortest: 0, cheapest: 0, balanced: 100 },
       generatedAt: new Date(),
       strategy: 'balanced'
@@ -681,12 +681,8 @@ export class ReroutingEngine {
     return milestones;
   }
 
-  private formatCost(cost: number | string | null | undefined): string {
-    const numericCost = typeof cost === 'number' ? cost : Number(cost);
-    if (Number.isNaN(numericCost)) {
-      return '₦0';
-    }
-    return `₦${numericCost.toFixed(0)}`;
+  private formatCost(cost: number): string {
+    return `₦${cost.toFixed(0)}`;
   }
 
   private emitDeviationEvent(event: DeviationEvent): void {

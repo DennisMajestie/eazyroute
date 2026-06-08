@@ -93,7 +93,7 @@
                         <span *ngIf="getSegmentStatus(i) !== 'completed'">{{ i + 1 }}</span>
                     </div>
                     <div class="timeline-content">
-                        <i [class]="getTransportIcon(segment.mode.type) + ' me-2'"></i>
+                        <i [class]="getTransportIcon(getSegmentModeIdentifier(segment)) + ' me-2'"></i>
                         <span class="segment-label">{{ segment.toStop.name || 'Stop ' + (i + 1) }}</span>
                         <span class="segment-cost" *ngIf="segment.cost > 0">₦{{ segment.cost }}</span>
                     </div>
