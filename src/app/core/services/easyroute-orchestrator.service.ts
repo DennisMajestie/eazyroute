@@ -217,6 +217,21 @@ export class EasyrouteOrchestratorService {
   ): Promise<string> {
     
     try {
+      // Basic accuracy guard: if location objects include an `accuracy` field
+      // and the accuracy is very large, block creation and surface a clear error.
+      const ORIGIN_ACCURACY = (originLocation as any)?.accuracy ?? (originLocation as any)?.confidence ?? null;
+      const DEST_ACCURACY = (destinationLocation as any)?.accuracy ?? (destinationLocation as any)?.confidence ?? null;
+      const MAX_ACCEPTABLE_ACCURACY_M = 1000; // 1km
+
+      if (typeof ORIGIN_ACCURACY === 'number' && ORIGIN_ACCURACY > MAX_ACCEPTABLE_ACCURACY_M) {
+        console.warn(`[Orchestrator] Origin location accuracy too low: ${ORIGIN_ACCURACY}m`);
+        throw new Error('Origin location too inaccurate. Move to a better location or enable high-accuracy GPS.');
+      }
+      if (typeof DEST_ACCURACY === 'number' && DEST_ACCURACY > MAX_ACCEPTABLE_ACCURACY_M) {
+        console.warn(`[Orchestrator] Destination location accuracy too low: ${DEST_ACCURACY}m`);
+        throw new Error('Destination location too inaccurate. Move to a better location or enable high-accuracy GPS.');
+      }
+
       // Create trip in backend
       const request: CreateTripRequest = {
         routeId: selectedRoute.id,
@@ -224,6 +239,9 @@ export class EasyrouteOrchestratorService {
         destinationLocation,
         selectedRoute
       };
+
+      // Log payload to help diagnose 400s (frontend payload vs backend validation)
+      console.debug('[Orchestrator] Creating trip request payload:', request);
 
       const response = await firstValueFrom(
         this.tripHttpService.createTrip(request)
