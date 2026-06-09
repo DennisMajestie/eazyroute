@@ -4,7 +4,7 @@ import { catchError, throwError } from 'rxjs';
 import { ToastNotificationService } from '../services/toast-notification.service';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
-import { isLogoutRequestUrl } from '../utils/trip-request.utils';
+import { isLogoutRequestUrl, shouldShowSessionExpiredToast } from '../utils/trip-request.utils';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     const toastService = inject(ToastNotificationService);
@@ -30,6 +30,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 // Specific Handling for global connection and server issues
                 if (error.status === 401 || error.status === 403) {
                     if (isLogoutRequestUrl(req.url)) {
+                        return throwError(() => error);
+                    }
+
+                    const shouldShowSessionToast = shouldShowSessionExpiredToast(
+                        req.url,
+                        router.url,
+                        authService.isUserAuthenticated()
+                    );
+
+                    if (!shouldShowSessionToast) {
                         return throwError(() => error);
                     }
 

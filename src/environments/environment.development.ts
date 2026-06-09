@@ -21,14 +21,23 @@ export const environment: Environment = {
         recentSearches: 'eazyroute_recent_searches'
     },
 
+    // geolocation: {
+    //     enabled: true,
+    //     defaultCenter: {
+    //         lat: 9.0765,
+    //         lng: 7.3986
+    //     },
+    //     timeout: 15000,
+    //     maximumAge: 0,
+    //     enableHighAccuracy: true
+    // }
+
     geolocation: {
-        enabled: true,
-        defaultCenter: {
-            lat: 9.0765,
-            lng: 7.3986
-        },
-        timeout: 15000,
-        maximumAge: 0,
-        enableHighAccuracy: true
-    }
+    enabled: true,
+    defaultCenter: { lat: 9.0765, lng: 7.3986 },
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 300000,
+    locationUpdateIntervalMs: 10000  // ← add this line
+}
 };

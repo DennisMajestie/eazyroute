@@ -1,4 +1,9 @@
-import { resolveTripRouteId, sanitizeTripRouteForRequest, isLogoutRequestUrl } from './trip-request.utils';
+import {
+  resolveTripRouteId,
+  sanitizeTripRouteForRequest,
+  isLogoutRequestUrl,
+  shouldShowSessionExpiredToast
+} from './trip-request.utils';
 
 describe('trip-request.utils', () => {
   it('prefers a usable MongoDB route id from the selected route payload', () => {
@@ -25,6 +30,13 @@ describe('trip-request.utils', () => {
     expect(sanitized._id).toBe('64f0c1d7a9b5c2d3e4f56789');
     expect(sanitized.routeId).toBe('64f0c1d7a9b5c2d3e4f56789');
     expect(sanitized.name).toBe('Route 1');
+  });
+
+  it('suppresses the session-expired toast while the user is on the login route or already logged out', () => {
+    expect(shouldShowSessionExpiredToast('/auth/login', '/auth/login', false)).toBeFalse();
+    expect(shouldShowSessionExpiredToast('/api/v1/trips', '/auth/login', false)).toBeFalse();
+    expect(shouldShowSessionExpiredToast('/api/v1/trips', '/dashboard', false)).toBeFalse();
+    expect(shouldShowSessionExpiredToast('/api/v1/trips', '/dashboard', true)).toBeTrue();
   });
 
   it('detects logout calls so the interceptor does not recurse on them', () => {

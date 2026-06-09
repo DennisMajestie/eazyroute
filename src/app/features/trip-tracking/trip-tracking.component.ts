@@ -2,8 +2,9 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
-import { Observable, Subject, map, takeUntil, interval, startWith } from 'rxjs';
+import { Observable, Subject, takeUntil, interval, startWith } from 'rxjs';
 import { EasyrouteOrchestratorService, OrchestratorState } from '../../core/services/easyroute-orchestrator.service';
+import { GeolocationService, Coordinates } from '../../core/services/geolocation.service';
 import { RouteSegment, GeneratedRoute } from '../../core/engines/types/easyroute.types';
 import { MapComponent } from '../../shared/components/map/map.component';
 import { SosButtonComponent } from '../../shared/components/sos-button/sos-button.component';
@@ -31,6 +32,7 @@ interface CurrentStepInfo {
 export class TripTrackingComponent implements OnInit, OnDestroy {
     private router = inject(Router);
     private orchestrator = inject(EasyrouteOrchestratorService);
+    private geolocationService = inject(GeolocationService);
     private destroy$ = new Subject<void>();
 
     // State observables
@@ -51,10 +53,11 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
     distanceToNextStopM = Infinity;
     showCelebrationModal = false;
 
-    // Map
+    // Map - Updated to include user marker
     center: { lat: number; lng: number } = { lat: 9.0579, lng: 7.4951 }; // Abuja default
     zoom = 14;
-    userMarker: { lat: number; lng: number } | null = null;
+    userMarker: { lat: number; lng: number; title?: string; tier?: string } | null = null;
+    markers: Array<{ lat: number; lng: number; title?: string; tier?: string }> = [];
     routePolylines: any[] = [];
 
     // Clock for live updates
@@ -82,6 +85,12 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
                 this.updateCurrentStep();
                 this.calculateProgress();
                 this.updateMapData();
+                
+                // Update user marker position on map
+                if (state.currentLocation) {
+                    this.updateUserMarker(state.currentLocation);
+                }
+                
                 this.checkArrivalProximity(state.currentLocation);
             }
         });
@@ -98,6 +107,23 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
+    }
+
+    /**
+     * Update user marker position on map
+     */
+    private updateUserMarker(location: any): void {
+        if (!location?.latitude || !location?.longitude) return;
+
+        this.userMarker = {
+            lat: location.latitude,
+            lng: location.longitude,
+            title: 'Your Location',
+            tier: 'primary'
+        };
+
+        // Update markers array for map component
+        this.markers = [this.userMarker];
     }
 
     private updateCurrentStep(): void {

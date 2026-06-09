@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: routing.spec.ts >> EazyRoute - Abuja Soul Engine Verification >> should apply Night Mode safety constraints
-- Location: tests\routing.spec.ts:202:7
+- Name: routing.spec.ts >> EazyRoute - Abuja Soul Engine Verification >> should avoid flood-prone zones in Rainy Mode
+- Location: tests\routing.spec.ts:251:7
 
 # Error details
 

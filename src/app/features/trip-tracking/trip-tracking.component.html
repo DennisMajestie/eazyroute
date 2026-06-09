@@ -101,9 +101,13 @@
             </div>
         </section>
 
-        <!-- Map Section -->
+        <!-- Map Section with User Marker -->
         <section class="map-section">
-            <app-map [center]="center" [zoom]="zoom" [polylines]="routePolylines">
+            <app-map 
+                [center]="center" 
+                [zoom]="zoom" 
+                [markers]="markers"
+                [polylines]="routePolylines">
             </app-map>
         </section>
 
@@ -187,5 +191,3 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>

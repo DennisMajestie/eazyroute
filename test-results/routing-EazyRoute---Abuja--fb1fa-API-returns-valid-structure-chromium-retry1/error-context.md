@@ -6,8 +6,8 @@
 
 # Test info
 
-- Name: routing.spec.ts >> EazyRoute - Abuja Soul Engine Verification >> should apply Night Mode safety constraints
-- Location: tests\routing.spec.ts:202:7
+- Name: routing.spec.ts >> EazyRoute - Abuja Soul Engine Verification >> Backend: generate-route API returns valid structure
+- Location: tests\routing.spec.ts:295:7
 
 # Error details
 

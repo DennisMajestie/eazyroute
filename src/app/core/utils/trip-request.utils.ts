@@ -41,3 +41,25 @@ export function sanitizeTripRouteForRequest(selectedRoute: any): any {
 export function isLogoutRequestUrl(url: string): boolean {
   return /\/auth\/logout\b/i.test(url);
 }
+
+export function shouldShowSessionExpiredToast(
+  requestUrl: string,
+  currentUrl: string,
+  isAuthenticated: boolean
+): boolean {
+  if (!isAuthenticated) {
+    return false;
+  }
+
+  const normalizedCurrentUrl = currentUrl.split('?')[0].replace(/\/+$/, '');
+
+  if (/^\/auth(\/|$)/.test(normalizedCurrentUrl)) {
+    return false;
+  }
+
+  if (/\/auth\/(login|logout|register|forgot-password|verify-otp|reset-password)\b/i.test(requestUrl)) {
+    return false;
+  }
+
+  return true;
+}

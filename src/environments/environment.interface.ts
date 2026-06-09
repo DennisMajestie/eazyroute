@@ -21,14 +21,15 @@ export interface Environment {
         recentSearches: string;
     };
 
-    geolocation: {
-        enabled: boolean;
-        defaultCenter: {
-            lat: number;
-            lng: number;
-        };
-        timeout: number;
-        maximumAge: number;
-        enableHighAccuracy: boolean;
+geolocation: {
+    enabled: boolean;
+    defaultCenter: {
+        lat: number;
+        lng: number;
     };
+    timeout: number;
+    maximumAge: number;
+    enableHighAccuracy: boolean;
+    locationUpdateIntervalMs: number; // ← add this
+};
 }
