@@ -179,8 +179,8 @@ export class DeviationCheckerService implements OnDestroy {
                 const distance = this.haversineDistance(
                     currentLocation.latitude,
                     currentLocation.longitude,
-                    point.lat,
-                    point.lng
+                    Number(point.lat ?? 0),
+                    Number(point.lng ?? 0)
                 );
                 minDistance = Math.min(minDistance, distance);
             }

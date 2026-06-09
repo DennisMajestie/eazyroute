@@ -296,21 +296,31 @@ export class EasyRouteOrchestrator implements OnDestroy {
     currentLocation?: Location
   ): Promise<TripState> {
     
-    const startLocation = currentLocation || selectedRoute.segments[0].fromStop;
-    const destinationLocation = selectedRoute.segments[selectedRoute.segments.length - 1].toStop;
+    const firstSegment = selectedRoute.segments?.[0];
+    const lastSegment = selectedRoute.segments?.[selectedRoute.segments.length - 1];
+    const startStop = currentLocation ?? firstSegment?.fromStop;
+    const destinationStop = lastSegment?.toStop;
+
+    if (!startStop || !destinationStop) {
+      throw new Error('Cannot start trip: route start or destination location is missing.');
+    }
+
+    const startLocation = {
+      latitude: Number(startStop.latitude ?? 0),
+      longitude: Number(startStop.longitude ?? 0)
+    };
+
+    const destinationLocation = {
+      latitude: Number(destinationStop.latitude ?? 0),
+      longitude: Number(destinationStop.longitude ?? 0)
+    };
 
     // Use TripLifecycle to create trip state
     const tripState = this.tripLifecycle.startTrip({
       userId,
       selectedRoute,
-      startLocation: {
-        latitude: startLocation.latitude,
-        longitude: startLocation.longitude
-      },
-      destinationLocation: {
-        latitude: destinationLocation.latitude,
-        longitude: destinationLocation.longitude
-      }
+      startLocation,
+      destinationLocation
     });
 
     // Initialize milestone tracking

@@ -92,8 +92,14 @@ async function navigateWithLocations(
     Object.defineProperty(window, '_mockNavState', { value: { fromLocation: from, fromName: from.name, toLocation: to, toName: to.name }, writable: false });
     // Patch replaceState/pushState to inject our state before Angular bootstraps
     const _original = history.replaceState.bind(history);
-    history.replaceState = (state: any, ...args: any[]) => {
-      _original({ ...state, fromLocation: from, fromName: from.name, toLocation: to, toName: to.name }, ...args);
+    history.replaceState = (state?: any, title?: string, url?: string | URL | null) => {
+      _original.call(history, {
+        ...(state ?? {}),
+        fromLocation: from,
+        fromName: from.name,
+        toLocation: to,
+        toName: to.name
+      }, title ?? '', url ?? '');
     };
   }, { from, to });
 }
@@ -216,7 +222,7 @@ test.describe('EazyRoute - Abuja Soul Engine Verification', () => {
           // @ts-ignore
           super(...args);
         }
-        static now() { return mockTime; }
+        static override now() { return mockTime; }
       };
     });
 
