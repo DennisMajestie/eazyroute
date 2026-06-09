@@ -141,30 +141,32 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
             if (value == null) return '';
             if (typeof value === 'string') return value;
             if (typeof value === 'object') {
-                return String(value.type || value.name || value.vehicleType || '');
+                return String(value.type || value.name || value.vehicleType || value.label || '');
             }
             return String(value);
         };
 
-        const rawMode = extract(
-            (segment as any).vehicleType ||
-            (segment as any).type ||
-            segment.mode?.type ||
-            segment.mode?.name ||
-            'walk'
-        );
+        const humanLabel = extract(segment.mode?.name || (segment as any).mode?.name || (segment as any).name).toLowerCase();
+        const vehicleLabel = extract((segment as any).vehicleType || (segment as any).mode?.type || (segment as any).type).toLowerCase();
+        const fallbackLabel = extract(segment.mode?.type || '').toLowerCase();
+
+        const rawMode = humanLabel.includes('keke') || humanLabel.includes('okada') || humanLabel.includes('bus') ||
+            humanLabel.includes('taxi') || humanLabel.includes('walk') || humanLabel.includes('bike')
+            ? humanLabel
+            : (vehicleLabel || fallbackLabel || 'walk');
+
         const mode = rawMode.toLowerCase();
 
-        if (mode === 'bike' || mode === 'bicycle' || mode === 'motorcycle') {
+        if (mode === 'bike' || mode === 'bicycle' || mode === 'motorcycle' || mode === 'motorbike') {
             return 'okada';
         }
         if (mode.includes('okada')) {
             return 'okada';
         }
-        if (mode.includes('keke')) {
+        if (mode.includes('keke') || mode.includes('napep') || mode.includes('tricycle')) {
             return 'keke';
         }
-        if (mode.includes('bus')) {
+        if (mode.includes('bus') || mode.includes('danfo')) {
             return 'bus';
         }
         if (mode.includes('taxi') || mode.includes('cab') || mode.includes('car')) {
