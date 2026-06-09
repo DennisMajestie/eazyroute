@@ -1,7 +1,8 @@
 // src/app/core/services/easyroute-orchestrator.service.ts
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, interval, Subscription } from 'rxjs';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
 
 // Import Engines
 import { AlongService } from './along.service';
@@ -16,6 +17,8 @@ import { ReroutingHttpService } from './rerouting-http.service';
 import { TripState, Location, GeneratedRoute } from '../engines/types/easyroute.types';
 import { WebSocketService } from './websocket.service';
 import { resolveTripRouteId, sanitizeTripRouteForRequest } from '../utils/trip-request.utils';
+import { GeolocationService, Coordinates } from './geolocation.service';
+import { environment } from '../../../environments/environment';
 
 export interface OrchestratorState {
   isInitialized: boolean;
@@ -49,8 +52,8 @@ export class EasyrouteOrchestratorService {
   // Current trip state
   private currentTripState: TripState | null = null;
 
-  // Location tracking subscription
-  private locationTrackingSubscription: Subscription | null = null;
+  // Location tracking
+  private locationWatchId: number | null = null;
   private isUpdatingLocation: boolean = false;
 
   // Resumption tracking (to avoid immediate deviation alerts)
@@ -59,16 +62,58 @@ export class EasyrouteOrchestratorService {
   // Stale trip threshold: trips not updated in the last 2 hours are considered stale
   private readonly STALE_TRIP_THRESHOLD_MS = 2 * 60 * 60 * 1000; // 2 hours
 
+  // Location update interval in ms
+  private readonly LOCATION_UPDATE_INTERVAL_MS = environment.geolocation.locationUpdateIntervalMs || 10000;
+  isTrackingLocation: any;
+
   constructor(
     private alongService: AlongService,
     private tripExecutionEngine: TripExecutionEngine,
     private reroutingEngine: ReroutingEngine,
     private tripHttpService: TripHttpService,
     private reroutingHttpService: ReroutingHttpService,
-    private webSocketService: WebSocketService
+    private webSocketService: WebSocketService,
+    private geolocationService: GeolocationService,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {
     this.initialize();
     this.setupSocketListeners();
+    this.setupAppVisibilityHandling();
+  }
+
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * APP VISIBILITY HANDLING (Background/Foreground)
+   * ═══════════════════════════════════════════════════════════════
+   */
+  private setupAppVisibilityHandling(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+
+    // Page Visibility API for background/foreground detection
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        console.log('[Orchestrator] App went to background, pausing location tracking');
+        this.handleAppBackground();
+      } else {
+        console.log('[Orchestrator] App returned to foreground');
+        this.handleAppForeground();
+      }
+    });
+  }
+
+  private handleAppBackground(): void {
+    // Pause location tracking when app goes to background
+    if (this.currentTripState?.status === 'in_progress') {
+      this.pauseLocationTracking();
+    }
+  }
+
+  private handleAppForeground(): void {
+    // Resume location tracking when app comes to foreground
+    this.resumedAt = Date.now();
+    if (this.currentTripState?.status === 'in_progress') {
+      this.startLocationTracking();
+    }
   }
 
   /**
@@ -77,7 +122,6 @@ export class EasyrouteOrchestratorService {
    * ═══════════════════════════════════════════════════════════════
    */
   private async initialize(): Promise<void> {
-    
     // Check for active trip from backend
     try {
       const response = await firstValueFrom(this.tripHttpService.getActiveTrip());
@@ -92,22 +136,21 @@ export class EasyrouteOrchestratorService {
         const isStale = (now - tripUpdatedAt) > this.STALE_TRIP_THRESHOLD_MS;
 
         if (isStale) {
-                    // Auto-cancel stale trip to prevent zombie trips
+          // Auto-cancel stale trip to prevent zombie trips
           try {
             await firstValueFrom(this.tripHttpService.cancelTrip(
               tripData._id || tripData.id,
               'Auto-cancelled: Stale trip from previous session'
             ));
-                      } catch (cancelError) {
+          } catch (cancelError) {
             console.warn('[Orchestrator] Failed to auto-cancel stale trip:', cancelError);
           }
         } else {
-                    await this.resumeTrip(tripData);
+          await this.resumeTrip(tripData);
         }
-      } else {
-              }
+      }
     } catch (error: any) {
-            if (error?.status === 401) {
+      if (error?.status === 401) {
         this.reset();
       }
     }
@@ -123,7 +166,6 @@ export class EasyrouteOrchestratorService {
   private setupSocketListeners(): void {
     // 🎯 Milestone Reached - Authoritative update from backend
     this.webSocketService.on('milestone_reached').subscribe((data) => {
-      
       const state = this.currentTripState;
       if (!state || state.tripId !== data.tripId) return;
 
@@ -145,7 +187,6 @@ export class EasyrouteOrchestratorService {
 
     // ⚠️ Route Deviation - Authoritative signal from backend
     this.webSocketService.on('route_deviation').subscribe((data) => {
-      
       const state = this.currentTripState;
       if (!state || state.tripId !== data.tripId) return;
 
@@ -158,7 +199,6 @@ export class EasyrouteOrchestratorService {
 
     // ✅ Deviation Cleared - User is back on track
     this.webSocketService.on('deviation_cleared').subscribe((data) => {
-      
       const state = this.currentTripState;
       if (!state || state.tripId !== data.tripId) return;
 
@@ -179,7 +219,6 @@ export class EasyrouteOrchestratorService {
     startLocation: Location,
     endLocation: Location
   ): Promise<GeneratedRoute[]> {
-    
     this.updateState({ tripStatus: 'planning' });
 
     try {
@@ -198,7 +237,7 @@ export class EasyrouteOrchestratorService {
       // Which matches the GeneratedRoute interface for the orchestrator
       const routes = response.data as any as GeneratedRoute[];
 
-            return routes;
+      return routes;
     } catch (error) {
       console.error('[Orchestrator] Error planning trip:', error);
       this.updateState({ tripStatus: 'idle' });
@@ -216,7 +255,6 @@ export class EasyrouteOrchestratorService {
     destinationLocation: Location,
     selectedRoute: GeneratedRoute
   ): Promise<string> {
-    
     try {
       const routeId = resolveTripRouteId(selectedRoute);
 
@@ -240,18 +278,15 @@ export class EasyrouteOrchestratorService {
         throw new Error('Failed to create trip');
       }
 
-      
       // The sanitizer interceptor will have added an 'id' field, but we check raw data too for safety
       let tripId = response.data.id || response.data._id || (typeof response.data === 'string' ? response.data : undefined);
 
-      
       // Robust stringification if it's still an object
       if (typeof tripId === 'object' && tripId !== null) {
         console.warn('[Orchestrator] tripId is an object, attempting to extract string ID:', tripId);
         tripId = tripId.id || tripId._id || tripId.$oid || String(tripId);
       }
 
-      
       if (!tripId || tripId === '[object Object]') {
         console.error('[Orchestrator] Invalid trip ID found in response:', response.data);
         throw new Error('Failed to extract valid trip ID from response');
@@ -284,7 +319,7 @@ export class EasyrouteOrchestratorService {
         tripStartTime: null
       });
 
-            return tripId;
+      return tripId;
     } catch (error) {
       console.error('[Orchestrator] Error creating trip:', error);
       throw error;
@@ -295,12 +330,11 @@ export class EasyrouteOrchestratorService {
    * Start trip execution
    */
   async startTrip(tripId: string): Promise<void> {
-    
     try {
       // Start trip in backend
       await firstValueFrom(this.tripHttpService.startTrip(tripId));
 
-      // ✅ NULL SAFETY CHECK
+      // NULL SAFETY CHECK
       if (!this.currentTripState) {
         throw new Error('Cannot start trip: No current trip state');
       }
@@ -312,13 +346,13 @@ export class EasyrouteOrchestratorService {
 
       this.updateState({ tripStatus: 'active', tripStartTime: startTime });
 
-      // ✅ Now safe to pass - TypeScript knows it's not null
+      // Now safe to pass - TypeScript knows it's not null
       await this.tripExecutionEngine.initializeTrip(this.currentTripState);
 
-      // Start location tracking
+      // Start location tracking with live GPS
       this.startLocationTracking();
 
-          } catch (error) {
+    } catch (error) {
       console.error('[Orchestrator] Error starting trip:', error);
       throw error;
     }
@@ -328,12 +362,11 @@ export class EasyrouteOrchestratorService {
    * Pause trip
    */
   async pauseTrip(): Promise<void> {
-    // ✅ NULL SAFETY CHECK
+    // NULL SAFETY CHECK
     if (!this.currentTripState) {
       throw new Error('No active trip');
     }
 
-    
     try {
       await firstValueFrom(
         this.tripHttpService.pauseTrip(this.currentTripState.tripId)
@@ -343,7 +376,7 @@ export class EasyrouteOrchestratorService {
       this.stopLocationTracking();
 
       this.updateState({ tripStatus: 'paused' });
-          } catch (error) {
+    } catch (error) {
       console.error('[Orchestrator] Error pausing trip:', error);
       throw error;
     }
@@ -353,22 +386,22 @@ export class EasyrouteOrchestratorService {
    * Resume trip
    */
   async resumeTripExecution(): Promise<void> {
-    // ✅ NULL SAFETY CHECK
+    // NULL SAFETY CHECK
     if (!this.currentTripState) {
       throw new Error('No active trip');
     }
 
-    
     try {
       await firstValueFrom(
         this.tripHttpService.resumeTrip(this.currentTripState.tripId)
       );
 
       this.currentTripState.status = 'in_progress';
+      this.resumedAt = Date.now();
       this.startLocationTracking();
 
       this.updateState({ tripStatus: 'active' });
-          } catch (error) {
+    } catch (error) {
       console.error('[Orchestrator] Error resuming trip:', error);
       throw error;
     }
@@ -378,12 +411,11 @@ export class EasyrouteOrchestratorService {
    * Complete trip
    */
   async completeTrip(actualCost?: number, feedback?: string): Promise<void> {
-    // ✅ NULL SAFETY CHECK
+    // NULL SAFETY CHECK
     if (!this.currentTripState) {
       throw new Error('No active trip');
     }
 
-    
     try {
       await firstValueFrom(
         this.tripHttpService.completeTrip(
@@ -414,14 +446,14 @@ export class EasyrouteOrchestratorService {
         tripStatus: 'completed'
       });
 
-          } catch (error) {
+    } catch (error) {
       console.error('[Orchestrator] Error completing trip:', error);
       throw error;
     }
   }
 
   async cancelTrip(reason?: string): Promise<void> {
-    // ✅ NULL SAFETY CHECK
+    // NULL SAFETY CHECK
     if (!this.currentTripState?.tripId) {
       console.warn('[Orchestrator] Cannot cancel trip: No active trip ID found');
       // Fallback: cleanup local state anyway
@@ -429,7 +461,6 @@ export class EasyrouteOrchestratorService {
       return;
     }
 
-    
     try {
       await firstValueFrom(
         this.tripHttpService.cancelTrip(this.currentTripState.tripId, reason)
@@ -446,7 +477,7 @@ export class EasyrouteOrchestratorService {
         tripStatus: 'cancelled'
       });
 
-          } catch (error) {
+    } catch (error) {
       console.error('[Orchestrator] Error cancelling trip:', error);
       throw error;
     }
@@ -456,21 +487,77 @@ export class EasyrouteOrchestratorService {
     return this.cancelTrip('User ended trip');
   }
 
-  private startLocationTracking(): void {
-        // 🇳🇬 Optimized: 10s interval to reduce battery drain and backend load
-    this.locationTrackingSubscription = interval(10000).subscribe(async () => {
-      await this.updateCurrentLocation();
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * LIVE GPS LOCATION TRACKING
+   * ═══════════════════════════════════════════════════════════════
+   */
+
+private startLocationTracking(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (!this.geolocationService.isLocationEnabled()) return;
+    if (this.isTrackingLocation) return; // prevent double-start
+
+    console.log('[Orchestrator] Starting live GPS location tracking...');
+    this.isTrackingLocation = true;
+
+    this.geolocationService.watchPosition((coords) => {
+        this.handleLocationUpdate(coords);
     });
-  }
+}
 
-  private stopLocationTracking(): void {
-        if (this.locationTrackingSubscription) {
-      this.locationTrackingSubscription.unsubscribe();
-      this.locationTrackingSubscription = null;
+private pauseLocationTracking(): void {
+    if (this.isTrackingLocation) {
+        this.geolocationService.clearWatch();
+        this.isTrackingLocation = false;
     }
+}
+
+private stopLocationTracking(): void {
+    this.pauseLocationTracking();
+}
+
+  // private startLocationTracking(): void {
+  //   if (!isPlatformBrowser(this.platformId)) return;
+  //   if (!this.geolocationService.isLocationEnabled()) return;
+
+  //   console.log('[Orchestrator] Starting live GPS location tracking...');
+
+  //   // Use watchPosition for continuous GPS updates
+  //   this.locationWatchId = this.geolocationService.watchPosition((coords) => {
+  //     this.handleLocationUpdate(coords);
+  //   });
+  // }
+
+  // private pauseLocationTracking(): void {
+  //   if (this.locationWatchId !== null) {
+  //     this.geolocationService.clearWatch();
+  //     this.locationWatchId = null;
+  //   }
+  // }
+
+  // private stopLocationTracking(): void {
+  //   this.pauseLocationTracking();
+  // }
+
+  private async handleLocationUpdate(coords: Coordinates): Promise<void> {
+    const state = this.currentTripState;
+    if (!state?.tripId || state.status !== 'in_progress') return;
+
+    // Update local trip state with latest GPS location
+    state.currentLocation = {
+      latitude: coords.latitude,
+      longitude: coords.longitude
+    };
+
+    // Update state for UI components
+    this.updateState({ currentLocation: state.currentLocation });
+
+    // Post to backend
+    await this.postLocationToBackend(coords);
   }
 
-  private async updateCurrentLocation(): Promise<void> {
+  private async postLocationToBackend(coords: Coordinates): Promise<void> {
     if (this.isUpdatingLocation) return;
 
     const state = this.currentTripState;
@@ -478,26 +565,20 @@ export class EasyrouteOrchestratorService {
 
     this.isUpdatingLocation = true;
     try {
-      const location = state.currentLocation;
-      if (!location) return;
-
       await firstValueFrom(
         this.tripHttpService.updateLocation(
           state.tripId,
           {
-            latitude: location.latitude,
-            longitude: location.longitude
+            latitude: coords.latitude,
+            longitude: coords.longitude
           }
         )
       );
 
-      // 🛰️ Update state with latest location for UI distance calcs
-      this.updateState({ currentLocation: location });
-
       await this.checkDeviation();
     } catch (error: any) {
       console.error('[Orchestrator] Error updating location:', error);
-      // 🛡️ Safety: If we get 401 Unauthorized, the session is dead. Stop tracking to avoid loops.
+      // Safety: If we get 401 Unauthorized, the session is dead. Stop tracking to avoid loops.
       if (error?.status === 401) {
         console.warn('[Orchestrator] 401 detected during background update. Resetting state.');
         this.reset();
@@ -510,6 +591,7 @@ export class EasyrouteOrchestratorService {
   private async checkDeviation(): Promise<void> {
     if (!this.currentTripState) return;
 
+    // Don't check deviation immediately after resuming
     if (Date.now() - this.resumedAt < 15000) {
       return;
     }
@@ -520,7 +602,8 @@ export class EasyrouteOrchestratorService {
       );
 
       if (analysis.shouldReroute) {
-              }
+        // Rerouting handled by engine
+      }
     } catch (error) {
       console.error('[Orchestrator] Error checking deviation:', error);
     }
@@ -532,10 +615,9 @@ export class EasyrouteOrchestratorService {
       throw new Error('No active trip');
     }
 
-    
     try {
       await this.reroutingEngine.acceptReroute(state);
-          } catch (error) {
+    } catch (error) {
       console.error('[Orchestrator] Error accepting reroute:', error);
       throw error;
     }
@@ -547,10 +629,9 @@ export class EasyrouteOrchestratorService {
       throw new Error('No active trip');
     }
 
-    
     try {
       await this.reroutingEngine.declineReroute(state);
-          } catch (error) {
+    } catch (error) {
       console.error('[Orchestrator] Error declining reroute:', error);
       throw error;
     }
@@ -575,11 +656,10 @@ export class EasyrouteOrchestratorService {
    * Resume trip from backend data
    */
   private async resumeTrip(tripData: any): Promise<void> {
-    
     const tripId = tripData._id || tripData.id || (tripData.data?._id) || (tripData.data?.id);
 
     if (!tripId) {
-            return;
+      return;
     }
 
     this.currentTripState = {
@@ -638,9 +718,7 @@ export class EasyrouteOrchestratorService {
       this.updateState({
         currentSegmentIndex: state.currentSegmentIndex
       });
-
-          } else {
-          }
+    }
   }
 
   /**
@@ -667,7 +745,7 @@ export class EasyrouteOrchestratorService {
    * Called on logout or when manual reset is needed
    */
   reset(): void {
-        this.stopLocationTracking();
+    this.stopLocationTracking();
     this.reroutingEngine.reset();
     this.cleanupTrip();
     this.updateState({
