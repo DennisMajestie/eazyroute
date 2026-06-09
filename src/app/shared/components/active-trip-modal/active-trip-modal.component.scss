@@ -1,80 +1,134 @@
 .active-trip-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 24px;
+  background: rgba(2, 6, 23, 0.55);
+  backdrop-filter: blur(6px);
   z-index: 2000;
 }
 
 .active-trip-card {
-  width: min(520px, calc(100% - 32px));
-  background: #ffffff;
-  border-radius: 18px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
-  padding: 28px;
-  color: #1b1b1f;
+  position: relative;
+  width: min(560px, 100%);
+  border-radius: 28px;
+  padding: 24px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(245, 247, 250, 0.98));
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 28px 60px rgba(15, 23, 42, 0.18);
+  color: var(--text-primary, #172033);
+  overflow: hidden;
+}
+
+.card-accent {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary, #008751), var(--secondary, #FF6B35), var(--accent, #FFB81C));
+}
+
+.card-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(0, 135, 81, 0.10);
+  color: var(--primary-dark, #006B3F);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.active-trip-card header {
+  margin-bottom: 18px;
 }
 
 .active-trip-card header h2 {
   margin: 0 0 8px;
-  font-size: 1.45rem;
+  font-family: var(--font-display, 'Outfit', sans-serif);
+  font-size: clamp(1.3rem, 4vw, 1.7rem);
+  line-height: 1.2;
 }
 
 .active-trip-card header p {
   margin: 0;
-  color: #555555;
-  line-height: 1.6;
+  color: var(--text-secondary, #526072);
+  line-height: 1.55;
+  max-width: 44ch;
 }
 
 .trip-summary {
-  margin: 24px 0;
   display: grid;
-  gap: 14px;
+  gap: 10px;
+  margin-bottom: 18px;
 }
 
-.trip-summary div {
+.trip-row {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  align-items: baseline;
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: #f7f8fa;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(248, 250, 252, 0.95);
+  border: 1px solid rgba(148, 163, 184, 0.18);
 }
 
-.trip-summary strong {
-  color: #222222;
+.trip-row .label {
+  color: var(--text-secondary, #526072);
+  font-size: 0.92rem;
+}
+
+.trip-row strong {
+  max-width: 62%;
+  text-align: right;
+  color: var(--text-primary, #172033);
+  font-size: 0.95rem;
+  line-height: 1.35;
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 10px;
 }
 
 .button {
-  flex: 1 1 auto;
-  min-width: 110px;
-  border: none;
+  flex: 1 1 0;
+  min-width: 120px;
+  border: 1px solid transparent;
   border-radius: 999px;
-  padding: 12px 18px;
+  padding: 11px 14px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 0.95rem;
+  transition: transform var(--transition-fast, 150ms ease), box-shadow var(--transition-fast, 150ms ease), background-color var(--transition-fast, 150ms ease);
+}
+
+.button:hover {
+  transform: translateY(-1px);
 }
 
 .button.primary {
-  background: #1f73ff;
-  color: white;
+  background: linear-gradient(135deg, var(--primary, #008751), var(--primary-light, #00A862));
+  color: #fff;
+  box-shadow: 0 10px 18px rgba(0, 135, 81, 0.18);
 }
 
 .button.secondary {
-  background: #f3f4f8;
-  color: #1b1b1f;
+  background: rgba(255, 107, 53, 0.10);
+  color: var(--secondary-dark, #E55A2B);
+  border-color: rgba(255, 107, 53, 0.16);
 }
 
-.button.text {
+.button.ghost {
   background: transparent;
-  color: #3a4d6d;
+  color: var(--text-secondary, #526072);
+  border-color: rgba(148, 163, 184, 0.25);
 }

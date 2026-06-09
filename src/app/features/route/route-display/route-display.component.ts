@@ -900,10 +900,10 @@ export class RouteDisplayComponent implements OnInit {
                 ? this.toLocation.lng
                 : (lastSeg?.toStop as any)?.longitude || 7.3986;
 
-            const rawId = resolveTripRouteId(this.route as any) || (this.route as any)?._id || (this.route as any)?.id || (this.route as any)?.routeId || '';
+            const rawId = resolveTripRouteId(this.route as any);
 
             // Convert AlongRoute to GeneratedRoute format for the orchestrator.
-            // Keep the route id as-is so the backend can resolve the saved route.
+            // Only include a route id when it is a real MongoDB ObjectId.
             const generatedRoute: any = {
                 ...(rawId ? { id: rawId } : {}),
                 segments: this.route.segments.map((seg, i) => {

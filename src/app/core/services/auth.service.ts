@@ -22,6 +22,7 @@ import {
 } from '../../models/user.model';
 import { TripHttpService } from './trip-http.service';
 import { ActiveTripPromptService, ActiveTripPromptData, ActiveTripPromptChoice } from './active-trip-prompt.service';
+import { getPostLoginRoute, shouldPromptActiveTripOnDashboard } from '../utils/post-login-flow.utils';
 
 declare var google: any;
 
@@ -344,29 +345,42 @@ export class AuthService {
 
     private async handlePostLogin(hasCompletedOnboarding: boolean, isAdmin: boolean): Promise<void> {
         const activeTrip = await this.fetchActiveTrip();
+        const nextRoute = getPostLoginRoute(hasCompletedOnboarding, isAdmin);
 
-        if (activeTrip) {
-            const tripId = activeTrip._id || activeTrip.id || activeTrip.tripId || activeTrip.trip_id || '';
-            const choice = await this.activeTripPromptService.prompt({
-                tripId,
-                destination: this.getActiveTripDestination(activeTrip),
-                startedAt: this.getActiveTripStartTime(activeTrip),
-                status: activeTrip.status || activeTrip.tripStatus || 'active',
-                raw: activeTrip
-            });
-
-            if (choice === 'resume') {
-                this.router.navigate(['/trip-tracking']);
-                return;
-            }
-
-            if (choice === 'cancel') {
-                await this.cancelActiveTrip(activeTrip);
-            }
+        if (activeTrip && shouldPromptActiveTripOnDashboard(hasCompletedOnboarding, isAdmin)) {
+            await this.router.navigate([nextRoute]);
+            setTimeout(() => {
+                void this.promptForActiveTrip(activeTrip);
+            }, 0);
+            return;
         }
 
-        const nextRoute = hasCompletedOnboarding || isAdmin ? '/dashboard' : '/onboarding';
-        this.router.navigate([nextRoute]);
+        if (!activeTrip) {
+            await this.router.navigate([nextRoute]);
+            return;
+        }
+
+        await this.router.navigate([nextRoute]);
+    }
+
+    private async promptForActiveTrip(activeTrip: any): Promise<void> {
+        const tripId = activeTrip._id || activeTrip.id || activeTrip.tripId || activeTrip.trip_id || '';
+        const choice = await this.activeTripPromptService.prompt({
+            tripId,
+            destination: this.getActiveTripDestination(activeTrip),
+            startedAt: this.getActiveTripStartTime(activeTrip),
+            status: activeTrip.status || activeTrip.tripStatus || 'active',
+            raw: activeTrip
+        });
+
+        if (choice === 'resume') {
+            await this.router.navigate(['/trip-tracking']);
+            return;
+        }
+
+        if (choice === 'cancel') {
+            await this.cancelActiveTrip(activeTrip);
+        }
     }
 
     private async fetchActiveTrip(): Promise<any | null> {

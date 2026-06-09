@@ -15,7 +15,7 @@ import { ReroutingHttpService } from './rerouting-http.service';
 // Import Types
 import { TripState, Location, GeneratedRoute } from '../engines/types/easyroute.types';
 import { WebSocketService } from './websocket.service';
-import { resolveTripRouteId } from '../utils/trip-request.utils';
+import { resolveTripRouteId, sanitizeTripRouteForRequest } from '../utils/trip-request.utils';
 
 export interface OrchestratorState {
   isInitialized: boolean;
@@ -218,12 +218,18 @@ export class EasyrouteOrchestratorService {
   ): Promise<string> {
     
     try {
+      const routeId = resolveTripRouteId(selectedRoute);
+
+      if (!routeId) {
+        throw new Error('Selected route is missing a valid MongoDB route id. Please choose another route.');
+      }
+
       // Create trip in backend
       const request: CreateTripRequest = {
-        routeId: resolveTripRouteId(selectedRoute) || (selectedRoute as any)?.id || (selectedRoute as any)?.routeId,
+        routeId,
         originLocation,
         destinationLocation,
-        selectedRoute
+        selectedRoute: sanitizeTripRouteForRequest(selectedRoute)
       };
 
       const response = await firstValueFrom(

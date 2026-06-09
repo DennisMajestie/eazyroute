@@ -1,33 +1,37 @@
 <div class="active-trip-backdrop" *ngIf="activeTrip">
-    <div class="active-trip-card">
+    <div class="active-trip-card" role="dialog" aria-modal="true" aria-label="Resume your active trip">
+        <div class="card-accent"></div>
+
+        <div class="card-chip">Active trip</div>
+
         <header>
-            <h2>You have an unfinished trip</h2>
-            <p>Resume the trip you left open or cancel it and continue to the app.</p>
+            <h2>Resume your trip</h2>
+            <p>Pick up where you left off, or clear the old trip and continue with a fresh dashboard.</p>
         </header>
 
         <section class="trip-summary">
-            <div>
-                <strong>Trip ID</strong>
-                <span>{{ activeTrip?.tripId || 'Unknown' }}</span>
-            </div>
-            <div>
-                <strong>Destination</strong>
-                <span>{{ activeTrip?.destination || 'Unknown destination' }}</span>
-            </div>
-            <div>
-                <strong>Started</strong>
-                <span>{{ startedAtLabel }}</span>
-            </div>
-            <div *ngIf="activeTrip?.status">
-                <strong>Status</strong>
-                <span>{{ activeTrip.status }}</span>
-            </div>
+            <article class="trip-row">
+                <span class="label">Trip ID</span>
+                <strong>{{ activeTrip?.tripId || 'Unknown' }}</strong>
+            </article>
+            <article class="trip-row">
+                <span class="label">Destination</span>
+                <strong>{{ activeTrip?.destination || 'Unknown destination' }}</strong>
+            </article>
+            <article class="trip-row">
+                <span class="label">Started</span>
+                <strong>{{ startedAtLabel }}</strong>
+            </article>
+            <article class="trip-row" *ngIf="activeTrip?.status">
+                <span class="label">Status</span>
+                <strong>{{ activeTrip.status }}</strong>
+            </article>
         </section>
 
         <section class="actions">
             <button type="button" class="button primary" (click)="resume()">Resume trip</button>
             <button type="button" class="button secondary" (click)="cancel()">Cancel trip</button>
-            <button type="button" class="button text" (click)="continue()">Continue later</button>
+            <button type="button" class="button ghost" (click)="continue()">Continue later</button>
         </section>
     </div>
 </div>
