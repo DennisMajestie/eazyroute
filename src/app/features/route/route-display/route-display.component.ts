@@ -14,6 +14,7 @@ import { CommunityService } from '../../../core/services/community.service';
 import { CommunityReport } from '../../../models/community.types';
 import { RouteNotFoundCardComponent, CoverageStats } from '../../../shared/components/route-not-found-card/route-not-found-card.component';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
+import { resolveTripRouteId } from '../../../core/utils/trip-request.utils';
 
 @Component({
     selector: 'app-route-display',
@@ -899,13 +900,12 @@ export class RouteDisplayComponent implements OnInit {
                 ? this.toLocation.lng
                 : (lastSeg?.toStop as any)?.longitude || 7.3986;
 
-            // ─── Only pass routeId if it is a valid 24-char MongoDB ObjectId ───
-            const rawId = (this.route as any)._id || (this.route as any).id || '';
-            const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(rawId);
+            const rawId = resolveTripRouteId(this.route as any) || (this.route as any)?._id || (this.route as any)?.id || (this.route as any)?.routeId || '';
 
-            // Convert AlongRoute to GeneratedRoute format for orchestrator
+            // Convert AlongRoute to GeneratedRoute format for the orchestrator.
+            // Keep the route id as-is so the backend can resolve the saved route.
             const generatedRoute: any = {
-                ...(isValidObjectId ? { id: rawId } : {}),
+                ...(rawId ? { id: rawId } : {}),
                 segments: this.route.segments.map((seg, i) => {
                     const modeStr = this.getSegmentMode(seg);
                     return {

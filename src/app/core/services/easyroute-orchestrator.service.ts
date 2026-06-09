@@ -15,6 +15,7 @@ import { ReroutingHttpService } from './rerouting-http.service';
 // Import Types
 import { TripState, Location, GeneratedRoute } from '../engines/types/easyroute.types';
 import { WebSocketService } from './websocket.service';
+import { resolveTripRouteId } from '../utils/trip-request.utils';
 
 export interface OrchestratorState {
   isInitialized: boolean;
@@ -219,7 +220,7 @@ export class EasyrouteOrchestratorService {
     try {
       // Create trip in backend
       const request: CreateTripRequest = {
-        routeId: selectedRoute.id,
+        routeId: resolveTripRouteId(selectedRoute) || (selectedRoute as any)?.id || (selectedRoute as any)?.routeId,
         originLocation,
         destinationLocation,
         selectedRoute

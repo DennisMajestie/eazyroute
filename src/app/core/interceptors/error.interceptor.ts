@@ -4,6 +4,7 @@ import { catchError, throwError } from 'rxjs';
 import { ToastNotificationService } from '../services/toast-notification.service';
 import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { isLogoutRequestUrl } from '../utils/trip-request.utils';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     const toastService = inject(ToastNotificationService);
@@ -28,11 +29,15 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 
                 // Specific Handling for global connection and server issues
                 if (error.status === 401 || error.status === 403) {
+                    if (isLogoutRequestUrl(req.url)) {
+                        return throwError(() => error);
+                    }
+
                     // Session expired or unauthorized
                     errorTitle = 'Session Expired';
                     errorMessage = 'Your session has expired. Please log in again to continue.';
                     shouldShowToast = true;
-                    
+
                     // Clear auth data and navigate to login
                     authService.logout().subscribe();
                 } else if (error.status === 500) {
