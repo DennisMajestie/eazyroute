@@ -1,20 +1,21 @@
 const MONGODB_OBJECT_ID = /^[0-9a-fA-F]{24}$/;
 
+function isUsableRouteId(candidate: unknown): candidate is string {
+  return typeof candidate === 'string' && candidate.trim().length > 0 && candidate.trim() !== '[object Object]';
+}
+
 export function resolveTripRouteId(selectedRoute: any): string | undefined {
-  const candidates = [selectedRoute?.id, selectedRoute?._id, selectedRoute?.routeId];
+  const candidates = [selectedRoute?.id, selectedRoute?._id, selectedRoute?.routeId, selectedRoute?.route_id]
+    .filter(isUsableRouteId)
+    .map(candidate => candidate.trim());
 
-  for (const candidate of candidates) {
-    if (typeof candidate !== 'string') {
-      continue;
-    }
+  const preferredMongoId = candidates.find(candidate => MONGODB_OBJECT_ID.test(candidate));
 
-    const normalized = candidate.trim();
-    if (MONGODB_OBJECT_ID.test(normalized)) {
-      return normalized;
-    }
+  if (preferredMongoId) {
+    return preferredMongoId;
   }
 
-  return undefined;
+  return candidates[0];
 }
 
 export function sanitizeTripRouteForRequest(selectedRoute: any): any {

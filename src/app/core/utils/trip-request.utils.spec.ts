@@ -11,9 +11,9 @@ describe('trip-request.utils', () => {
     expect(resolveTripRouteId({ _id: '64f0c1d7a9b5c2d3e4f56789' })).toBe('64f0c1d7a9b5c2d3e4f56789');
   });
 
-  it('ignores non-Mongo route ids that would make the trip-creation request fail', () => {
-    expect(resolveTripRouteId({ id: 'route-123' })).toBeUndefined();
-    expect(resolveTripRouteId({ routeId: 'custom-route-id' })).toBeUndefined();
+  it('accepts non-Mongo route ids used by the trip-start flow', () => {
+    expect(resolveTripRouteId({ id: 'route-123' })).toBe('route-123');
+    expect(resolveTripRouteId({ routeId: 'custom-route-id' })).toBe('custom-route-id');
   });
 
   it('sanitizes the selected route payload so the backend sees a valid Mongo route id', () => {

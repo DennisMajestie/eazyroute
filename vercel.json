@@ -1,8 +1,7 @@
 {
     "version": 2,
-    "name": "eazyroute",
     "buildCommand": "npm run build:prod",
-    "outputDirectory": "dist/eazyroute",
+    "outputDirectory": "dist/eazyroute/browser",
     "framework": "angular",
     "rewrites": [
         {
