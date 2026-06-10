@@ -41,3 +41,12 @@ testem.log
 .DS_Store
 Thumbs.db
 .vercel
+
+# Local export / debug / test artifacts that should not be deployed
+/abuja_harvest_export*.json
+/build_output.txt
+/weaver_out.txt
+/temp_mode_selector.ts
+/temp_route.html
+/test-results/
+/playwright-report/

@@ -14,7 +14,11 @@ import { CommunityService } from '../../../core/services/community.service';
 import { CommunityReport } from '../../../models/community.types';
 import { RouteNotFoundCardComponent, CoverageStats } from '../../../shared/components/route-not-found-card/route-not-found-card.component';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
-import { resolveTripRouteId } from '../../../core/utils/trip-request.utils';
+import {
+    getTripStartErrorMessage,
+    isActiveTripError,
+    resolveTripRouteId
+} from '../../../core/utils/trip-request.utils';
 
 @Component({
     selector: 'app-route-display',
@@ -879,6 +883,16 @@ export class RouteDisplayComponent implements OnInit {
         if (!this.route || !this.fromLocation || !this.toLocation) return;
         if (this.isStartingJourney) return;
 
+        const currentState = this.orchestrator.getState();
+        if (currentState.hasActiveTrip || currentState.currentTripId) {
+            this.toastService.info(
+                'Active trip detected',
+                'Resume or cancel your current trip from the tracking page before starting a new journey.'
+            );
+            this.router.navigate(['/trip-tracking']);
+            return;
+        }
+
         this.isStartingJourney = true;
 
         try {
@@ -954,7 +968,15 @@ export class RouteDisplayComponent implements OnInit {
             this.router.navigate(['/trip-tracking']);
         } catch (error) {
             console.error('[RouteDisplay] Failed to start journey:', error);
-            this.toastService.error('Trip Start Failed', 'We couldn\'t initialize your trip tracking. Please try again.');
+
+            const message = getTripStartErrorMessage(error);
+
+            if (isActiveTripError(error)) {
+                this.toastService.warning('Active trip already in progress', message);
+                this.router.navigate(['/trip-tracking']);
+            } else {
+                this.toastService.error('Trip Start Failed', message);
+            }
         } finally {
             this.isStartingJourney = false;
         }

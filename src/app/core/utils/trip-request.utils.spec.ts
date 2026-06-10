@@ -2,7 +2,9 @@ import {
   resolveTripRouteId,
   sanitizeTripRouteForRequest,
   isLogoutRequestUrl,
-  shouldShowSessionExpiredToast
+  shouldShowSessionExpiredToast,
+  isActiveTripError,
+  getTripStartErrorMessage
 } from './trip-request.utils';
 
 describe('trip-request.utils', () => {
@@ -47,5 +49,27 @@ describe('trip-request.utils', () => {
   it('detects logout calls so the interceptor does not recurse on them', () => {
     expect(isLogoutRequestUrl('https://example.com/api/v1/auth/logout')).toBeTrue();
     expect(isLogoutRequestUrl('https://example.com/api/v1/trips')).toBeFalse();
+  });
+
+  it('recognizes the active-trip backend error while starting a journey', () => {
+    const error = {
+      status: 400,
+      error: {
+        message: 'You already have an active trip. Please complete or cancel it first.'
+      }
+    };
+
+    expect(isActiveTripError(error)).toBeTrue();
+    expect(getTripStartErrorMessage(error)).toContain('already have an active trip');
+  });
+
+  it('falls back to a generic message for unrelated trip-start failures', () => {
+    const error = {
+      status: 500,
+      error: { message: 'Something else went wrong.' }
+    };
+
+    expect(isActiveTripError(error)).toBeFalse();
+    expect(getTripStartErrorMessage(error)).toContain('We couldn\'t initialize your trip tracking');
   });
 });

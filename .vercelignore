@@ -1,0 +1,13 @@
+node_modules
+dist
+.angular
+.vscode
+coverage
+test-results
+playwright-report
+abuja_harvest_export*.json
+build_output.txt
+weaver_out.txt
+temp_mode_selector.ts
+temp_route.html
+*.log

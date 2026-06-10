@@ -53,6 +53,18 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
     distanceToNextStopM = Infinity;
     showCelebrationModal = false;
 
+    routeMonitorTitle = 'Route monitor active';
+    routeMonitorMessage = 'We are checking your position against the planned route in real time.';
+    routeStatusBadge = 'On route';
+    routeStatusClass = 'on-track';
+    routeStatusIcon = 'fa-check-circle';
+    lastUpdatedLabel = 'GPS synced';
+    gpsStatusLabel = 'Location signal stable';
+    movementLabel = 'Live';
+    movementStatusClass = 'moving';
+    movementSpeedKmh = 0;
+    private lastMovementSample: { latitude: number; longitude: number; timestamp: number } | null = null;
+
     // Map - Updated to include user marker
     center: { lat: number; lng: number } = { lat: 9.0579, lng: 7.4951 }; // Abuja default
     zoom = 14;
@@ -85,13 +97,16 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
                 this.updateCurrentStep();
                 this.calculateProgress();
                 this.updateMapData();
+                this.updateRouteMonitoring(state);
                 
                 // Update user marker position on map
                 if (state.currentLocation) {
                     this.updateUserMarker(state.currentLocation);
+                    this.updateMovementIndicator(state.currentLocation);
                 }
                 
                 this.checkArrivalProximity(state.currentLocation);
+                this.updateRouteMonitoring(state);
             }
         });
 
@@ -124,6 +139,113 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
 
         // Update markers array for map component
         this.markers = [this.userMarker];
+    }
+
+    private updateRouteMonitoring(state: OrchestratorState): void {
+        const location = state.currentLocation as any;
+        const distance = Number.isFinite(this.distanceToNextStopM) ? this.distanceToNextStopM : Infinity;
+
+        if (state.deviationDetected) {
+            this.routeStatusBadge = 'Off route';
+            this.routeStatusClass = 'off-route';
+            this.routeStatusIcon = 'fa-exclamation-triangle';
+            this.routeMonitorTitle = 'We detected you are leaving the planned path';
+            this.routeMonitorMessage = 'Please realign to the current segment to stay on the right direction.';
+        } else if (this.isArrived) {
+            this.routeStatusBadge = 'At stop';
+            this.routeStatusClass = 'near-stop';
+            this.routeStatusIcon = 'fa-map-marker-alt';
+            this.routeMonitorTitle = 'You are at the next stop';
+            this.routeMonitorMessage = 'Tap “Arrived at Stop” to move to the next step when you are ready.';
+        } else if (distance < 150) {
+            this.routeStatusBadge = 'Almost there';
+            this.routeStatusClass = 'near-stop';
+            this.routeStatusIcon = 'fa-location-arrow';
+            this.routeMonitorTitle = 'You are close to the next stop';
+            this.routeMonitorMessage = 'Keep the route visible and confirm your position as you approach the stop.';
+        } else {
+            this.routeStatusBadge = 'On route';
+            this.routeStatusClass = 'on-track';
+            this.routeStatusIcon = 'fa-check-circle';
+            this.routeMonitorTitle = 'Route monitor is active';
+            this.routeMonitorMessage = 'Your journey is being checked against the planned route in real time.';
+        }
+
+        this.lastUpdatedLabel = this.getLastUpdatedLabel(location?.timestamp);
+        this.gpsStatusLabel = this.getGpsStatusLabel(location);
+    }
+
+    private getLastUpdatedLabel(timestamp?: number | Date): string {
+        if (!timestamp) {
+            return 'Live tracking';
+        }
+
+        const updatedAt = timestamp instanceof Date ? timestamp.getTime() : Number(timestamp);
+        const diffSeconds = Math.max(0, Math.floor((Date.now() - updatedAt) / 1000));
+
+        if (diffSeconds < 5) {
+            return 'Updated just now';
+        }
+        if (diffSeconds < 30) {
+            return `Updated ${diffSeconds}s ago`;
+        }
+        return `Updated ${Math.ceil(diffSeconds / 60)} min ago`;
+    }
+
+    private getGpsStatusLabel(location: any): string {
+        const accuracy = typeof location?.accuracy === 'number' ? location.accuracy : undefined;
+        const confidence = typeof location?.confidence === 'number' ? location.confidence : undefined;
+
+        if (accuracy !== undefined && accuracy > 0) {
+            if (accuracy <= 25) {
+                return `GPS accuracy: ${Math.round(accuracy)}m (strong)`;
+            }
+            if (accuracy <= 75) {
+                return `GPS accuracy: ${Math.round(accuracy)}m (moderate)`;
+            }
+            return `GPS accuracy: ${Math.round(accuracy)}m (low)`;
+        }
+
+        if (confidence !== undefined) {
+            return `GPS confidence: ${Math.round(confidence)}%`;
+        }
+
+        return 'Location signal stable';
+    }
+
+    private updateMovementIndicator(location: any): void {
+        if (!location?.latitude || !location?.longitude) {
+            return;
+        }
+
+        const now = location.timestamp instanceof Date
+            ? location.timestamp.getTime()
+            : (typeof location.timestamp === 'number' ? location.timestamp : Date.now());
+
+        if (this.lastMovementSample) {
+            const distanceKm = this.haversineDistance(
+                this.lastMovementSample.latitude,
+                this.lastMovementSample.longitude,
+                location.latitude,
+                location.longitude
+            );
+            const deltaSeconds = Math.max(1, (now - this.lastMovementSample.timestamp) / 1000);
+            const speedKmh = distanceKm / (deltaSeconds / 3600);
+
+            this.movementSpeedKmh = Number.isFinite(speedKmh) ? speedKmh : 0;
+            this.movementLabel = speedKmh >= 1 ? 'Moving' : 'Holding position';
+            this.movementStatusClass = speedKmh >= 1 ? 'moving' : 'idle';
+        } else {
+            this.movementLabel = 'Tracking';
+            this.movementStatusClass = 'moving';
+            this.movementSpeedKmh = 0;
+        }
+
+        this.lastMovementSample = {
+            latitude: location.latitude,
+            longitude: location.longitude,
+            timestamp: now
+        };
     }
 
     private updateCurrentStep(): void {
@@ -278,6 +400,7 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
 
         // Enabled if within 100 meters
         this.isArrived = this.distanceToNextStopM <= 100;
+        this.updateRouteMonitoring(this.orchestrator.getState());
     }
 
     private haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {

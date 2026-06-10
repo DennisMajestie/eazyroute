@@ -547,8 +547,13 @@ private stopLocationTracking(): void {
     // Update local trip state with latest GPS location
     state.currentLocation = {
       latitude: coords.latitude,
-      longitude: coords.longitude
-    };
+      longitude: coords.longitude,
+      timestamp: new Date(coords.timestamp ?? Date.now()),
+      confidence: typeof coords.accuracy === 'number'
+        ? Math.max(0, Math.min(100, 100 - Math.round(coords.accuracy / 10)))
+        : 100,
+      ...(typeof coords.accuracy === 'number' ? { accuracy: coords.accuracy } : {})
+    } as any;
 
     // Update state for UI components
     this.updateState({ currentLocation: state.currentLocation });

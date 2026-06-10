@@ -48,6 +48,32 @@ export function sanitizeTripRouteForRequest(selectedRoute: any): any {
   return sanitized;
 }
 
+export function extractTripErrorMessage(error: any): string {
+  if (typeof error?.error === 'string') {
+    return error.error;
+  }
+
+  return (
+    error?.error?.message ||
+    error?.message ||
+    'We couldn\'t initialize your trip tracking. Please try again.'
+  );
+}
+
+export function isActiveTripError(error: any): boolean {
+  const message = extractTripErrorMessage(error).toLowerCase();
+
+  return /already have an active trip/i.test(message) || /active trip/i.test(message) && /complete or cancel/i.test(message);
+}
+
+export function getTripStartErrorMessage(error: any): string {
+  if (isActiveTripError(error)) {
+    return 'You already have an active trip. Resume or cancel it from the trip-tracking screen before starting a new journey.';
+  }
+
+  return 'We couldn\'t initialize your trip tracking. Please try again.';
+}
+
 export function isLogoutRequestUrl(url: string): boolean {
   return /\/auth\/logout\b/i.test(url);
 }
