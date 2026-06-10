@@ -82,9 +82,9 @@ export class EasyrouteOrchestratorService {
   }
 
   /**
-   * ═══════════════════════════════════════════════════════════════
+   * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    * APP VISIBILITY HANDLING (Background/Foreground)
-   * ═══════════════════════════════════════════════════════════════
+   * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    */
   private setupAppVisibilityHandling(): void {
     if (!isPlatformBrowser(this.platformId)) return;
@@ -517,29 +517,6 @@ private stopLocationTracking(): void {
     this.pauseLocationTracking();
 }
 
-  // private startLocationTracking(): void {
-  //   if (!isPlatformBrowser(this.platformId)) return;
-  //   if (!this.geolocationService.isLocationEnabled()) return;
-
-  //   console.log('[Orchestrator] Starting live GPS location tracking...');
-
-  //   // Use watchPosition for continuous GPS updates
-  //   this.locationWatchId = this.geolocationService.watchPosition((coords) => {
-  //     this.handleLocationUpdate(coords);
-  //   });
-  // }
-
-  // private pauseLocationTracking(): void {
-  //   if (this.locationWatchId !== null) {
-  //     this.geolocationService.clearWatch();
-  //     this.locationWatchId = null;
-  //   }
-  // }
-
-  // private stopLocationTracking(): void {
-  //   this.pauseLocationTracking();
-  // }
-
   private async handleLocationUpdate(coords: Coordinates): Promise<void> {
     const state = this.currentTripState;
     if (!state?.tripId || state.status !== 'in_progress') return;
@@ -677,7 +654,7 @@ private stopLocationTracking(): void {
       selectedRoute: tripData.selectedRoute,
       currentSegmentIndex: tripData.currentSegmentIndex || 0,
       milestones: tripData.milestones || [],
-      startTime: tripData.startTime ? new Date(tripData.startTime) : undefined,
+      startTime: tripData.startTime ? new Date(tripData.startTime) : new Date(),
       endTime: undefined,
       lastUpdated: new Date(),
       deviationDetected: tripData.deviationDetected || false,

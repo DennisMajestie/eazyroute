@@ -501,16 +501,8 @@ export class TripTrackingComponent implements OnInit, OnDestroy {
     }
 
     getFormattedETA(): string {
-        // Use trip start time + total planned duration for a stable arrival time
-        // If trip hasn't started or no start time yet, fall back to current time + remaining minutes
-        let arrival: Date;
-
-        if (this.tripStartTime && this.totalPlannedDuration > 0) {
-            arrival = new Date(this.tripStartTime.getTime() + this.totalPlannedDuration * 60000);
-        } else {
-            arrival = new Date(this.currentTime.getTime() + this.etaMinutes * 60000);
-        }
-
+        // Use dynamic ETA (current time + remaining minutes) for the most accurate real-time arrival estimate
+        const arrival = new Date(this.currentTime.getTime() + this.etaMinutes * 60000);
         return arrival.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     }
 }
