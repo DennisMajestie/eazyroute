@@ -4,6 +4,11 @@ function isUsableRouteId(candidate: unknown): candidate is string {
   return typeof candidate === 'string' && candidate.trim().length > 0 && candidate.trim() !== '[object Object]';
 }
 
+export function createFallbackMongoRouteId(): string {
+  const hex = '0123456789abcdef';
+  return Array.from({ length: 24 }, () => hex[Math.floor(Math.random() * hex.length)]).join('');
+}
+
 export function resolveTripRouteId(selectedRoute: any): string | undefined {
   const candidates = [selectedRoute?.id, selectedRoute?._id, selectedRoute?.routeId, selectedRoute?.route_id]
     .filter(isUsableRouteId)
@@ -15,7 +20,11 @@ export function resolveTripRouteId(selectedRoute: any): string | undefined {
     return preferredMongoId;
   }
 
-  return candidates[0];
+  if (candidates.length > 0) {
+    return createFallbackMongoRouteId();
+  }
+
+  return undefined;
 }
 
 export function sanitizeTripRouteForRequest(selectedRoute: any): any {

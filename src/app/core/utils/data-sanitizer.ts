@@ -7,6 +7,8 @@
  * Guarantees that components receive stable, valid objects.
  */
 
+import { createFallbackMongoRouteId } from './trip-request.utils';
+
 console.warn('[DataSanitizer] Loading version 2.3 (Robust Trip ID Extraction)');
 
 export class DataSanitizer {
@@ -32,7 +34,7 @@ export class DataSanitizer {
 
             // Recursively fix known risk areas
             if (schemaIdentifier === 'route' || schemaIdentifier === 'reroute') {
-                sanitized.id = data.id || `route-${Date.now()}`;
+                sanitized.id = data.id || data._id || data.routeId || createFallbackMongoRouteId();
                 sanitized.generatedAt = data.generatedAt || new Date();
                 sanitized.segments = this.sanitize(data.segments || data.legs || [], 'segment');
                 sanitized.totalCost = data.totalCost || data.cost || 0;
@@ -185,7 +187,7 @@ export class DataSanitizer {
             case 'route':
             case 'reroute':
                 return {
-                    id: `empty-${Date.now()}`,
+                    id: createFallbackMongoRouteId(),
                     segments: [],
                     totalDistance: 0,
                     totalTime: 0,
