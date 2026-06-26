@@ -6,15 +6,16 @@
  * File: src/app/features/profile/profile-view.component.ts
  */
 
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { takeUntil, switchMap, finalize } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/services/auth.service';
 import { CommunityService } from '../../../core/services/community.service';
+import { ProfileService } from '../../../core/services/profile.service';
 import { User, UserReputation } from '../../../models/user.model';
 
 interface ProfileStats {
@@ -80,11 +81,23 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   // Active section
   activeSection: 'overview' | 'trips' | 'settings' | 'security' | 'reputation' = 'overview';
 
+  // Form for editing profile
+  editForm!: FormGroup;
+
   constructor(
     public authService: AuthService,
     public communityService: CommunityService,
+    private profileService: ProfileService,
+    private fb: FormBuilder,
     private router: Router
-  ) { }
+  ) {
+    this.editForm = this.fb.group({
+      firstName: [''],
+      lastName: [''],
+      email: [''],
+      phoneNumber: ['']
+    });
+  }
 
   ngOnInit(): void {
     this.loadUserProfile();
@@ -147,17 +160,9 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   private loadProfileStats(): void {
     this.isLoadingStats = true;
 
-    this.communityService.getUserReputation().subscribe({
-      next: (res) => {
-        if (res.success) {
-          // Use reputation data for stats - adapt to match ProfileStats interface
-          this.stats = {
-            tripsCompleted: res.data?.tripsCompleted || 0,
-            routesSaved: res.data?.routesSaved || 0,
-            tagsAlong: res.data?.tagsAlong || 0,
-            rewardsPoints: res.data?.rewardsPoints || 0
-          };
-        }
+    this.profileService.getProfileStats().subscribe({
+      next: (stats) => {
+        this.stats = stats;
         this.isLoadingStats = false;
       },
       error: (err) => {
@@ -168,43 +173,77 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   }
 
   private loadRecentTrips(): void {
-    // TODO: Load from API
-    this.recentTrips = [
-      {
-        id: '1',
-        from: 'Kubwa',
-        to: 'Berger',
-        date: '2 hours ago',
-        fare: '₦300',
-        status: 'completed'
+    this.profileService.getRecentTrips().subscribe({
+      next: (trips) => {
+        this.recentTrips = trips;
       },
-      {
-        id: '2',
-        from: 'Wuse 2',
-        to: 'Nyanya',
-        date: 'Yesterday',
-        fare: '₦400',
-        status: 'completed'
-      },
-      {
-        id: '3',
-        from: 'Gwarinpa',
-        to: 'Area 1',
-        date: '2 days ago',
-        fare: '₦350',
-        status: 'completed'
+      error: (err) => {
+        console.error('Error loading recent trips:', err);
+        // Fallback to empty array on error
+        this.recentTrips = [];
       }
-    ];
+    });
   }
 
   private loadUserReputation(): void {
-    this.communityService.getUserReputation().subscribe({
-      next: (res) => {
-        if (res.success) {
-          this.userReputation = res.data;
-        }
+    this.profileService.getUserReputation().subscribe({
+      next: (reputation) => {
+        this.userReputation = reputation;
       },
-      error: (err) => console.error('Error loading reputation:', err)
+      error: (err) => {
+        console.error('Error loading reputation:', err);
+        this.userReputation = null;
+      }
+    });
+  }
+
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * AVATAR MANAGEMENT
+   * ═══════════════════════════════════════════════════════════════
+   */
+
+  getAvatarFile(event: any): File | null {
+    const file = event.target.files[0];
+    if (file) {
+      const validation = this.profileService.validateAvatarFile(file);
+      if (!validation.valid) {
+        console.error('Avatar validation failed:', validation.error);
+        alert(validation.error);
+        return null;
+      }
+      return file;
+    }
+    return null;
+  }
+
+  onAvatarClick(): void {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/jpeg,image/png,image/gif,image/webp';
+    input.max = '5242880'; // 5MB
+    input.onchange = (e: any) => {
+      const file = this.getAvatarFile(e);
+      if (file) {
+        this.uploadAvatar(file);
+      }
+    };
+    input.click();
+  }
+
+  uploadAvatar(file: File): void {
+    const formData = new FormData();
+    formData.append('avatar', file);
+
+    this.profileService.uploadAvatar(formData).subscribe({
+      next: (response) => {
+        this.userAvatar = response.data?.avatar;
+        console.log('Avatar uploaded successfully');
+      },
+      error: (err) => {
+        console.error('Avatar upload failed:', err);
+        alert('Failed to upload avatar. Please try again.');
+      }
     });
   }
 
@@ -216,37 +255,118 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
 
   startEditProfile(): void {
     this.isEditingProfile = true;
-  }
-
-  cancelEdit(): void {
-    this.isEditingProfile = false;
-    // Reset form
     if (this.currentUser) {
-      this.editForm = {
+      this.editForm.patchValue({
         firstName: this.currentUser.firstName || '',
         lastName: this.currentUser.lastName || '',
         email: this.currentUser.email || '',
         phoneNumber: this.currentUser.phoneNumber || ''
-      };
+      });
     }
+  }
+
+  cancelEdit(): void {
+    this.isEditingProfile = false;
+    this.editForm.reset();
   }
 
   saveProfile(): void {
     if (this.isSavingProfile) return;
 
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+
     this.isSavingProfile = true;
 
-    this.authService.updateProfile(this.editForm).subscribe({
-      next: (response) => {
-                this.isSavingProfile = false;
+    // Map form to user object for API
+    const profileUpdate: Partial<User> = {
+      firstName: this.editForm.value.firstName || '',
+      lastName: this.editForm.value.lastName || '',
+      email: this.editForm.value.email || '',
+      phoneNumber: this.editForm.value.phoneNumber || ''
+    };
+
+    this.profileService.updateProfile(profileUpdate).subscribe({
+      next: (updatedUser) => {
+        this.isSavingProfile = false;
         this.isEditingProfile = false;
+        // Update current user with new data
+        this.updateUserFromSignal(updatedUser);
+        this.toastService?.success('Success', 'Profile updated successfully');
       },
       error: (error) => {
         console.error('Error updating profile:', error);
         this.isSavingProfile = false;
-        alert('Failed to update profile. Please try again.');
+        this.toastService?.error('Error', 'Failed to update profile. Please try again.');
       }
     });
+  }
+
+  /**
+   * ═══════════════════════════════════════════════════════════════
+   * PROFILE EDITING
+   * ═══════════════════════════════════════════════════════════════
+   */
+
+  startEditProfile(): void {
+    this.isEditingProfile = true;
+    if (this.currentUser) {
+      this.editForm.patchValue({
+        firstName: this.currentUser.firstName || '',
+        lastName: this.currentUser.lastName || '',
+        email: this.currentUser.email || '',
+        phoneNumber: this.currentUser.phoneNumber || ''
+      });
+    }
+  }
+
+  cancelEdit(): void {
+    this.isEditingProfile = false;
+    this.editForm.reset();
+  }
+
+  saveProfile(): void {
+    if (this.isSavingProfile) return;
+
+    if (this.editForm.invalid) {
+      this.editForm.markAllAsTouched();
+      return;
+    }
+
+    this.isSavingProfile = true;
+
+    // Map form to user object for API
+    const profileUpdate: Partial<User> = {
+      firstName: this.editForm.value.firstName || '',
+      lastName: this.editForm.value.lastName || '',
+      email: this.editForm.value.email || '',
+      phoneNumber: this.editForm.value.phoneNumber || ''
+    };
+
+    this.profileService.updateProfile(profileUpdate).subscribe({
+      next: (updatedUser) => {
+        this.isSavingProfile = false;
+        this.isEditingProfile = false;
+        // Update current user with new data
+        this.updateUserFromSignal(updatedUser);
+        this.toastService?.success('Success', 'Profile updated successfully');
+      },
+      error: (error) => {
+        console.error('Error updating profile:', error);
+        this.isSavingProfile = false;
+        this.toastService?.error('Error', 'Failed to update profile. Please try again.');
+      }
+    });
+  }
+
+  // Use ToastNotificationService if available
+  get toastService() {
+    return (window as any).toastNotificationService || {
+      success: (title: string, message: string) => console.log(`✅ ${title}: ${message}`),
+      error: (title: string, message: string) => console.error(`❌ ${title}: ${message}`)
+    };
   }
 
   /**
