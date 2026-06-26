@@ -1,0 +1,147 @@
+<div class="engine-container">
+  <div class="network-header">
+    <h1>Flow Network Retag</h1>
+    <p class="subtitle">Confirm tier adjustments + view tier counts</p>
+    <button class="btn btn-primary" (click)="refreshNetwork()">
+      <span>🔄</span> Refresh Network
+    </button>
+  </div>
+
+  <div class="tier-summary">
+    <div class="tier-card captain">
+      <div class="tier-header">
+        <span class="tier-icon">👑</span>
+        <h3>Captain Tier</h3>
+      </div>
+      <div class="tier-count">{{ tierCountData.tierBreakdown.captain }}</div>
+      <div class="tier-label">Active Captains</div>
+    </div>
+
+    <div class="tier-card trusted">
+      <div class="tier-header">
+        <span class="tier-icon">⭐</span>
+        <h3>Trusted Tier</h3>
+      </div>
+      <div class="tier-count">{{ tierCountData.tierBreakdown.trusted }}</div>
+      <div class="tier-label">Trusted Contributors</div>
+    </div>
+
+    <div class="tier-card new">
+      <div class="tier-header">
+        <span class="tier-icon">🎯</span>
+        <h3>New Tier</h3>
+      </div>
+      <div class="tier-count">{{ tierCountData.tierBreakdown.new }}</div>
+      <div class="tier-label">New Contributors</div>
+    </div>
+  </div>
+
+  <div class="network-content">
+    <div class="visualization-area">
+      <div class="tier-legend">
+        <div class="legend-item captain">
+          <div class="legend-color captain"></div>
+          <span>Captain Tier</span>
+        </div>
+        <div class="legend-item trusted">
+          <div class="legend-color trusted"></div>
+          <span>Trusted Tier</span>
+        </div>
+        <div class="legend-item new">
+          <div class="legend-color new"></div>
+          <span>New Tier</span>
+        </div>
+      </div>
+
+      <div class="network-canvas">
+        <div class="nodes-container">
+          <div *ngFor="let node of activeTierLevels" class="node" [style.left]="node.coordinates.x + 'px'" [style.top]="node.coordinates.y + 'px'"
+               (click)="openRetagNode(node)">
+            <div class="node-glow" [style.border-color]="getNodeTierBorderColor(node.tier)"></div>
+            <div class="node-content" [style.background-color]="getNodeTierColor(node.tier)">
+              <span class="node-name">{{ node.name }}</span>
+            </div>
+            <div class="node-tier-label">{{ node.tier }}</div>
+          </div>
+        </div>
+
+        <div class="tier-lines">
+          <div *ngFor="let node of activeTierLevels" class="movement-line"
+               [style.border-color]="getNodeTierBorderColor(node.tier)"
+               [style.animation-delay]="(Math.random() * 3) + 's'"
+               [style.transform]="'translate(' + getNodeMovementDirection(node).dx + 'px, ' + getNodeMovementDirection(node).dy + 'px)'">
+          </div>
+        </div>
+      </div>
+
+      <div class="info-panel">
+        <div class="panel-header">
+          <h3>Tier Migration Preview</h3>
+        </div>
+        <div class="panel-content">
+          <div class="migration-list">
+            <div class="migration-item" *ngFor="let node of activeTierLevels">
+              <div class="migration-node from-tier" [style.background-color]="getNodeTierColor(node.tier)">
+                {{ node.name }}
+              </div>
+              <div class="migration-arrow">
+                <div class="arrow-up" *ngIf="getNodeTierChange(node.tier) === 'captain'"></div>
+                <div class="arrow-right" *ngIf="getNodeTierChange(node.tier) === 'trusted'"></div>
+                <div class="arrow-down" *ngIf="getNodeTierChange(node.tier) === 'new'"></div>
+              </div>
+              <div class="migration-node to-tier" [style.background-color]="getNodeTierColor(getNodeTierChange(node.tier))">
+                {{ getNodeTierChange(node.tier) }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" *ngIf="showRetagModal" (click)="cancelRetag()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Confirm Retag Operation</h2>
+        <button class="close-btn" (click)="cancelRetag()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="retag-preview">
+          <div class="preview-node from">
+            <div class="node-header">From</div>
+            <div class="node-content" [style.background-color]="getNodeTierColor(currentRetagOperation?.tier)">
+              <span class="node-name">{{ currentRetagOperation?.name }}</span>
+              <span class="node-tier">{{ currentRetagOperation?.tier }}</span>
+            </div>
+          </div>
+          <div class="retag-arrow">
+            <div class="arrow-icon">↔</div>
+          </div>
+          <div class="preview-node to">
+            <div class="node-header">To</div>
+            <div class="node-content" [style.background-color]="getNodeTierColor(getNodeTierChange(currentRetagOperation?.tier))">
+              <span class="node-name">{{ getNodeTierChange(currentRetagOperation?.tier) }}</span>
+              <span class="node-tier">{{ getNodeTierChange(currentRetagOperation?.tier) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="retag-actions">
+          <div class="action-info">
+            <strong>Soul v2 Preferences:</strong><br>
+            <span class="action-details">
+              First Leg Mode: {{ currentRetagOperation?.soulV2Preferences?.firstLegPreferredMode || 'N/A' }}<br>
+              Bridge Mode: {{ currentRetagOperation?.soulV2Preferences?.bridgeModePreference || 'N/A' }}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="cancelRetag()">Cancel</button>
+        <button type="button" class="btn btn-primary" (click)="confirmRetag()">
+          Confirm Retag
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,184 @@
+<div class="bus-stops-container">
+  <div class="page-header">
+    <h1>Bus Stops Management</h1>
+    <p class="subtitle">Full CRUD for bus stops beyond harvest registry</p>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <span>+</span> New Stop
+    </button>
+  </div>
+
+  <div class="search-bar">
+    <input
+      type="text"
+      placeholder="Search by name, city, area, status..."
+      (input)="onSearch($event)"
+      class="search-input"
+    />
+    <span class="results-count">{{ filteredStops.length }} of {{ totalCount }} stops</span>
+  </div>
+
+  <div class="table-wrapper" *ngIf="!isLoading; else loadingTpl">
+    <table class="stops-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>City / Area</th>
+          <th>Coordinates</th>
+          <th>Status</th>
+          <th>Modes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let stop of filteredStops">
+          <td>
+            <span class="name-chip">
+              <strong>{{ stop.name }}</strong>
+              <span *ngIf="stop.localNames && stop.localNames.length" class="local-names">
+                ({{ stop.localNames.join(', ') }})
+              </span>
+            </span>
+          </td>
+          <td>
+            <div class="location-info">
+              <span class="city">{{ stop.city }}</span>
+              <span *ngIf="stop.area" class="area">{{ stop.area }}</span>
+            </div>
+          </td>
+          <td class="mono">
+            {{ stop.location?.coordinates ? formatCoords(stop.location.coordinates[1], stop.location.coordinates[0]) : 'N/A' }}
+          </td>
+          <td>
+            <span class="status-badge" [style.background-color]="getStatusColor(stop.verificationStatus) + '20'" [style.color]="getStatusColor(stop.verificationStatus)" [style.border-color]="getStatusColor(stop.verificationStatus) + '40'">
+              {{ stop.verificationStatus }}
+            </span>
+            <span class="active-indicator" [class.active]="stop.isActive" [class.inactive]="!stop.isActive" (click)="toggleActive(stop)" style="cursor: pointer; margin-left: 8px;">
+              {{ stop.isActive ? '● Active' : '○ Inactive' }}
+            </span>
+          </td>
+          <td>
+            <div class="mode-badges">
+              <span *ngFor="let mode of stop.transportModes" class="mode-badge" [style.background-color]="getModeColors([mode])">
+                {{ mode }}
+              </span>
+              <span *ngIf="!stop.transportModes || stop.transportModes.length === 0" class="no-modes">—</span>
+            </div>
+          </td>
+          <td class="actions">
+            <button class="icon-btn edit" (click)="openEditModal(stop)" title="Edit">
+              ✏️
+            </button>
+            <button class="icon-btn delete" (click)="deleteStop(stop)" title="Delete">
+              🗑️
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="filteredStops.length === 0">
+          <td colspan="6" class="empty-state">No bus stops found</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="page-btn" (click)="onPageChange(page - 1)" [disabled]="page === 1">‹</button>
+      <span class="page-info">Page {{ page }} of {{ totalPages }}</span>
+      <button class="page-btn" (click)="onPageChange(page + 1)" [disabled]="page === totalPages">›</button>
+    </div>
+  </div>
+
+  <ng-template #loadingTpl>
+    <div class="loading-state">Loading bus stops...</div>
+  </ng-template>
+
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ editMode ? 'Edit Bus Stop' : 'Create Bus Stop' }}</h2>
+        <button class="close-btn" (click)="closeModal()">×</button>
+      </div>
+      <form [formGroup]="stopForm" (ngSubmit)="onSubmit()">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" formControlName="name" class="form-input" placeholder="e.g., Wuse Market">
+              <small class="error" *ngIf="stopForm.get('name')?.invalid && stopForm.get('name')?.touched">
+                Required, minimum 2 characters
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Local Names (comma-separated)</label>
+              <input type="text" formControlName="localNames" class="form-input" placeholder="e.g., Wuse, Market">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" formControlName="city" class="form-input" placeholder="e.g., Abuja">
+              <small class="error" *ngIf="stopForm.get('city')?.invalid && stopForm.get('city')?.touched">
+                Required
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Area / Neighborhood</label>
+              <input type="text" formControlName="area" class="form-input" placeholder="e.g., Wuse Zone 2">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude</label>
+              <input type="number" formControlName="latitude" class="form-input" step="0.000001" placeholder="e.g., 9.0579">
+              <small class="error" *ngIf="stopForm.get('latitude')?.invalid && stopForm.get('latitude')?.touched">
+                Required, -90 to 90
+              </small>
+            </div>
+            <div class="form-group">
+              <label>Longitude</label>
+              <input type="number" formControlName="longitude" class="form-input" step="0.000001" placeholder="e.g., 7.4951">
+              <small class="error" *ngIf="stopForm.get('longitude')?.invalid && stopForm.get('longitude')?.touched">
+                Required, -180 to 180
+              </small>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Verification Status</label>
+              <select formControlName="verificationStatus" class="form-select">
+                <option value="pending">Pending</option>
+                <option value="verified">Verified</option>
+                <option value="rejected">Rejected</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="form-group checkbox-group">
+              <label class="checkbox-label">
+                <input type="checkbox" formControlName="isActive">
+                <span>Active</span>
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Transport Modes (comma-separated)</label>
+            <input type="text" formControlName="transportModes" class="form-input" placeholder="e.g., KEKE, OKADA, BUS">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Soul v2: First Leg Preferred Mode</label>
+              <input type="text" formControlName="soulV2Preferences.firstLegPreferredMode" class="form-input" placeholder="e.g., KEKE">
+            </div>
+            <div class="form-group">
+              <label>Soul v2: Bridge Mode Preference</label>
+              <input type="text" formControlName="soulV2Preferences.bridgeModePreference" class="form-input" placeholder="e.g., OKADA">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Saving...' : (editMode ? 'Update' : 'Create') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
