@@ -555,15 +555,6 @@ export class AdminService {
     }
 
     /**
-     * Get user statistics (admin)
-     */
-    getUserStats(): Observable<UserStats> {
-        return this.http.get<{ success: boolean; data: UserStats }>(`${this.apiUrl}/users/admin/stats`).pipe(
-            map(response => response.data)
-        );
-    }
-
-    /**
      * Promote user to captain (admin)
      */
     promoteToCaptain(userId: string): Observable<void> {
