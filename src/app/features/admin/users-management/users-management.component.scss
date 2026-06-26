@@ -121,7 +121,8 @@
 
         .search-bar {
             position: relative;
-            width: 320px;
+            width: 100%;
+            max-width: 320px;
 
             i {
                 position: absolute;
@@ -478,3 +479,65 @@
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 768px) {
+    :host {
+        padding: $space-md;
+    }
+
+    .users-management-container {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: $space-md;
+            padding: $space-lg;
+        }
+
+        .filters-bar {
+            flex-direction: column;
+            gap: $space-md;
+            padding: $space-lg;
+
+            .search-bar {
+                max-width: 100%;
+            }
+        }
+
+        .stats-cards {
+            grid-template-columns: repeat(2, 1fr);
+            gap: $space-md;
+            margin-bottom: $space-2xl;
+        }
+
+        .contributors-table {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: $radius-xl;
+
+            .table {
+                th, td {
+                    padding: $space-md;
+                    white-space: nowrap;
+                }
+            }
+
+            .pagination {
+                padding: $space-md;
+
+                .page-btn {
+                    padding: 8px 12px;
+                    font-size: 0.65rem;
+                }
+            }
+        }
+    }
+
+    .modal-overlay {
+        padding: $space-md;
+
+        .modal {
+            max-width: 100%;
+            margin: 0 $space-sm;
+        }
+    }
+}

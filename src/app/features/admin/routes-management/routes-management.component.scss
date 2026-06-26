@@ -207,6 +207,8 @@
             border-radius: $radius-2xl;
             width: 100%;
             max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 
             .modal-header {
@@ -351,4 +353,53 @@
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+    :host {
+        padding: $space-md;
+    }
+
+    .routes-container {
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: $space-md;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            border-radius: $radius-xl;
+
+            table {
+                th, td {
+                    padding: $space-md;
+                    white-space: nowrap;
+                }
+            }
+        }
+
+        .pagination {
+            padding: $space-md;
+
+            .page-btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+        }
+
+        .modal-overlay {
+            padding: $space-md;
+
+            .modal {
+                max-width: 100%;
+                margin: 0 $space-sm;
+
+                .modal-body .form-row {
+                    grid-template-columns: 1fr;
+                }
+            }
+        }
+    }
 }
