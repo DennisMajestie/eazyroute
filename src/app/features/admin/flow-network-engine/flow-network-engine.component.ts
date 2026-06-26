@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChartModule } from 'angular2-charts';
 import { FormsModule } from '@angular/forms';
 import { AdminService } from '../../../core/services/admin.service';
 import { ToastNotificationService } from '../../../core/services/toast-notification.service';
@@ -10,7 +9,7 @@ import { GraphReport } from '../../../models/admin.types';
 @Component({
   selector: 'app-flow-network-engine',
   standalone: true,
-  imports: [CommonModule, ChartModule, FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './flow-network-engine.component.html',
   styleUrls: ['./flow-network-engine.component.scss']
 })
@@ -68,7 +67,7 @@ export class FlowNetworkEngineComponent implements OnInit {
 
   generateMockTierData(): any[] {
     const tiers = ['captain', 'trusted', 'new'];
-    const nodes = [];
+    const nodes: any[] = [];
     
     tiers.forEach(tier => {
       for (let i = 0; i < 15; i++) {
@@ -91,9 +90,9 @@ export class FlowNetworkEngineComponent implements OnInit {
       }
     });
     
-    return nodes.sort((a, b) => {
-      const tierOrder = { captain: 0, trusted: 1, new: 2 };
-      return tierOrder[a.tier] - tierOrder[b.tier];
+    return nodes.sort((a: any, b: any) => {
+      const tierOrder: Record<string, number> = { captain: 0, trusted: 1, new: 2 };
+      return (tierOrder[a.tier] || 0) - (tierOrder[b.tier] || 0);
     });
   }
 
@@ -182,7 +181,7 @@ export class FlowNetworkEngineComponent implements OnInit {
   }
 
   getNodeMovementDirection(node: any): { dx: number; dy: number } {
-    const tierDirections = {
+    const tierDirections: Record<string, { dx: number; dy: number }> = {
       captain: { dx: Math.random() > 0.5 ? 20 : -20, dy: Math.random() > 0.5 ? -10 : 10 },
       trusted: { dx: Math.random() > 0.5 ? 10 : -10, dy: Math.random() > 0.5 ? 20 : -20 },
       new: { dx: Math.random() > 0.5 ? -15 : 15, dy: Math.random() > 0.5 ? 5 : -5 }
@@ -193,6 +192,10 @@ export class FlowNetworkEngineComponent implements OnInit {
 
   trackByFn(index: number, node: any): string {
     return node.id;
+  }
+
+  getRandomDelay(): number {
+    return Math.random() * 3;
   }
 
   refreshNetwork(): void {

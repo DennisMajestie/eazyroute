@@ -1,4 +1,4 @@
-@use "../../styles/variables" as *;
+@use "../../../styles/variables" as *;
 
 .admin-container {
     display: flex;
@@ -356,7 +356,7 @@
             display: block;
         }
     }
-}}
+}
 
 :global(.disabled) {
     opacity: 0.5;

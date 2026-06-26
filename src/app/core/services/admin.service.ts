@@ -28,7 +28,11 @@ import {
     SafetyAnalytics,
     UserStats,
     PricingRule,
-    PricingRulesResponse
+    PricingRulesResponse,
+    BusStop,
+    BusStopsResponse,
+    RouteSegment,
+    RouteSegmentsResponse
 } from '../../models/admin.types';
 import { CommunityReport } from '../../models/community.types';
 
@@ -554,10 +558,4 @@ export class AdminService {
         );
     }
 
-    /**
-     * Promote user to captain (admin)
-     */
-    promoteToCaptain(userId: string): Observable<void> {
-        return this.http.post<void>(`${this.apiUrl}/community/promote/${userId}`, {});
-    }
 }

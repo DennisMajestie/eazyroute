@@ -68,7 +68,7 @@
         <div class="tier-lines">
           <div *ngFor="let node of activeTierLevels" class="movement-line"
                [style.border-color]="getNodeTierBorderColor(node.tier)"
-               [style.animation-delay]="(Math.random() * 3) + 's'"
+               [style.animation-delay]="getRandomDelay() + 's'"
                [style.transform]="'translate(' + getNodeMovementDirection(node).dx + 'px, ' + getNodeMovementDirection(node).dy + 'px)'">
           </div>
         </div>

@@ -93,7 +93,7 @@ export class BusStopsManagementComponent implements OnInit {
       const q = this.searchQuery.toLowerCase();
       this.filteredStops = this.stops.filter(s =>
         s.name.toLowerCase().includes(q) ||
-        s.city.toLowerCase().includes(q) ||
+        (s.city || '').toLowerCase().includes(q) ||
         (s.area || '').toLowerCase().includes(q) ||
         s.verificationStatus.toLowerCase().includes(q)
       );
@@ -173,14 +173,15 @@ export class BusStopsManagementComponent implements OnInit {
 
     this.isSubmitting = true;
     const formValue = this.stopForm.value;
-    const payload = {
+    const coordinates: [number, number] = [Number(formValue.longitude) || 0, Number(formValue.latitude) || 0];
+    const payload: Partial<BusStop> = {
       name: formValue.name,
       localNames: formValue.localNames.split(',').map((s: string) => s.trim()).filter(Boolean),
       city: formValue.city,
       area: formValue.area,
       location: {
-        type: 'Point' as const,
-        coordinates: [formValue.longitude, formValue.latitude]
+        type: 'Point',
+        coordinates
       },
       verificationStatus: formValue.verificationStatus,
       isActive: formValue.isActive,

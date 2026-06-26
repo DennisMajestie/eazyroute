@@ -70,14 +70,6 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   isSavingProfile = false;
   showLogoutModal = false;
 
-  // Edit form
-  editForm = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: ''
-  };
-
   // Active section
   activeSection: 'overview' | 'trips' | 'settings' | 'security' | 'reputation' = 'overview';
 
@@ -137,12 +129,12 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     this.userInitials = this.getInitials(user);
 
     // Populate edit form
-    this.editForm = {
+    this.editForm.patchValue({
       firstName: user.firstName || '',
       lastName: user.lastName || '',
       email: user.email || '',
       phoneNumber: user.phoneNumber || ''
-    };
+    });
   }
 
   private getInitials(user: User): string {
@@ -304,102 +296,12 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * PROFILE EDITING
-   * ═══════════════════════════════════════════════════════════════
-   */
-
-  startEditProfile(): void {
-    this.isEditingProfile = true;
-    if (this.currentUser) {
-      this.editForm.patchValue({
-        firstName: this.currentUser.firstName || '',
-        lastName: this.currentUser.lastName || '',
-        email: this.currentUser.email || '',
-        phoneNumber: this.currentUser.phoneNumber || ''
-      });
-    }
-  }
-
-  cancelEdit(): void {
-    this.isEditingProfile = false;
-    this.editForm.reset();
-  }
-
-  saveProfile(): void {
-    if (this.isSavingProfile) return;
-
-    if (this.editForm.invalid) {
-      this.editForm.markAllAsTouched();
-      return;
-    }
-
-    this.isSavingProfile = true;
-
-    // Map form to user object for API
-    const profileUpdate: Partial<User> = {
-      firstName: this.editForm.value.firstName || '',
-      lastName: this.editForm.value.lastName || '',
-      email: this.editForm.value.email || '',
-      phoneNumber: this.editForm.value.phoneNumber || ''
-    };
-
-    this.profileService.updateProfile(profileUpdate).subscribe({
-      next: (updatedUser) => {
-        this.isSavingProfile = false;
-        this.isEditingProfile = false;
-        // Update current user with new data
-        this.updateUserFromSignal(updatedUser);
-        this.toastService?.success('Success', 'Profile updated successfully');
-      },
-      error: (error) => {
-        console.error('Error updating profile:', error);
-        this.isSavingProfile = false;
-        this.toastService?.error('Error', 'Failed to update profile. Please try again.');
-      }
-    });
-  }
-
   // Use ToastNotificationService if available
   get toastService() {
     return (window as any).toastNotificationService || {
       success: (title: string, message: string) => console.log(`✅ ${title}: ${message}`),
       error: (title: string, message: string) => console.error(`❌ ${title}: ${message}`)
     };
-  }
-
-  /**
-   * ═══════════════════════════════════════════════════════════════
-   * AVATAR MANAGEMENT
-   * ═══════════════════════════════════════════════════════════════
-   */
-
-  onAvatarClick(): void {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e: any) => {
-      const file = e.target.files[0];
-      if (file) {
-        this.uploadAvatar(file);
-      }
-    };
-    input.click();
-  }
-
-  uploadAvatar(file: File): void {
-    // TODO: Upload to backend
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      this.userAvatar = e.target.result;
-      // Update in backend
-      this.authService.updateProfile({ avatar: e.target.result } as any).subscribe({
-        next: () => void 0,
-        error: (err) => console.error('Avatar upload failed:', err)
-      });
-    };
-    reader.readAsDataURL(file);
   }
 
   /**

@@ -203,11 +203,6 @@ export class UsersManagementComponent implements OnInit {
     this.toastService.error('Error', msg);
   }
 
-  // Helper method to get user role with proper fallback
-getUserRole(user: any): string {
-    return user.role || 'user';
-  }
-
   deleteUser(user: any): void {
     const displayName = user.name || user.email || 'Unknown User';
     if (!confirm(`Delete user "${displayName}"?`)) return;
@@ -240,22 +235,17 @@ getUserRole(user: any): string {
     return d.toLocaleDateString('en-NG', { year: 'numeric', month: 'short', day: 'numeric' });
   }
 
-  getStatusColor(status: string): string {
+  getStatusColor(status: string | undefined): string {
     const colors: Record<string, string> = {
       active: '#22c55e',
       inactive: '#ef4444',
       suspended: '#f59e0b'
     };
-    return colors[status] || '#6b7280';
+    return (status ? colors[status] : undefined) || '#6b7280';
   }
 
   getTierBadgeClass(tier: string): string {
     return `badge-${tier}`;
-  }
-
-  // Helper method to get user role safely
-  getUserRole(user: any): string {
-    return user.role || 'user';
   }
 
   // Helper method to get user name safely

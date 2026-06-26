@@ -45,7 +45,7 @@
           <td>{{ formatCurrency(rule.perKm) }}/km</td>
           <td>{{ formatCurrency(rule.minFare) }}</td>
           <td>{{ rule.villageSurcharge }}x</td>
-          <td>{{ (rule.alongDiscount * 100).toFixed(0) }% off</td>
+          <td>{{ (rule.alongDiscount * 100).toFixed(0) }}% off</td>
           <td>{{ rule.surgeMultiplier }}x</td>
           <td>
             <span class="status-badge" [class.active]="rule.isActive" [class.inactive]="!rule.isActive"
@@ -76,7 +76,7 @@
   </div>
 
   <ng-template #loadingTpl>
-    <div class="loading-state class="loading">Loading pricing rules...</div>
+    <div class="loading-state">Loading pricing rules...</div>
   </ng-template>
 
   <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">

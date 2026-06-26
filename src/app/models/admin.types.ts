@@ -153,6 +153,10 @@ export interface PricingAnalytics {
 export interface ContributorStats {
     userId: string;
     name: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    status?: string;
     totalReports: number;
     accuracyRate: number;      // 0-1
     tier: 'captain' | 'trusted' | 'new';

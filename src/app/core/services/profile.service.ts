@@ -7,10 +7,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { FormData } from '@angular/common';
 import { environment } from '../../../environments/environment';
 import { User } from '../../models/user.model';
-import { UserReputation } from '../community.service';
+import { UserReputation } from '../../models/user.model';
 
 interface ProfileStats {
   tripsCompleted: number;
@@ -150,7 +149,7 @@ export class ProfileService {
 
 // Backend may return additional fields, extend as needed
 interface UserWithMetadata extends User {
-    reputation?: number;
+    reputationScore?: number;
     tier?: string;
     stats?: ProfileStats;
     recentTrips?: RecentTrip[];
