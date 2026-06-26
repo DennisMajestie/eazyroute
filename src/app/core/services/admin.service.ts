@@ -26,7 +26,9 @@ import {
     ContributorStats,
     SafetyIncident,
     SafetyAnalytics,
-    UserStats
+    UserStats,
+    PricingRule,
+    PricingRulesResponse
 } from '../../models/admin.types';
 import { CommunityReport } from '../../models/community.types';
 
@@ -65,6 +67,80 @@ export class AdminService {
     getPricingAnalytics(): Observable<PricingAnalytics> {
         return this.http.get<{ success: boolean; data: PricingAnalytics }>(
             `${this.apiUrl}/pricing/admin/list`
+        ).pipe(
+            map(response => response.data)
+        );
+    }
+
+    // ════════════════════════════════════════════════════════════════
+    // PRICING RULES MANAGEMENT
+    // ════════════════════════════════════════════════════════════════
+
+    /**
+     * Get all pricing rules (admin)
+     */
+    getPricingRules(page: number = 1, limit: number = 50): Observable<PricingRulesResponse> {
+        return this.http.get<{ success: boolean; data: PricingRulesResponse }>(
+            `${this.apiUrl}/pricing/admin/rules?page=${page}&limit=${limit}`
+        ).pipe(
+            map(response => response.data || { rules: [], total: 0, page, limit })
+        );
+    }
+
+    /**
+     * Create a new pricing rule (admin)
+     */
+    createPricingRule(rule: Partial<PricingRule>): Observable<PricingRule> {
+        return this.http.post<{ success: boolean; data: PricingRule }>(
+            `${this.apiUrl}/pricing/admin/rules`,
+            rule
+        ).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Update a pricing rule (admin)
+     */
+    updatePricingRule(id: string, rule: Partial<PricingRule>): Observable<PricingRule> {
+        return this.http.patch<{ success: boolean; data: PricingRule }>(
+            `${this.apiUrl}/pricing/admin/rules/${id}`,
+            rule
+        ).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Delete a pricing rule (admin)
+     */
+    deletePricingRule(id: string): Observable<void> {
+        return this.http.delete<{ success: boolean }>(
+            `${this.apiUrl}/pricing/admin/rules/${id}`
+        ).pipe(
+            map(() => void 0)
+        );
+    }
+
+    /**
+     * Toggle pricing rule active status (admin)
+     */
+    togglePricingRule(id: string, isActive: boolean): Observable<PricingRule> {
+        return this.http.patch<{ success: boolean; data: PricingRule }>(
+            `${this.apiUrl}/pricing/admin/rules/${id}/toggle`,
+            { isActive }
+        ).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Bulk update pricing rules (admin)
+     */
+    bulkUpdatePricingRules(rules: Partial<PricingRule>[]): Observable<PricingRule[]> {
+        return this.http.post<{ success: boolean; data: PricingRule[] }>(
+            `${this.apiUrl}/pricing/admin/rules/bulk`,
+            { rules }
         ).pipe(
             map(response => response.data)
         );
@@ -376,5 +452,121 @@ export class AdminService {
      */
     verifyBusStop(id: string): Observable<any> {
         return this.http.post(`${this.apiUrl}/bus-stops/${id}/verify`, {});
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // BUS STOPS MANAGEMENT (ADMIN)
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Get all bus stops (admin)
+     */
+    getBusStops(page: number = 1, limit: number = 50, search?: string): Observable<BusStopsResponse> {
+        let params = `?page=${page}&limit=${limit}`;
+        if (search) params += `&search=${search}`;
+        return this.http.get<{ success: boolean; data: BusStopsResponse }>(`${this.apiUrl}/bus-stops${params}`).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Create a new bus stop (admin)
+     */
+    createBusStop(stop: Partial<BusStop>): Observable<BusStop> {
+        return this.http.post<{ success: boolean; data: BusStop }>(`${this.apiUrl}/bus-stops`, stop).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Update a bus stop (admin)
+     */
+    updateBusStop(id: string, stop: Partial<BusStop>): Observable<BusStop> {
+        return this.http.patch<{ success: boolean; data: BusStop }>(`${this.apiUrl}/bus-stops/${id}`, stop).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Delete a bus stop (admin)
+     */
+    deleteBusStop(id: string): Observable<void> {
+        return this.http.delete<{ success: boolean }>(`${this.apiUrl}/bus-stops/${id}`).pipe(
+            map(() => void 0)
+        );
+    }
+
+    /**
+     * Toggle bus stop active status (admin)
+     */
+    toggleBusStopStatus(id: string, isActive: boolean): Observable<BusStop> {
+        return this.http.patch<{ success: boolean; data: BusStop }>(`${this.apiUrl}/bus-stops/${id}/toggle`, { isActive }).pipe(
+            map(response => response.data)
+        );
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // ROUTES MANAGEMENT (ADMIN)
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * Get all route segments (admin)
+     */
+    getRouteSegments(page: number = 1, limit: number = 50): Observable<RouteSegmentsResponse> {
+        return this.http.get<{ success: boolean; data: RouteSegmentsResponse }>(`${this.apiUrl}/route-segments?page=${page}&limit=${limit}`).pipe(
+            map(response => response.data || { segments: [], total: 0, page, limit })
+        );
+    }
+
+    /**
+     * Create a new route segment (admin)
+     */
+    createRouteSegment(segment: Partial<RouteSegment>): Observable<RouteSegment> {
+        return this.http.post<{ success: boolean; data: RouteSegment }>(`${this.apiUrl}/route-segments`, segment).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Update a route segment (admin)
+     */
+    updateRouteSegment(id: string, segment: Partial<RouteSegment>): Observable<RouteSegment> {
+        return this.http.patch<{ success: boolean; data: RouteSegment }>(`${this.apiUrl}/route-segments/${id}`, segment).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Delete a route segment (admin)
+     */
+    deleteRouteSegment(id: string): Observable<void> {
+        return this.http.delete<{ success: boolean }>(`${this.apiUrl}/route-segments/${id}`).pipe(
+            map(() => void 0)
+        );
+    }
+
+    /**
+     * Get traffic metrics for routes (admin)
+     */
+    getRouteMetrics(): Observable<any> {
+        return this.http.get<{ success: boolean; data: any }>(`${this.apiUrl}/route-metrics`).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Get user statistics (admin)
+     */
+    getUserStats(): Observable<UserStats> {
+        return this.http.get<{ success: boolean; data: UserStats }>(`${this.apiUrl}/users/admin/stats`).pipe(
+            map(response => response.data)
+        );
+    }
+
+    /**
+     * Promote user to captain (admin)
+     */
+    promoteToCaptain(userId: string): Observable<void> {
+        return this.http.post<void>(`${this.apiUrl}/community/promote/${userId}`, {});
     }
 }

@@ -209,3 +209,98 @@ export interface UserStats {
         createdAt: Date;
     }[];
 }
+
+/**
+ * Pricing Rule (Admin)
+ */
+export interface PricingRule {
+    _id?: string;
+    id?: string;
+    mode: 'KEKE' | 'OKADA' | 'TAXI' | 'BUS' | 'WALKING';
+    corridor: string;
+    baseFare: number;
+    perKm: number;
+    minFare: number;
+    villageSurcharge: number;
+    alongDiscount: number;
+    surgeMultiplier: number;
+    isActive: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface PricingRulesResponse {
+    rules: PricingRule[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
+/**
+ * Bus Stop (Admin)
+ */
+export interface BusStop {
+    _id?: string;
+    id?: string;
+    name: string;
+    localNames?: string[];
+    location: {
+        type: 'Point';
+        coordinates: [number, number];
+    };
+    city?: string;
+    area?: string;
+    verificationStatus: 'pending' | 'verified' | 'rejected' | 'inactive';
+    isActive: boolean;
+    transportModes?: string[];
+    soulV2Preferences?: {
+        firstLegPreferredMode?: string;
+        bridgeModePreference?: string;
+    };
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface BusStopsResponse {
+    stops: BusStop[];
+    total: number;
+    page: number;
+    limit: number;
+}
+
+/**
+ * Route Segment (Admin)
+ */
+export interface RouteSegment {
+    _id?: string;
+    id?: string;
+    fromStopId: string;
+    toStopId: string;
+    transportModes: string[];
+    estimatedTime: number;
+    priceRange: {
+        min: number;
+        max: number;
+    };
+    fromStop?: {
+        id: string;
+        name: string;
+        localNames?: string[];
+        area: string;
+    };
+    toStop?: {
+        id: string;
+        name: string;
+        localNames?: string[];
+        area: string;
+    };
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+export interface RouteSegmentsResponse {
+    segments: RouteSegment[];
+    total: number;
+    page: number;
+    limit: number;
+}

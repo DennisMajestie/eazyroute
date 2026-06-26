@@ -135,6 +135,26 @@ export const routes: Routes = [
             {
                 path: 'harvest-registry',
                 loadComponent: () => import('./features/admin/harvest-registry/harvest-registry.component').then(m => m.HarvestRegistryComponent)
+            },
+            {
+                path: 'pricing-rules',
+                loadComponent: () => import('./features/admin/pricing-rules/pricing-rules.component').then(m => m.PricingRulesComponent)
+            },
+            {
+                path: 'bus-stops',
+                loadComponent: () => import('./features/admin/bus-stops-management/bus-stops-management.component').then(m => m.BusStopsManagementComponent)
+            },
+            {
+                path: 'routes',
+                loadComponent: () => import('./features/admin/routes-management/routes-management.component').then(m => m.RoutesManagementComponent)
+            },
+            {
+                path: 'users',
+                loadComponent: () => import('./features/admin/users-management/users-management.component').then(m => m.UsersManagementComponent)
+            },
+            {
+                path: 'engine',
+                loadComponent: () => import('./features/admin/flow-network-engine/flow-network-engine.component').then(m => m.FlowNetworkEngineComponent)
             }
         ]
     },

@@ -60,10 +60,15 @@ export class AdminLayoutComponent {
 
   getPageTitle(): string {
     if (this.currentUrl.includes('/admin/dashboard')) return 'Dashboard Overview';
-    if (this.currentUrl.includes('/admin/graph')) return 'Graph Diagnostics';
     if (this.currentUrl.includes('/admin/moderation')) return 'Moderation Queue';
-    if (this.currentUrl.includes('/admin/community')) return 'Community Intelligence';
+    if (this.currentUrl.includes('/admin/bus-stops')) return 'Bus Stops Management';
+    if (this.currentUrl.includes('/admin/routes')) return 'Routes Management';
+    if (this.currentUrl.includes('/admin/pricing-rules')) return 'Pricing Rules Management';
+    if (this.currentUrl.includes('/admin/users')) return 'Users Management';
     if (this.currentUrl.includes('/admin/safety')) return 'Safety Intelligence';
+    if (this.currentUrl.includes('/admin/engine')) return 'Flow Network Engine';
+    if (this.currentUrl.includes('/admin/graph')) return 'Graph Diagnostics';
+    if (this.currentUrl.includes('/admin/community')) return 'Community Intelligence';
     if (this.currentUrl.includes('/admin/seeder')) return 'Route Seeder';
     if (this.currentUrl.includes('/admin/harvest-registry')) return 'Landmark Harvest Registry';
     return 'Admin Console';
