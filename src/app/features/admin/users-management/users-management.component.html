@@ -74,11 +74,11 @@
           <td>
             <span class="last-active">{{ formatDate(user.lastActive) }}</span>
           </td>
-          <td>
-            <span class="role-badge" [style.background-color]="getStatusColor(user.status)">
-              {{ user.role || 'user' | uppercase }}
-            </span>
-          </td>
+            <td>
+              <span class="role-badge" [style.background-color]="getStatusColor(user.status)">
+                {{ (user.role || 'user') | uppercase }}
+              </span>
+            </td>
           <td class="actions">
             <button class="btn-icon edit" (click)="openEditModal(user)" title="Edit">
               ✏️

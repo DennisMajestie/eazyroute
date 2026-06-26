@@ -147,16 +147,24 @@ export class ProfileViewComponent implements OnInit, OnDestroy {
   private loadProfileStats(): void {
     this.isLoadingStats = true;
 
-    // TODO: Load from API
-    setTimeout(() => {
-      this.stats = {
-        tripsCompleted: 47,
-        routesSaved: 12,
-        tagsAlong: 8,
-        rewardsPoints: 350
-      };
-      this.isLoadingStats = false;
-    }, 500);
+    this.communityService.getUserReputation().subscribe({
+      next: (res) => {
+        if (res.success) {
+          // Use reputation data for stats - adapt to match ProfileStats interface
+          this.stats = {
+            tripsCompleted: res.data?.tripsCompleted || 0,
+            routesSaved: res.data?.routesSaved || 0,
+            tagsAlong: res.data?.tagsAlong || 0,
+            rewardsPoints: res.data?.rewardsPoints || 0
+          };
+        }
+        this.isLoadingStats = false;
+      },
+      error: (err) => {
+        console.error('Error loading profile stats:', err);
+        this.isLoadingStats = false;
+      }
+    });
   }
 
   private loadRecentTrips(): void {

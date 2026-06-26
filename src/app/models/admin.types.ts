@@ -148,7 +148,7 @@ export interface PricingAnalytics {
 }
 
 /**
- * Contributor Performance Stats (Captains)
+ * Contribution Stats
  */
 export interface ContributorStats {
     userId: string;
@@ -158,6 +158,25 @@ export interface ContributorStats {
     tier: 'captain' | 'trusted' | 'new';
     lastActive: Date;
     flaggedReports: number;
+    role?: string;              // Admin role field (user, admin, captain, etc.)
+}
+
+/**
+ * User Statistics
+ */
+export interface UserStats {
+    total: number;
+    totalContributions: number;
+    verified: number;
+    byRole: { _id: string; count: number; }[];
+    byStatus: { _id: string; count: number; }[];
+    recentUsers: {
+        firstName: string;
+        lastName: string;
+        email: string;
+        role: string;
+        createdAt: Date;
+    }[];
 }
 
 /**

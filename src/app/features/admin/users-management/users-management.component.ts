@@ -203,8 +203,14 @@ export class UsersManagementComponent implements OnInit {
     this.toastService.error('Error', msg);
   }
 
+  // Helper method to get user role with proper fallback
+getUserRole(user: any): string {
+    return user.role || 'user';
+  }
+
   deleteUser(user: any): void {
-    if (!confirm(`Delete user ${user.name || user.email}?`)) return;
+    const displayName = user.name || user.email || 'Unknown User';
+    if (!confirm(`Delete user "${displayName}"?`)) return;
 
     this.adminService.promoteToCaptain(user.userId).subscribe({
       next: () => {
@@ -245,5 +251,15 @@ export class UsersManagementComponent implements OnInit {
 
   getTierBadgeClass(tier: string): string {
     return `badge-${tier}`;
+  }
+
+  // Helper method to get user role safely
+  getUserRole(user: any): string {
+    return user.role || 'user';
+  }
+
+  // Helper method to get user name safely
+  getUserName(user: any): string {
+    return user.name || user.email || 'Unknown User';
   }
 }
