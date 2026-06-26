@@ -37,7 +37,7 @@ interface RecentTrip {
 @Component({
   selector: 'app-profile-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule],
   templateUrl: './profile-view.component.html',
   styleUrls: ['./profile-view.component.scss']
 })

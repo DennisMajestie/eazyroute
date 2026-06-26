@@ -8,6 +8,7 @@
     min-height: 100vh;
     background: #020617;
     color: white;
+    padding: $space-2xl;
 }
 
 .mesh-gradient {
@@ -862,7 +863,58 @@
 }
 
 @media (max-width: 768px) {
+    .moderation-container {
+        padding: $space-lg;
+        gap: $space-lg;
+    }
+
+    .moderation-tabs {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: $space-sm;
+
+        .tab-btn {
+            font-size: 0.75rem;
+            padding: $space-sm $space-md;
+        }
+    }
+
+    .bulk-actions-bar {
+        flex-direction: column;
+        gap: $space-md;
+        padding: $space-lg;
+
+        .bulk-buttons {
+            width: 100%;
+            flex-wrap: wrap;
+
+            .bulk-btn {
+                flex: 1;
+                justify-content: center;
+                min-width: 0;
+                padding: 8px $space-md;
+                font-size: 0.7rem;
+            }
+        }
+    }
+
+    .moderation-card {
+        border-radius: 20px;
+    }
+
     .detail-panel {
         width: 100%;
+    }
+
+    .panel-footer {
+        flex-direction: column;
+    }
+
+    .modal-overlay .modal-card {
+        max-width: 100% !important;
+        margin: $space-md;
+        max-height: 90vh;
+        overflow-y: auto;
     }
 }

@@ -343,3 +343,49 @@
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+@media (max-width: 768px) {
+    :host {
+        padding: $space-lg;
+    }
+
+    .registry-container {
+        .header-section {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: $space-lg;
+            padding: $space-lg;
+
+            .search-bar {
+                width: 100%;
+            }
+
+            .actions {
+                flex-direction: column;
+                width: 100%;
+
+                button {
+                    width: 100%;
+                    justify-content: center;
+                }
+            }
+        }
+
+        .pagination-footer {
+            flex-direction: column;
+            gap: $space-lg;
+            align-items: center;
+
+            .page-controls {
+                gap: $space-lg;
+            }
+        }
+    }
+
+    .modal-card {
+        max-width: 100% !important;
+        margin: $space-md;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+}

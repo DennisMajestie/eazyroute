@@ -463,3 +463,108 @@
     80% { opacity: 0.3; }
     100% { opacity: 0; transform: translateY(200px); }
 }
+
+@media (max-width: 768px) {
+    :host {
+        padding: $space-lg;
+    }
+
+    .engine-container {
+        .network-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: $space-lg;
+            padding: $space-lg;
+
+            .subtitle {
+                margin-bottom: $space-sm;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        .tier-summary {
+            grid-template-columns: 1fr;
+            gap: $space-lg;
+        }
+
+        .network-content {
+            padding: $space-lg;
+
+            .tier-legend {
+                position: relative;
+                top: auto;
+                right: auto;
+                display: flex;
+                flex-wrap: wrap;
+                gap: $space-sm;
+                margin-bottom: $space-lg;
+                width: 100%;
+
+                .legend-item {
+                    margin-bottom: 0;
+                }
+            }
+
+            .network-canvas {
+                height: 250px;
+            }
+
+            .info-panel {
+                padding: $space-lg;
+
+                .migration-list {
+                    .migration-item {
+                        flex-direction: column;
+                        gap: $space-sm;
+
+                        .migration-node {
+                            min-width: 100%;
+                        }
+
+                        .migration-arrow {
+                            transform: rotate(90deg);
+                        }
+                    }
+                }
+            }
+        }
+
+        .modal-overlay {
+            padding: $space-md;
+            align-items: flex-end;
+
+            .modal {
+                max-width: 100%;
+                border-radius: $radius-2xl $radius-2xl 0 0;
+
+                .modal-body {
+                    .retag-preview {
+                        flex-direction: column;
+                        gap: $space-lg;
+
+                        .preview-node {
+                            .node-content {
+                                min-width: 100%;
+                                padding: $space-lg;
+                            }
+                        }
+                    }
+                }
+
+                .modal-footer {
+                    flex-direction: column;
+                    gap: $space-sm;
+
+                    .btn {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                }
+            }
+        }
+    }
+}
